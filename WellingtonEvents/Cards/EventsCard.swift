@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import DesignLibrary
 
 struct FavouriteModel {
     let isFavourited: Bool
@@ -27,18 +28,20 @@ struct EventsCardView: View {
                 AsyncImage(url: URL(string: event.imageUrl ?? "")) { phase in
                     switch phase {
                     case .empty:
-                        Rectangle()
+                        RoundedRectangle(cornerRadius: 8)
                             .fill(.gray)
-                            .frame(width: 100, height: 100)
+                            .squareFrame(size: 100)
+                            .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1)
                     case .success(let image):
                         image
                             .resizable()
-                            .scaledToFit()
-                            .frame(width: 100, height: 100)
+                            .squareFrame(size: 100)
+                            .roundedShadow()
                     case .failure(let error):
-                        Rectangle()
+                        RoundedRectangle(cornerRadius: 8)
                             .fill(.red)
-                            .frame(width: 100, height: 100)
+                            .squareFrame(size: 100)
+                            .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1)
                             .onAppear {
                                 print(error)
                                 print(event.imageUrl ?? "")
@@ -73,9 +76,9 @@ struct EventsCardView: View {
                             .foregroundStyle(.text)
                     }
                     HStack {
-                        Text(event.source)
+                        Text("From: \(event.source)")
                             .font(.subheadline)
-                            .foregroundStyle(.red)
+                            .foregroundStyle(.text)
                         Spacer()
                         Button {
                             FavouriteModel.didTapFavorites()
@@ -92,21 +95,19 @@ struct EventsCardView: View {
                                 addToCalendar()
                             } label: {
                                 Image(systemName: "calendar.badge.plus")
+                                    .renderingMode(.template)
                                     .resizable()
                                     .squareFrame(size: 30)
                             }
                             .padding(.leading, .xxSmall)
+                            .foregroundStyle(.text)
                         }
                     }
                 }
             }
         }
         .padding(.all, .medium)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(.cardBackground)
-                .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1))
+        .roundedShadow(color: Gradient(colors: [.cardGradient1, .cardGradient2]))
         .padding(.horizontal, .medium)
     }
 }

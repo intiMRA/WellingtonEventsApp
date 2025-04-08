@@ -9,26 +9,22 @@ import Foundation
 
 struct EventsResponse: Codable {
     let events: [EventInfo]
-    let eventsWithNoDate: [EventInfo]
     let filters: Filters
     
     enum CodingKeys: CodingKey {
         case events
-        case eventsWithNoDate
         case filters
     }
     
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.events = try container.decode([EventInfo].self, forKey: .events)
-        self.eventsWithNoDate = try container.decode([EventInfo].self, forKey: .eventsWithNoDate)
         self.filters = try container.decode(Filters.self, forKey: .filters)
     }
     
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(self.events, forKey: .events)
-        try container.encode(self.eventsWithNoDate, forKey: .eventsWithNoDate)
         try container.encode(self.filters, forKey: .filters)
     }
 }

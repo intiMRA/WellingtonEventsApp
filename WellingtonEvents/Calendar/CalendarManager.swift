@@ -12,8 +12,8 @@ class CalendarManager {
     
     static let eventStore : EKEventStore = EKEventStore()
     
-    static func saveEventToCalendar(eventInfo: EventInfo, date: Date?) async {
-        guard (try? await eventStore.requestFullAccessToEvents()) == true else {
+    static func saveEventToCalendar(eventInfo: EventInfo, date: Date?) async throws {
+        guard (try await eventStore.requestFullAccessToEvents()) == true else {
             return
         }
         
@@ -29,10 +29,7 @@ class CalendarManager {
         event.endDate = date
         event.notes = eventInfo.venue
         event.calendar = eventStore.defaultCalendarForNewEvents
-        do {
-            try eventStore.save(event, span: .thisEvent, commit: true)
-        } catch let error as NSError {
-            print("failed to save event with error : \(error)")
-        }
+        
+        try eventStore.save(event, span: .thisEvent, commit: true)
     }
 }

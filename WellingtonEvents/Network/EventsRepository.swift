@@ -11,5 +11,5 @@ protocol EventsRepository {
     func saveToFavorites(event: EventInfo)
     func retrieveFavorites() -> [EventInfo]
     func deleteFromFavorites(event: EventInfo)
-    func deleteFromFavorites(events: [EventInfo])
+    func deleteFromFavorites(eventIds: [String])
 }

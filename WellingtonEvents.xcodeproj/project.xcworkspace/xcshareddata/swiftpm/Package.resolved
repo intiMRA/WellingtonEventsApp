@@ -1,5 +1,5 @@
 {
-  "originHash" : "46c9a5cf07748d8e5a7c11407ad36a2a72467eeb744a56b7fa96ad11dfda1610",
+  "originHash" : "c1baabaee6c88f5d12201c794f07fa4e813896435bc6938b4291a195dade4179",
   "pins" : [
     {
       "identity" : "desing-library-spm",
@@ -7,7 +7,7 @@
       "location" : "https://github.com/intiMRA/Desing-Library-SPM",
       "state" : {
         "branch" : "main",
-        "revision" : "364a12951779ffbd5648cccfe2dbbcf5d683d19e"
+        "revision" : "2a72b400017740ee318551357024beb6d28197b7"
       }
     },
     {

@@ -38,9 +38,9 @@ class UserDefaultsEventsRepository: EventsRepository {
         save(favourites: favourites)
     }
     
-    func deleteFromFavorites(events: [EventInfo]) {
+    func deleteFromFavorites(eventIds: [String]) {
         var favourites = retrieveFavorites()
-        favourites.removeAll(where: { event in events.contains(where: { event.id == $0.id }) })
+        favourites.removeAll(where: { event in eventIds.contains(where: { event.id == $0 }) })
         save(favourites: favourites)
     }
     

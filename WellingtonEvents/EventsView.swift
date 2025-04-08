@@ -22,6 +22,18 @@ struct EventsView: View {
                     listView
                         .navigationTitle( "Events")
                         .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button {
+                                    Task {
+                                        await viewModel.fetchEvents()
+                                    }
+                                } label: {
+                                    Text("Refresh")
+                                }
+                            }
+                        }
+
                 }
                 
                 filtersView
@@ -36,61 +48,23 @@ struct EventsView: View {
         .animation(nil, value: viewModel.events)
         .animation(.easeIn, value: viewModel.isLoading)
         .sheet(item: $viewModel.route.calendar) { event in
-            ScrollView {
-                VStack(alignment: .leading) {
-                    ForEach(viewModel.datesByMonth(dates: event.dates)) { month in
-                        Text(month.month)
-                            .font(.headline)
-                            .foregroundStyle(.text)
-                        
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 50))], spacing: 4) {
-                            ForEach(month.dates, id: \.self) { date in
-                                Button {
-                                    viewModel.addToCalendar(event: event, date: date)
-                                    viewModel.route = nil
-                                } label: {
-                                    VStack {
-                                        Text(date.asString(with: .dd))
-                                            .lineLimit(1)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .background {
-                                        RoundedRectangle(cornerRadius: 2)
-                                            .fill(Color.gray.opacity(0.7))
-                                            .frame(width: 44, height: 44)
-                                    }
-                                }
-                                .frame(width: 44, height: 44)
-                            }
-                        }
-                    }
-                }
-                .padding(.horizontal, .medium)
+            NavigationView {
+                DatePickerView(viewModel: .init(event: event, dismiss: { [weak viewModel] style in viewModel?.dissmissCalendar(style) }))
             }
         }
         .sheet(item: $viewModel.route.filters, id: \.self) { value in
             NavigationView {
-                ScrollView {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))]) {
-                        ForEach(value.items, id: \.self) { filter in
-                            Button {
-                                viewModel.didSelectFilter(filter, filterType: value.filterType)
-                            } label: {
-                                VStack {
-                                    Text(filter)
-                                        .lineLimit(1)
-                                        .font(.headline)
-                                }
-                                .frame(maxWidth: .infinity)
-                            }
-                            .foregroundStyle(.text)
-                        }
-                    }
-                }
-                .navigationTitle("Select A Filter")
-                .navigationBarTitleDisplayMode(.inline)
+                FilterOptionsView(viewModel: .init(
+                    possibleFilters: value,
+                    selectedFilters: viewModel.selectedFilters,
+                    finishedFiltering: viewModel.applyFilters(filters:), dismiss: { [weak viewModel] in viewModel?.resetRoute() }))
             }
             .presentationDetents([ .medium, .large])
+        }
+        .sheet(item: $viewModel.route.alert, id: \.self) { style in
+            ToastView(model: .init(style: style, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+                .presentationBackground(.clear)
+                .presentationDetents([.fraction(1/7)])
         }
     }
     
@@ -98,60 +72,32 @@ struct EventsView: View {
     var filtersView: some View {
         ScrollView(.horizontal) {
             HStack {
-                let selectedSource = viewModel.selectedFilterSource()
-                Button {
-                    viewModel.expandFilter(for: viewModel.filters?.sources ?? [], filterType: .sources)
-                } label: {
-                    if selectedSource == .sources {
-                        HStack {
-                            Text("Sources")
-                                .font(.headline)
-                            Button {
-                                viewModel.clearFilters()
-                            } label: {
-                                Image(systemName: "xmark.circle.fill")
-                            }
-                        }
+                let selectedSources = viewModel.selectedFilterSource()
+                FilterView(
+                    isSelected: selectedSources.contains(where: { $0 == .sources }),
+                    title: "Sources",
+                    hasIcon: true) {
+                        viewModel.expandFilter(for: viewModel.filters?.sources ?? [], filterType: .sources)
+                    } clearFilters: {
+                        viewModel.clearFilters(for: .sources)
                     }
-                    else {
-                        Text("Sources \(Image(systemName: "chevron.down"))")
-                            .font(.headline)
-                    }
-                }
-                .foregroundStyle(.text)
-                .padding(.all, .xSmall)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(.cardBackground)
-                        .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1))
                 
-                Button {
-                    viewModel.expandFilter(for: viewModel.filters?.eventTypes ?? [], filterType: .eventTypes)
-                } label: {
-                    if selectedSource == .eventTypes {
-                        HStack {
-                            Text("Event Types")
-                                .font(.headline)
-                            Button {
-                                viewModel.clearFilters()
-                            } label: {
-                                Image(systemName: "xmark.circle.fill")
-                            }
-                        }
+                FilterView(
+                    isSelected: selectedSources.contains(where: { $0 == .eventTypes }),
+                    title: "Event Types",
+                    hasIcon: true) {
+                        viewModel.expandFilter(for: viewModel.filters?.eventTypes ?? [], filterType: .eventTypes)
+                    } clearFilters: {
+                        viewModel.clearFilters(for: .eventTypes)
                     }
-                    else {
-                        Text("Event Types \(Image(systemName: "chevron.down"))")
-                            .font(.headline)
+                
+                FilterView(
+                    isSelected: viewModel.favoritesFilterOn,
+                    title: "Favorited",
+                    hasIcon: false) {
+                        viewModel.favoritesFilterOn.toggle()
+                        viewModel.applyFilters(filters: viewModel.selectedFilters)
                     }
-                }
-                .foregroundStyle(.text)
-                .padding(.all, .xSmall)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(.cardBackground)
-                        .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1))
             }
             .padding(.vertical, .xxSmall)
         }
@@ -160,46 +106,6 @@ struct EventsView: View {
     @ViewBuilder
     var listView: some View {
         ScrollView {
-            if !viewModel.eventsWithNoDates.isEmpty {
-                Button {
-                    viewModel.noDateIsExpanded.toggle()
-                } label: {
-                    HStack {
-                        Text("Events With No Date \(viewModel.noDateIsExpanded ? Image(systemName: "chevron.down") : Image(systemName: "chevron.right"))")
-                            .font(.headline)
-                        Spacer()
-                    }
-                    .padding(.bottom, .medium)
-                }
-                .foregroundStyle(.primary)
-                .padding(.top, 78)
-                .padding(.horizontal, .medium)
-                VStack(alignment: .leading) {
-                    if viewModel.noDateIsExpanded {
-                        LazyVStack(spacing: .medium) {
-                            ForEach(viewModel.eventsWithNoDates) { event in
-                                let isFavourited = viewModel.isEventFavourited(id: event.id)
-                                EventsCardView(
-                                    event: event,
-                                    FavouriteModel: .init(
-                                        isFavourited: isFavourited,
-                                        didTapFavorites: {
-                                            if isFavourited {
-                                                viewModel.deleteFromFavorites(event: event)
-                                            }
-                                            else {
-                                                viewModel.saveToFavorites(event: event)
-                                            }
-                                        })) {
-                                            viewModel.didTapOnEvent(with: $0)
-                                        }
-                                        .padding(.bottom, .medium)
-                            }
-                        }
-                    }
-                    
-                }
-            }
             
             VStack(alignment: .leading, spacing: .medium) {
                 Text("Events")
@@ -230,10 +136,7 @@ struct EventsView: View {
                 }
             }
         }
-        .padding(.top, 0)
-        .refreshable {
-            await viewModel.fetchEvents()
-        }
+        .padding(.top, 78)
         .animation(.default, value: viewModel.noDateIsExpanded)
     }
 }

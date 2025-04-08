@@ -10,18 +10,13 @@ import NetworkLayerSPM
 import CasePaths
 import Combine
 import SwiftUI
+import DesignLibrary
 
 @CasePathable
 enum Destination {
-    struct FilterValue: Equatable, Identifiable, Hashable {
-        let items: [String]
-        let filterType: Filters.FilterType
-        var id: Filters.FilterType {
-            filterType
-        }
-    }
     case calendar(event: EventInfo)
-    case filters(for: FilterValue)
+    case filters(for: FilterValues)
+    case alert(ToastStyle)
 }
 
 struct urlBuilder: NetworkLayerURLBuilder {
@@ -54,13 +49,14 @@ class EventsViewModel: ObservableObject {
     var allEvents: [EventInfo]
     @Published var events: [EventInfo]
     @Published var selectedDate: Date
-    @Published var eventsWithNoDates: [EventInfo]
     @Published var isLoading: Bool = true
     
     @Published var searchText = ""
     @Published var noDateIsExpanded: Bool = true
+    @Published var favoritesFilterOn: Bool = false
+    
     var filters: Filters?
-    @Published var selectedFilter: String?
+    @Published var selectedFilters: [Filter] = []
     
     @Published var route: Destination?
     var cancellables = Set<AnyCancellable>()
@@ -68,31 +64,38 @@ class EventsViewModel: ObservableObject {
     func setup() async {
         await fetchEvents()
         self.favourites = repository.retrieveFavorites()
+        guard !allEvents.isEmpty else {
+            return
+        }
+        repository.deleteFromFavorites(eventIds: favourites.compactMap { event in
+            if !allEvents.contains(where: { $0.id == event.id }) {
+                return event.id
+            }
+            return nil
+        })
     }
     
     init(
         favourites: [EventInfo] = [],
         allEvents: [EventInfo] = [],
         events: [EventInfo] = [],
-        selectedDate: Date = .now,
-        eventsWithNoDates: [EventInfo] = []) {
-        self.favourites = favourites
-        self.allEvents = allEvents
-        self.events = events
-        self.selectedDate = selectedDate
-        self.eventsWithNoDates = eventsWithNoDates
-        self.noDateIsExpanded = noDateIsExpanded
-        $searchText
-            .dropFirst()
-            .debounce(for: .seconds(0.1), scheduler: DispatchQueue.main)
-            .sink { [weak self] value in
-                self?.filterEvents(containing: value)
-            }
-            .store(in: &cancellables)
-    }
+        selectedDate: Date = .now) {
+            self.favourites = favourites
+            self.allEvents = allEvents
+            self.events = events
+            self.selectedDate = selectedDate
+            self.noDateIsExpanded = noDateIsExpanded
+            $searchText
+                .dropFirst()
+                .debounce(for: .seconds(0.1), scheduler: DispatchQueue.main)
+                .sink { [weak self] value in
+                    self?.filterEvents(containing: value)
+                }
+                .store(in: &cancellables)
+        }
     
     func fetchEvents() async {
-        selectedFilter = nil
+        selectedFilters = []
         isLoading = true
         defer {
             isLoading = false
@@ -110,8 +113,6 @@ class EventsViewModel: ObservableObject {
                 
                 return date1 < date2
             }) ?? []
-            
-            eventsWithNoDates = response?.eventsWithNoDate.sorted(by: { $0.name < $1.name }) ?? []
             
             filters = response?.filters
             
@@ -158,9 +159,15 @@ class EventsViewModel: ObservableObject {
         }
     }
     
-    func addToCalendar(event: EventInfo, date: Date?) {
+    private func addToCalendar(event: EventInfo, date: Date?) {
         Task {
-            await CalendarManager.saveEventToCalendar(eventInfo: event, date: date)
+            do {
+                try await CalendarManager.saveEventToCalendar(eventInfo: event, date: selectedDate)
+                route = .alert(.success(message: "Event successfully added to your calendar."))
+            }
+            catch {
+                route = .alert(.error(message: error.localizedDescription))
+            }
         }
     }
     
@@ -184,49 +191,76 @@ class EventsViewModel: ObservableObject {
         route = .filters(for: .init(items: items, filterType: filterType))
     }
     
-    func didSelectFilter(_ filter: String, filterType: Filters.FilterType) {
-        selectedFilter = filter
-        switch filterType {
+    func clearFilters(for source: Filters.FilterType) {
+        switch source {
         case .eventTypes:
-            events = allEvents.filter { $0.eventType == filter }
+            selectedFilters.removeAll(where: { filters?.eventTypes.contains($0.filter) == true })
         case .sources:
-            events = allEvents.filter { $0.source == filter }
+            selectedFilters.removeAll(where: { filters?.sources.contains($0.filter) == true })
         }
+        applyFilters(filters: selectedFilters)
+    }
+    
+    func applyFilters(filters: [Filter]) {
+        guard !filters.isEmpty || favoritesFilterOn else {
+            events = allEvents
+            selectedFilters = []
+            return
+        }
+        
+        var newEvents: [EventInfo] = []
+        for event in allEvents {
+            if favoritesFilterOn {
+                if favourites.contains(where: { $0.id == event.id }) {
+                    newEvents.append(event)
+                }
+            }
+            
+            for filter in filters {
+                if newEvents.contains(where: { event.id == $0.id }) {
+                    continue
+                }
+                
+                switch filter.filterType {
+                case .eventTypes:
+                    if event.eventType == filter.filter {
+                        newEvents.append(event)
+                    }
+                case .sources:
+                    if event.source == filter.filter {
+                        newEvents.append(event)
+                    }
+                }
+            }
+        }
+        self.selectedFilters = filters
+        self.events = newEvents
+    }
+    
+    func selectedFilterSource() -> [Filters.FilterType] {
+        var selectedSources: [Filters.FilterType] = []
+        if filters?.sources.oneOf(elements: selectedFilters.map { $0.filter} ) == true {
+            selectedSources.append(.sources)
+        }
+        
+        if filters?.eventTypes.oneOf(elements: selectedFilters.map { $0.filter} ) == true {
+            selectedSources.append(.eventTypes)
+        }
+        
+        return selectedSources
+    }
+    
+    func resetRoute() {
         route = nil
     }
     
-    func selectedFilterSource() -> Filters.FilterType? {
-        if filters?.sources.contains(where: { $0 == selectedFilter }) == true {
-            return .sources
-        }
-        
-        if filters?.eventTypes.contains(where: { $0 == selectedFilter }) == true {
-            return .sources
-        }
-        
-        return nil
-    }
-    
-    func clearFilters() {
-        selectedFilter = nil
-        events = allEvents
-    }
-    
-    func datesByMonth(dates: [Date]) -> [DateModel] {
-        var monthsDict = [String: [Date]]()
-        var monthStrings: [String] = []
-        dates.filter { $0 >= .now }.sorted(by: { $0 < $1 }).forEach { date in
-            let monthString = date.asString(with: .mmm)
-            if var month = monthsDict[monthString] {
-                month.append(date)
-                monthsDict[monthString] = month
+    func dissmissCalendar(_ style: ToastStyle?) {
+        withAnimation {
+            guard let style else {
+                resetRoute()
+                return
             }
-            else {
-                monthsDict[monthString] = [date]
-                monthStrings.append(monthString)
-            }
+            route = .alert(style)
         }
-        
-        return monthStrings.compactMap { .init(id: $0, month: $0, dates: monthsDict[$0]) }
     }
 }
