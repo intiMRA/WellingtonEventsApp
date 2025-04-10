@@ -12,6 +12,7 @@ enum Formats: String {
     case ddMMYyyy = "dd-MM-yyyy"
     case mmm = "MMM"
     case dd
+    case iso8601 = "yyyy-MM-dd'T'HH:mm:ss'Z'"
     
     static func formatter(for format: Self) -> DateFormatter {
         let formatter = DateFormatter()

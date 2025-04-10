@@ -17,3 +17,14 @@ extension Collection where Element: Equatable {
         return false
     }
 }
+
+extension Collection {
+    func oneSatisfies(condition: (Self.Element) -> Bool) -> Bool {
+        for e in self {
+            if condition(e) {
+                return true
+            }
+        }
+        return false
+    }
+}

@@ -66,6 +66,15 @@ struct EventsView: View {
                 .presentationBackground(.clear)
                 .presentationDetents([.fraction(1/7)])
         }
+        .sheet(item: $viewModel.route.dateSelector, id: \.id) { dates in
+            NavigationView {
+                DatesFilterView(startDate: dates.startDate,
+                                endDate: dates.endDate,
+                                dismiss: viewModel.resetRoute,
+                                didSelectDates: viewModel.didSelectDates)
+            }
+            .presentationDetents([ .medium, .large])
+        }
     }
     
     @ViewBuilder
@@ -73,6 +82,14 @@ struct EventsView: View {
         ScrollView(.horizontal) {
             HStack {
                 let selectedSources = viewModel.selectedFilterSource()
+                FilterView(
+                    isSelected: selectedSources.contains(where: { $0 == .dates }),
+                    title: "Dates",
+                    hasIcon: true) {
+                        viewModel.showDateSelector()
+                    } clearFilters: {
+                        viewModel.clearFilters(for: .dates)
+                    }
                 FilterView(
                     isSelected: selectedSources.contains(where: { $0 == .sources }),
                     title: "Sources",
@@ -98,15 +115,24 @@ struct EventsView: View {
                         viewModel.favoritesFilterOn.toggle()
                         viewModel.applyFilters(filters: viewModel.selectedFilters)
                     }
+                
+                FilterView(
+                    isSelected: viewModel.oneOfFilter,
+                    title: "Happening once",
+                    hasIcon: false) {
+                        viewModel.oneOfFilter.toggle()
+                        viewModel.applyFilters(filters: viewModel.selectedFilters)
+                    }
+                
             }
             .padding(.vertical, .xxSmall)
+            .padding(.horizontal, .xxxSmall)
         }
     }
     
     @ViewBuilder
     var listView: some View {
         ScrollView {
-            
             VStack(alignment: .leading, spacing: .medium) {
                 Text("Events")
                     .font(.headline)
@@ -137,6 +163,5 @@ struct EventsView: View {
             }
         }
         .padding(.top, 78)
-        .animation(.default, value: viewModel.noDateIsExpanded)
     }
 }

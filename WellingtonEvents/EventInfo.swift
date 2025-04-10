@@ -34,7 +34,7 @@ struct Filters: Codable {
     let sources: [String]
     
     enum FilterType: String, Equatable {
-        case eventTypes, sources
+        case eventTypes, sources, dates
     }
 }
 
