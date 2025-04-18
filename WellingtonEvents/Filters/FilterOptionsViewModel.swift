@@ -7,54 +7,43 @@
 
 import Foundation
 
-struct FilterValues: Equatable, Identifiable, Hashable {
-    let items: [String]
-    let filterType: Filters.FilterType
-    var id: Filters.FilterType {
-        filterType
-    }
-}
-
-struct Filter: Equatable {
-    let filterType: Filters.FilterType
-    let filter: String
-}
-
 @MainActor
 @Observable
 class FilterOptionsViewModel {
-    var selectedFilters: [Filter]
-    let possibleFilters: FilterValues
-    let finishedFiltering: ([Filter]) -> Void
+    let filterTye: FilterIds
+    var selectedFilters: [String]
+    let possibleFilters: [String]
+    let finishedFiltering: ([String], FilterIds) -> Void
     let dismiss: () -> Void
     
     init(
-        possibleFilters: FilterValues,
-        selectedFilters: [Filter],
-        finishedFiltering: @escaping ([Filter]) -> Void,
+        filterTye: FilterIds,
+        possibleFilters: [String],
+        selectedFilters: [String],
+        finishedFiltering: @escaping ([String], FilterIds) -> Void,
         dismiss: @escaping () -> Void) {
         self.selectedFilters = selectedFilters
         self.finishedFiltering = finishedFiltering
         self.possibleFilters = possibleFilters
         self.dismiss = dismiss
+            self.filterTye = filterTye
     }
     
     func didFinishedFiltering() {
-        finishedFiltering(selectedFilters)
+        finishedFiltering(selectedFilters, filterTye)
         dismiss()
     }
     
     func didTapOnFilter(_ filter: String) {
-        let filterWithType = Filter(filterType: possibleFilters.filterType, filter: filter)
-        if selectedFilters.contains(filterWithType) {
-            selectedFilters.removeAll(where: { $0 == filterWithType })
+        if selectedFilters.contains(filter) {
+            selectedFilters.removeAll(where: { $0 == filter })
         }
         else {
-            selectedFilters.append(filterWithType)
+            selectedFilters.append(filter)
         }
     }
     
     func filterIsSelected(_ filter: String) -> Bool {
-        selectedFilters.contains(where: { $0.filter == filter })
+        selectedFilters.contains(where: { $0 == filter })
     }
 }

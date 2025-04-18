@@ -42,6 +42,7 @@ struct EventsView: View {
                     .searchable(text: $viewModel.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: Text("Search For Event Names"))
             }
         }
+        .disabled(viewModel.isLoading)
         .task {
             await viewModel.setup()
         }
@@ -52,12 +53,14 @@ struct EventsView: View {
                 DatePickerView(viewModel: .init(event: event, dismiss: { [weak viewModel] style in viewModel?.dissmissCalendar(style) }))
             }
         }
-        .sheet(item: $viewModel.route.filters, id: \.self) { value in
+        .sheet(item: $viewModel.route.filters, id: \.id) { value in
             NavigationView {
                 FilterOptionsView(viewModel: .init(
-                    possibleFilters: value,
-                    selectedFilters: viewModel.selectedFilters,
-                    finishedFiltering: viewModel.applyFilters(filters:), dismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+                    filterTye: value.id,
+                    possibleFilters: value.items,
+                    selectedFilters: viewModel.selectedFilters(for: value.id),
+                    finishedFiltering: viewModel.didSelectFilterValues,
+                    dismiss: { [weak viewModel] in viewModel?.resetRoute() }))
             }
             .presentationDetents([ .medium, .large])
         }
@@ -83,45 +86,50 @@ struct EventsView: View {
             HStack {
                 let selectedSources = viewModel.selectedFilterSource()
                 FilterView(
-                    isSelected: selectedSources.contains(where: { $0 == .dates }),
+                    isSelected: selectedSources.contains(where: { $0 == .date }),
                     title: "Dates",
                     hasIcon: true) {
                         viewModel.showDateSelector()
                     } clearFilters: {
-                        viewModel.clearFilters(for: .dates)
+                        viewModel.clearFilters(for: .date)
                     }
                 FilterView(
-                    isSelected: selectedSources.contains(where: { $0 == .sources }),
+                    isSelected: selectedSources.contains(where: { $0 == .source }),
                     title: "Sources",
                     hasIcon: true) {
-                        viewModel.expandFilter(for: viewModel.filters?.sources ?? [], filterType: .sources)
+                        viewModel.expandFilter(for: viewModel.filters?.sources ?? [], filterType: .source)
                     } clearFilters: {
-                        viewModel.clearFilters(for: .sources)
+                        viewModel.clearFilters(for: .source)
                     }
                 
                 FilterView(
-                    isSelected: selectedSources.contains(where: { $0 == .eventTypes }),
+                    isSelected: selectedSources.contains(where: { $0 == .eventType }),
                     title: "Event Types",
                     hasIcon: true) {
-                        viewModel.expandFilter(for: viewModel.filters?.eventTypes ?? [], filterType: .eventTypes)
+                        viewModel.expandFilter(for: viewModel.filters?.eventTypes ?? [], filterType: .eventType)
                     } clearFilters: {
-                        viewModel.clearFilters(for: .eventTypes)
+                        viewModel.clearFilters(for: .eventType)
                     }
                 
                 FilterView(
-                    isSelected: viewModel.favoritesFilterOn,
+                    isSelected: selectedSources.contains(where: { $0 == .favorited }),
                     title: "Favorited",
                     hasIcon: false) {
-                        viewModel.favoritesFilterOn.toggle()
-                        viewModel.applyFilters(filters: viewModel.selectedFilters)
+                        viewModel.didTapFavouritesFilter()
                     }
                 
                 FilterView(
-                    isSelected: viewModel.oneOfFilter,
+                    isSelected: selectedSources.contains(where: { $0 == .oneOf }),
                     title: "Happening once",
                     hasIcon: false) {
-                        viewModel.oneOfFilter.toggle()
-                        viewModel.applyFilters(filters: viewModel.selectedFilters)
+                        viewModel.didTapOneOfFilter()
+                    }
+                
+                FilterView(
+                    isSelected: selectedSources.contains(where: { $0 == .multipleDates }),
+                    title: "Multiple dates",
+                    hasIcon: false) {
+                        viewModel.didTapMultipleDatesFilter()
                     }
                 
             }

@@ -47,6 +47,9 @@ struct DatesFilterView: View {
             
             ToolbarItem(placement: .confirmationAction) {
                 Button {
+                    if endDate < startDate {
+                        endDate = startDate
+                    }
                     didSelectDates(startDate, endDate)
                 } label : {
                     Text("Apply Filters")

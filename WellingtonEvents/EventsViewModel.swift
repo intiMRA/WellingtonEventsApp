@@ -14,6 +14,11 @@ import DesignLibrary
 
 @CasePathable
 enum Destination {
+    struct FilterValues: Identifiable {
+        var id: FilterIds
+        var items: [String]
+    }
+    
     case calendar(event: EventInfo)
     case filters(for: FilterValues)
     case alert(ToastStyle)
@@ -53,13 +58,9 @@ class EventsViewModel: ObservableObject {
     @Published var isLoading: Bool = true
     
     @Published var searchText = ""
-    @Published var favoritesFilterOn: Bool = false
-    @Published var oneOfFilter: Bool = false
     
     var filters: Filters?
-    @Published var selectedFilters: [Filter] = []
-    @Published var filterStartDate: Date?
-    @Published var filterEndDate: Date?
+    @Published var selectedFilters: [any FilterObjectProtocol] = []
     
     @Published var route: Destination?
     var cancellables = Set<AnyCancellable>()
@@ -125,19 +126,6 @@ class EventsViewModel: ObservableObject {
         }
     }
     
-    func filterEvents(containing string: String) {
-        guard !string.isEmpty else {
-            events = allEvents
-            return
-        }
-        
-        var events = allEvents.filter({ $0.name.lowercased().starts(with: string.lowercased())})
-        events.append(contentsOf: allEvents.filter({ event in event.name.lowercased().contains(string.lowercased()) && !events.contains(where: { $0.id == event.id }) }))
-        
-        events.append(contentsOf: allEvents.filter({ event in event.source.lowercased().contains(string.lowercased()) && !events.contains(where: { $0.id == event.id }) }))
-        self.events = events
-    }
-    
     func isEventFavourited(id: String) -> Bool {
         favourites.contains(where: { id == $0.id })
     }
@@ -186,98 +174,6 @@ class EventsViewModel: ObservableObject {
         }
     }
     
-    func expandFilter(for items: [String], filterType: Filters.FilterType) {
-        guard !items.isEmpty else {
-            return
-        }
-        route = .filters(for: .init(items: items, filterType: filterType))
-    }
-    
-    func clearFilters(for source: Filters.FilterType) {
-        switch source {
-        case .eventTypes:
-            selectedFilters.removeAll(where: { filters?.eventTypes.contains($0.filter) == true })
-        case .sources:
-            selectedFilters.removeAll(where: { filters?.sources.contains($0.filter) == true })
-        case .dates:
-            filterStartDate = nil
-            filterEndDate = nil
-        }
-        applyFilters(filters: selectedFilters)
-    }
-    
-    func applyFilters(filters: [Filter]) {
-        guard !filters.isEmpty || favoritesFilterOn || oneOfFilter else {
-            events = allEvents
-            selectedFilters = []
-            return
-        }
-        
-        var newEvents: [EventInfo] = allEvents
-        for event in allEvents {
-            if favoritesFilterOn {
-                if !favourites.contains(where: { $0.id == event.id }) {
-                    newEvents.removeAll(where: { $0.id == event.id })
-                }
-            }
-            
-            if oneOfFilter {
-                if event.dates.count > 1 {
-                    newEvents.removeAll(where: { $0.id == event.id })
-                }
-            }
-            
-            let eventTypeFilters = filters.filter { $0.filterType == .eventTypes }
-            let sourcesFilters = filters.filter({ $0.filterType == .sources })
-            
-            if !eventTypeFilters.isEmpty, !eventTypeFilters.contains(where: { $0.filter == event.eventType }) {
-                newEvents.removeAll(where: { $0.id == event.id })
-            }
-            
-            if !sourcesFilters.isEmpty, !sourcesFilters.contains(where: { $0.filter == event.source }) {
-                newEvents.removeAll(where: { $0.id == event.id })
-            }
-            
-            if let startDate = filterStartDate,
-               let endDate = filterEndDate {
-                let withInRange = !event.dates.oneSatisfies(condition: { date in
-                    let greaterThenCondition = date.checkConditionIgnoringTime(other: startDate) {
-                        $0 >= $1
-                    }
-                    
-                    let lessThenCondition = date.checkConditionIgnoringTime(other: endDate) {
-                        $0 <= $1
-                    }
-                    
-                    return greaterThenCondition && lessThenCondition
-                })
-                
-                if withInRange {
-                    newEvents.removeAll(where: { $0.id == event.id })
-                }
-            }
-        }
-        self.selectedFilters = filters
-        self.events = newEvents
-    }
-    
-    func selectedFilterSource() -> [Filters.FilterType] {
-        var selectedSources: [Filters.FilterType] = []
-        if filters?.sources.oneOf(elements: selectedFilters.map { $0.filter} ) == true {
-            selectedSources.append(.sources)
-        }
-        
-        if filters?.eventTypes.oneOf(elements: selectedFilters.map { $0.filter} ) == true {
-            selectedSources.append(.eventTypes)
-        }
-        
-        if filterStartDate != nil, filterEndDate != nil {
-            selectedSources.append(.dates)
-        }
-        
-        return selectedSources
-    }
-    
     func resetRoute() {
         route = nil
     }
@@ -290,42 +186,5 @@ class EventsViewModel: ObservableObject {
             }
             route = .alert(style)
         }
-    }
-}
-
-extension EventsViewModel {
-    private var idForDateRoute: String {
-        (filterStartDate ?? .now).id + (filterEndDate ?? .now).id
-    }
-    
-    func didSelectDates(_ startDate: Date, _ endDate: Date) {
-        filterStartDate = startDate
-        filterEndDate = endDate
-        resetRoute()
-        applyFilters(filters: selectedFilters)
-    }
-    
-    func showDateSelector() {
-        route = .dateSelector(startDate: filterStartDate ?? .now, endDate: filterEndDate ?? .now, id: idForDateRoute)
-    }
-}
-
-extension Date: @retroactive Identifiable {
-    private static var calendar: Calendar {
-        .init(identifier: .gregorian)
-    }
-    public var id: String {
-        self.asString(with: .iso8601)
-    }
-    
-    func checkConditionIgnoringTime(other: Date, condition: (Date, Date) -> Bool) -> Bool {
-        let selfDate = Self.calendar.date(bySettingHour: 0, minute: 0, second: 0, of: self)
-        let otherDate = Self.calendar.date(bySettingHour: 0, minute: 0, second: 0, of: other)
-        
-        guard let selfDate, let otherDate else {
-            return false
-        }
-        
-        return condition(selfDate, otherDate)
     }
 }

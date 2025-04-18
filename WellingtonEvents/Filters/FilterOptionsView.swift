@@ -17,7 +17,7 @@ struct FilterOptionsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
-                ForEach(viewModel.possibleFilters.items, id: \.self) { filter in
+                ForEach(viewModel.possibleFilters, id: \.self) { filter in
                     HStack {
                         let isSelected = viewModel.filterIsSelected(filter)
                         Image(systemName: "checkmark.square")

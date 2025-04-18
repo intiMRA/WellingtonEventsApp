@@ -32,10 +32,6 @@ struct EventsResponse: Codable {
 struct Filters: Codable {
     let eventTypes: [String]
     let sources: [String]
-    
-    enum FilterType: String, Equatable {
-        case eventTypes, sources, dates
-    }
 }
 
 struct EventInfo: Codable, Identifiable, Equatable {
@@ -44,7 +40,7 @@ struct EventInfo: Codable, Identifiable, Equatable {
     let imageUrl: String?
     let venue: String
     var dates: [Date]
-    let displayDate: String?
+    let displayDate: String
     let url: String
     let source: String
     let eventType: String
@@ -83,7 +79,7 @@ struct EventInfo: Codable, Identifiable, Equatable {
         let dateStrings = try container.decodeIfPresent([String].self, forKey: .dates)
         self.dates =  dateStrings?.compactMap { $0.asDate(with: .ddMMYyyy) } ?? []
         self.dates = Array(Set(self.dates))
-        self.displayDate = try container.decodeIfPresent(String.self, forKey: .displayDate)
+        self.displayDate = try container.decode(String.self, forKey: .displayDate)
         self.url = try container.decode(String.self, forKey: .url)
         self.source = try container.decode(String.self, forKey: .source)
         do {
