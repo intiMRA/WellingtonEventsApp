@@ -14,9 +14,15 @@ import DesignLibrary
 
 @CasePathable
 enum Destination {
+    struct FilterValues: Identifiable {
+        var id: FilterIds
+        var items: [String]
+    }
+    
     case calendar(event: EventInfo)
     case filters(for: FilterValues)
     case alert(ToastStyle)
+    case dateSelector(startDate: Date, endDate: Date, id: String)
 }
 
 struct urlBuilder: NetworkLayerURLBuilder {
@@ -52,11 +58,9 @@ class EventsViewModel: ObservableObject {
     @Published var isLoading: Bool = true
     
     @Published var searchText = ""
-    @Published var noDateIsExpanded: Bool = true
-    @Published var favoritesFilterOn: Bool = false
     
     var filters: Filters?
-    @Published var selectedFilters: [Filter] = []
+    @Published var selectedFilters: [any FilterObjectProtocol] = []
     
     @Published var route: Destination?
     var cancellables = Set<AnyCancellable>()
@@ -84,7 +88,6 @@ class EventsViewModel: ObservableObject {
             self.allEvents = allEvents
             self.events = events
             self.selectedDate = selectedDate
-            self.noDateIsExpanded = noDateIsExpanded
             $searchText
                 .dropFirst()
                 .debounce(for: .seconds(0.1), scheduler: DispatchQueue.main)
@@ -121,19 +124,6 @@ class EventsViewModel: ObservableObject {
         catch {
             print(error.localizedDescription)
         }
-    }
-    
-    func filterEvents(containing string: String) {
-        guard !string.isEmpty else {
-            events = allEvents
-            return
-        }
-        
-        var events = allEvents.filter({ $0.name.lowercased().starts(with: string.lowercased())})
-        events.append(contentsOf: allEvents.filter({ event in event.name.lowercased().contains(string.lowercased()) && !events.contains(where: { $0.id == event.id }) }))
-        
-        events.append(contentsOf: allEvents.filter({ event in event.source.lowercased().contains(string.lowercased()) && !events.contains(where: { $0.id == event.id }) }))
-        self.events = events
     }
     
     func isEventFavourited(id: String) -> Bool {
@@ -182,72 +172,6 @@ class EventsViewModel: ObservableObject {
         } else {
             print("Cannot open URL")
         }
-    }
-    
-    func expandFilter(for items: [String], filterType: Filters.FilterType) {
-        guard !items.isEmpty else {
-            return
-        }
-        route = .filters(for: .init(items: items, filterType: filterType))
-    }
-    
-    func clearFilters(for source: Filters.FilterType) {
-        switch source {
-        case .eventTypes:
-            selectedFilters.removeAll(where: { filters?.eventTypes.contains($0.filter) == true })
-        case .sources:
-            selectedFilters.removeAll(where: { filters?.sources.contains($0.filter) == true })
-        }
-        applyFilters(filters: selectedFilters)
-    }
-    
-    func applyFilters(filters: [Filter]) {
-        guard !filters.isEmpty || favoritesFilterOn else {
-            events = allEvents
-            selectedFilters = []
-            return
-        }
-        
-        var newEvents: [EventInfo] = []
-        for event in allEvents {
-            if favoritesFilterOn {
-                if favourites.contains(where: { $0.id == event.id }) {
-                    newEvents.append(event)
-                }
-            }
-            
-            for filter in filters {
-                if newEvents.contains(where: { event.id == $0.id }) {
-                    continue
-                }
-                
-                switch filter.filterType {
-                case .eventTypes:
-                    if event.eventType == filter.filter {
-                        newEvents.append(event)
-                    }
-                case .sources:
-                    if event.source == filter.filter {
-                        newEvents.append(event)
-                    }
-                }
-            }
-        }
-        self.selectedFilters = filters
-        self.events = newEvents
-    }
-    
-    func selectedFilterSource() -> [Filters.FilterType] {
-        var selectedSources: [Filters.FilterType] = []
-        if filters?.sources.oneOf(elements: selectedFilters.map { $0.filter} ) == true {
-            selectedSources.append(.sources)
-        }
-        
-        if filters?.eventTypes.oneOf(elements: selectedFilters.map { $0.filter} ) == true {
-            selectedSources.append(.eventTypes)
-        }
-        
-        return selectedSources
     }
     
     func resetRoute() {

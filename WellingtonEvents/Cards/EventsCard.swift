@@ -66,7 +66,7 @@ struct EventsCardView: View {
                         .font(.subheadline)
                         .foregroundStyle(.text)
                     if event.dates.count > 1 {
-                        Text("\(event.displayDate ?? "multiple dates") + more")
+                        Text("\(event.displayDate ?? "multiple dates")")
                             .font(.subheadline)
                             .foregroundStyle(.text)
                     }
@@ -91,7 +91,6 @@ struct EventsCardView: View {
                         
                         if let addToCalendar {
                             Button {
-                                print("tap calendar")
                                 addToCalendar()
                             } label: {
                                 Image(systemName: "calendar.badge.plus")

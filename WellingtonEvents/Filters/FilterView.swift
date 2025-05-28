@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import DesignLibrary
 
 struct FilterView: View {
     let isSelected: Bool
@@ -53,7 +54,8 @@ struct FilterView: View {
             }
         }
         .foregroundStyle(.text)
-        .padding(.all, .xSmall)
+        .padding(.horizontal, .small)
+        .padding(.vertical, .xSmall)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .background(
             RoundedRectangle(cornerRadius: 20)
