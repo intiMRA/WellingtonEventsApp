@@ -14,4 +14,5 @@ enum FilterIds: String {
     case oneOf
     case multipleDates
     case favorited
+    case search
 }

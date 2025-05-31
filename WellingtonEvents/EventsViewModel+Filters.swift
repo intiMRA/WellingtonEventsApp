@@ -8,18 +8,6 @@
 import Foundation
 
 extension EventsViewModel {
-    func filterEvents(containing string: String) {
-        guard !string.isEmpty else {
-            events = allEvents
-            return
-        }
-        
-        var events = allEvents.filter({ $0.name.lowercased().starts(with: string.lowercased())})
-        events.append(contentsOf: allEvents.filter({ event in event.name.lowercased().contains(string.lowercased()) && !events.contains(where: { $0.id == event.id }) }))
-        
-        events.append(contentsOf: allEvents.filter({ event in event.source.lowercased().contains(string.lowercased()) && !events.contains(where: { $0.id == event.id }) }))
-        self.events = events
-    }
     
     func expandFilter(for items: [String], filterType: FilterIds) {
         guard !items.isEmpty else {
@@ -57,9 +45,15 @@ extension EventsViewModel {
         var newEvents: [EventInfo] = allEvents
         for event in allEvents {
             for filter in selectedFilters {
+                // search has to be applies differently
+                if filter.id == .search {
+                    continue
+                }
                 filter.execute(event: event, events: &newEvents)
             }
         }
+        let searchFilter = selectedFilters.first(where: { $0.id == .search }) as? SearchFilter
+        searchFilter?.execute(events: &newEvents)
         self.events = newEvents
     }
     
@@ -122,4 +116,11 @@ extension EventsViewModel {
         }
     }
     
+    func didTypeSearch(string: String) {
+        selectedFilters.removeAll(where: { $0.id == .search })
+        if !string.isEmpty {
+            selectedFilters.append(SearchFilter(searchString: string))
+        }
+        applyFilters()
+    }
 }

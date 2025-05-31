@@ -92,7 +92,10 @@ class EventsViewModel: ObservableObject {
                 .dropFirst()
                 .debounce(for: .seconds(0.1), scheduler: DispatchQueue.main)
                 .sink { [weak self] value in
-                    self?.filterEvents(containing: value)
+                    guard let self else {
+                        return
+                    }
+                    didTypeSearch(string: value)
                 }
                 .store(in: &cancellables)
         }
