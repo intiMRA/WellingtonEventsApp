@@ -66,12 +66,12 @@ struct EventsCardView: View {
                         .font(.subheadline)
                         .foregroundStyle(.text)
                     if event.dates.count > 1 {
-                        Text("\(event.displayDate ?? "multiple dates")")
+                        Text("\(event.displayDate)")
                             .font(.subheadline)
                             .foregroundStyle(.text)
                     }
                     else {
-                        Text(event.displayDate ?? "multiple dates")
+                        Text(event.displayDate)
                             .font(.subheadline)
                             .foregroundStyle(.text)
                     }

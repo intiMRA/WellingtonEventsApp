@@ -27,7 +27,7 @@ enum Destination {
 
 struct urlBuilder: NetworkLayerURLBuilder {
     func url() -> URL? {
-        .init(string: "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/main/events.json")
+        .init(string: "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/test-date-formatting/events.json")
     }
 }
 
@@ -105,17 +105,7 @@ class EventsViewModel: ObservableObject {
         }
         do {
             let response: EventsResponse? = (try await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: urlBuilder(), httpMethod: .GET)))
-            events = response?.events.sorted(by: {
-                guard let date1 = $0.dates.first, let date2 = $1.dates.first else {
-                    return true
-                }
-                
-                if date1 == date2 {
-                    return $0.name < $1.name
-                }
-                
-                return date1 < date2
-            }) ?? []
+            events = response?.events ?? []
             
             filters = response?.filters
             

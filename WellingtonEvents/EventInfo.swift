@@ -63,7 +63,7 @@ struct EventInfo: Codable, Identifiable, Equatable {
         try container.encode(self.name, forKey: .name)
         try container.encodeIfPresent(self.imageUrl, forKey: .imageUrl)
         try container.encode(self.venue, forKey: .venue)
-        try container.encodeIfPresent(self.dates.map { $0.asString(with: .ddMMYyyy) }, forKey: .dates)
+        try container.encodeIfPresent(self.dates.map { $0.asString(with: .iso8601) }, forKey: .dates)
         try container.encodeIfPresent(self.displayDate, forKey: .displayDate)
         try container.encode(self.url, forKey: .url)
         try container.encode(self.source, forKey: .source)
@@ -77,7 +77,7 @@ struct EventInfo: Codable, Identifiable, Equatable {
         self.imageUrl = try container.decodeIfPresent(String.self, forKey: .imageUrl)
         self.venue = try container.decode(String.self, forKey: .venue)
         let dateStrings = try container.decodeIfPresent([String].self, forKey: .dates)
-        self.dates =  dateStrings?.compactMap { $0.asDate(with: .ddMMYyyy) } ?? []
+        self.dates =  dateStrings?.compactMap { $0.asDate(with: .iso8601) } ?? []
         self.dates = Array(Set(self.dates))
         self.displayDate = try container.decode(String.self, forKey: .displayDate)
         self.url = try container.decode(String.self, forKey: .url)
