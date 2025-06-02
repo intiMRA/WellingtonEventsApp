@@ -45,7 +45,7 @@ extension Date: @retroactive Identifiable {
         .init(identifier: .gregorian)
     }
     public var id: String {
-        self.asString(with: .iso8601)
+        self.asString(with: .yyyyMMddHHmmDashed)
     }
 
     func checkConditionIgnoringTime(

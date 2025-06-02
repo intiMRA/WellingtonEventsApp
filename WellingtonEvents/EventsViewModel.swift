@@ -92,7 +92,10 @@ class EventsViewModel: ObservableObject {
                 .dropFirst()
                 .debounce(for: .seconds(0.1), scheduler: DispatchQueue.main)
                 .sink { [weak self] value in
-                    self?.filterEvents(containing: value)
+                    guard let self else {
+                        return
+                    }
+                    didTypeSearch(string: value)
                 }
                 .store(in: &cancellables)
         }
@@ -105,17 +108,7 @@ class EventsViewModel: ObservableObject {
         }
         do {
             let response: EventsResponse? = (try await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: urlBuilder(), httpMethod: .GET)))
-            events = response?.events.sorted(by: {
-                guard let date1 = $0.dates.first, let date2 = $1.dates.first else {
-                    return true
-                }
-                
-                if date1 == date2 {
-                    return $0.name < $1.name
-                }
-                
-                return date1 < date2
-            }) ?? []
+            events = response?.events.filter { !$0.dates.isEmpty } ?? []
             
             filters = response?.filters
             
