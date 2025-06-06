@@ -40,8 +40,86 @@ struct DateFilter: FilterObjectProtocol {
     }
 }
 
+enum QuickDateType: String {
+    case thisMonth
+    case thisWeek
+    case thisWeekend
+    case today
+    
+    var name: String {
+        switch self {
+        case .thisMonth:
+            return String(localized: "This month")
+        case .thisWeek:
+            return String(localized: "This week")
+        case .thisWeekend:
+            return String(localized: "This weekend")
+        case .today:
+            return String(localized: "Today")
+        }
+    }
+    
+    static var asGrid: [(String, [QuickDateType])] = {
+        [
+            (UUID().uuidString, [.today, .thisWeekend, .thisWeek]),
+            (UUID().uuidString, [.thisMonth])
+        ]
+    }()
+}
+
+struct QuickDateFilter: FilterObjectProtocol {
+    let id: FilterIds = .quickDate
+    
+    var quickDateType: QuickDateType
+    
+    init(quickDateType: QuickDateType) {
+        self.quickDateType = quickDateType
+    }
+    
+    func execute(event: EventInfo, events: inout [EventInfo]) {
+        let dates = Self.getDateRange(for: quickDateType)
+        let startDate = dates.startDate
+        let endDate = dates.endDate
+        
+        let withInRange = event.dates.oneSatisfies(condition: { date in
+            let greaterThenCondition = startDate.checkConditionIgnoringTime(
+                other: date
+            ) {
+                $0 <= $1
+            }
+
+            let lessThenCondition = endDate.checkConditionIgnoringTime(
+                other: date
+            ) {
+                $0 >= $1
+            }
+
+            return greaterThenCondition && lessThenCondition
+        })
+        if !withInRange {
+            events.removeAll(where: { $0.id == event.id})
+        }
+    }
+    
+    static func getDateRange(for type: QuickDateType) -> (startDate: Date, endDate: Date) {
+        switch type {
+        case .thisMonth:
+            return Date.monthRange()
+
+        case .thisWeek:
+            return Date.weekRange()
+
+        case .thisWeekend:
+            return Date.weekRange()
+        case .today:
+            return (.now, .now)
+        }
+    }
+}
+
+
 extension Date: @retroactive Identifiable {
-    private static var calendar: Calendar {
+    static var calendar: Calendar {
         .init(identifier: .gregorian)
     }
     public var id: String {

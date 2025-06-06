@@ -14,99 +14,118 @@ struct FavouriteModel {
     let didTapFavorites: () -> Void
 }
 
+struct CalendarModel {
+    let isInCalendar: Bool
+    var addToCalendar: () -> Void
+}
+
 struct EventsCardView: View {
     let event: EventInfo
     let FavouriteModel: FavouriteModel
-    var addToCalendar: (() -> Void)? = nil
+    var calendarModel: CalendarModel?
     var didTapOnCard: (String) -> Void
     
     var body: some View {
         Button {
             didTapOnCard(event.id)
         } label: {
-            HStack {
-                AsyncImage(url: URL(string: event.imageUrl ?? "")) { phase in
-                    switch phase {
-                    case .empty:
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(.gray)
-                            .squareFrame(size: 100)
-                            .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1)
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .squareFrame(size: 100)
-                            .roundedShadow()
-                    case .failure(let error):
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(.red)
-                            .squareFrame(size: 100)
-                            .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1)
-                            .onAppear {
-                                print(error)
-                                print(event.imageUrl ?? "")
-                            }
-                        
-                    @unknown default:
-                        Rectangle()
-                            .fill(.gray)
-                            .frame(width: 100, height: 100)
+            VStack(alignment: .leading, spacing: .xSmall) {
+                ZStack(alignment: .topTrailing) {
+                    AsyncImage(url: URL(string: event.imageUrl ?? "")) { phase in
+                        switch phase {
+                        case .empty:
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(.gray)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 155)
+                                .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1)
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .frame(maxWidth: .infinity, maxHeight: 250)
+                                .scaledToFill()
+                                .roundedShadow()
+                        case .failure(let error):
+                            Image(.noImageAtTime)
+                                .resizable()
+                                .foregroundStyle(.textSecondary)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 155)
+                                .scaledToFit()
+                                .roundedShadow()
+                                .onAppear {
+                                    print(error)
+                                    print(event.imageUrl ?? "")
+                                }
+                        @unknown default:
+                            Rectangle()
+                                .fill(.gray)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 155)
+                        }
                     }
-                }
-                
-                Spacer()
-                VStack(alignment: .leading, spacing: .xxxSmall) {
-                    Text(event.name)
-                        .multilineTextAlignment(.leading)
-                        .font(.body.bold())
-                        .foregroundStyle(.text)
                     
-                    Text(event.venue)
-                        .multilineTextAlignment(.leading)
-                        .font(.subheadline)
-                        .foregroundStyle(.text)
-                    if event.dates.count > 1 {
-                        Text("\(event.displayDate)")
-                            .font(.subheadline)
-                            .foregroundStyle(.text)
-                    }
-                    else {
-                        Text(event.displayDate)
-                            .font(.subheadline)
-                            .foregroundStyle(.text)
-                    }
-                    HStack {
-                        Text("From: \(event.source)")
-                            .font(.subheadline)
-                            .foregroundStyle(.text)
-                        Spacer()
+                    HStack(spacing: .xSmall) {
                         Button {
                             FavouriteModel.didTapFavorites()
                         } label: {
                             (FavouriteModel.isFavourited ? Image(.heartFill) : Image(.heart))
                                 .resizable()
-                                .squareFrame(size: 30)
+                                .squareFrame(size: 36)
                         }
-                        .padding(.leading, .xxSmall)
                         
-                        if let addToCalendar {
+                        if let calendarModel {
                             Button {
-                                addToCalendar()
+                                calendarModel.addToCalendar()
                             } label: {
-                                Image(systemName: "calendar.badge.plus")
-                                    .renderingMode(.template)
+                                (calendarModel.isInCalendar ? Image(.calendarTick) : Image(.calendar))
                                     .resizable()
-                                    .squareFrame(size: 30)
+                                    .squareFrame(size: 36)
                             }
-                            .padding(.leading, .xxSmall)
                             .foregroundStyle(.text)
                         }
                     }
+                    .padding(.all, .medium)
                 }
+                
+                Text(event.name)
+                    .multilineTextAlignment(.leading)
+                    .font(.body.bold())
+                    .foregroundStyle(.text)
+                
+                if event.dates.count > 1 {
+                    Text("\(event.displayDate)")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.textSecondary)
+                }
+                else {
+                    Text(event.displayDate)
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.textSecondary)
+                }
+                
+                HStack(alignment: .top) {
+                    Text(event.venue)
+                        .multilineTextAlignment(.leading)
+                        .font(.subheadline)
+                        .foregroundStyle(.textSecondary)
+                        .padding(.trailing, .xxSmall)
+                    
+                    Image(systemName: "circle.fill")
+                        .renderingMode(.template)
+                        .font(.system(size: 8))
+                        .foregroundStyle(.textSecondary)
+                        .padding(.top, .xxSmall)
+                        .padding(.trailing, .xxSmall)
+                    
+                    Text(event.source)
+                        .font(.subheadline)
+                        .foregroundStyle(.textSecondary)
+                }
+                
+                Divider()
             }
         }
-        .padding(.all, .medium)
-        .roundedShadow(color: Gradient(colors: [.cardGradient1, .cardGradient2]))
         .padding(.horizontal, .medium)
     }
 }

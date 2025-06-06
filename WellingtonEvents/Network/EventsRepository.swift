@@ -7,9 +7,13 @@
 
 import Foundation
 
-protocol EventsRepository {
+protocol EventsRepository: AnyObject {
     func saveToFavorites(event: EventInfo)
     func retrieveFavorites() -> [EventInfo]
     func deleteFromFavorites(event: EventInfo)
     func deleteFromFavorites(eventIds: [String])
+    func didSaveToCalendar(event: EventInfo)
+    func retrieveSavedToCalendar() -> [EventInfo]
+    func didDeleteFromCalendar(event: EventInfo)
+    func didDeleteFromCalendar(eventIds: [String])
 }

@@ -8,6 +8,7 @@
 import Foundation
 
 enum FilterIds: String {
+    case quickDate
     case date
     case source
     case eventType

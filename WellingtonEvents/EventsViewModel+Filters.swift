@@ -68,11 +68,25 @@ extension EventsViewModel {
         applyFilters()
     }
     
+    func didSelectQuickDates(_ selectedDate: QuickDateType?) {
+        selectedFilters.removeAll(where: { $0.id == .quickDate })
+        if let selectedDate {
+            selectedFilters.append(QuickDateFilter(quickDateType: selectedDate))
+        }
+        resetRoute()
+        applyFilters()
+    }
+    
     func showDateSelector() {
         let filter = selectedFilters.first(where: { $0.id == .date }) as? DateFilter
         let startDate = filter?.startDate ?? .now
         let endDate = filter?.endDate ?? .now
         route = .dateSelector(startDate: startDate, endDate: endDate, id: startDate.id + endDate.id)
+    }
+    
+    func showQuickDateSelector() {
+        let filter = selectedFilters.first(where: { $0.id == .quickDate }) as? QuickDateFilter
+        route = .quickDateSelector(selectedQuickDate: filter?.quickDateType, id: FilterIds.quickDate.rawValue)
     }
     
     func didTapFavouritesFilter() {
@@ -122,5 +136,64 @@ extension EventsViewModel {
             selectedFilters.append(SearchFilter(searchString: string))
         }
         applyFilters()
+    }
+}
+
+extension EventsViewModel {
+    func filterTitle(for type: FilterIds, isSelected: Bool) -> String {
+        switch type {
+        case .date:
+            return isSelected ? getSelectedDatesFilterString() : String(localized: "Dates")
+        case .quickDate:
+            return isSelected ? getSelectedQuickDatesFilterString() : String(localized: "Quick Dates")
+        case .source:
+            return isSelected ? getSelectedSourcesFilterString() : String(localized: "Sources")
+        case .eventType:
+            return isSelected ? getSelectedEventTypesFilterString() : String(localized: "Event Types")
+        case .oneOf:
+            return String(localized: "Happening once")
+        case .multipleDates:
+            return String(localized: "Multiple dates")
+        case .favorited:
+            return String(localized: "Favorited")
+        case .search:
+            return ""
+        }
+    }
+    
+    private func getSelectedDatesFilterString() -> String {
+        let datesFilter = (selectedFilters.first(where: { $0.id == .date }) as? DateFilter)
+        let startDate = datesFilter?.startDate
+        
+        if let startDate, let endDate = datesFilter?.endDate {
+            if endDate.checkConditionIgnoringTime(other: startDate, condition: { $0 > $1 }) {
+                return "\(String(localized: "Dates:")) \(startDate.asString(with: .ddMMMMSpaced)) - \(endDate.asString(with: .ddMMMMSpaced))"
+            }
+        }
+        return "\(String(localized: "Date:")) \(startDate?.asString(with: .ddMMMMSpaced) ?? "")"
+    }
+    
+    private func getSelectedQuickDatesFilterString() -> String {
+        guard let datesFilter = (selectedFilters.first(where: { $0.id == .quickDate }) as? QuickDateFilter) else {
+            return String(localized: "Quick Dates")
+        }
+        
+        return "\(String(localized: "Quick Dates:")) \(datesFilter.quickDateType.name)"
+    }
+    
+    private func getSelectedSourcesFilterString() -> String {
+        let sources = selectedFilters(for: .source)
+        if sources.count > 1 {
+            return "\(String(localized: "Sources:")) \(sources.count) \(String(localized: "selected"))"
+        }
+        return "\(String(localized: "Source:")) \(sources.first ?? "")"
+    }
+    
+    private func getSelectedEventTypesFilterString() -> String {
+        let eventTypes = selectedFilters(for: .eventType)
+        if eventTypes.count > 1 {
+            return "\(String(localized: "Event types:")) \(eventTypes.count) \(String(localized: "selected"))"
+        }
+        return "\(String(localized: "Event type:")) \(eventTypes.first ?? "")"
     }
 }
