@@ -110,7 +110,7 @@ struct QuickDateFilter: FilterObjectProtocol {
             return Date.weekRange()
 
         case .thisWeekend:
-            return Date.weekRange()
+            return Date.weekEndRange()
         case .today:
             return (.now, .now)
         }

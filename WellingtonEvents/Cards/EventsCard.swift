@@ -42,9 +42,9 @@ struct EventsCardView: View {
                         case .success(let image):
                             image
                                 .resizable()
-                                .frame(maxWidth: .infinity, maxHeight: 250)
-                                .scaledToFill()
+                                .frame(height: 155)
                                 .roundedShadow()
+                                .clipped()
                         case .failure(let error):
                             Image(.noImageAtTime)
                                 .resizable()

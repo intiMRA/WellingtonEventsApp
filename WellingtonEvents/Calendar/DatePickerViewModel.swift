@@ -59,4 +59,8 @@ class DatePickerViewModel {
             }
         }
     }
+    
+    func isDateSelected(_ date: Date) -> Bool {
+        selectedDate == date
+    }
 }

@@ -1,0 +1,100 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "%@" : {
+
+    },
+    "%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "Add To Calendar" : {
+
+    },
+    "Apply Filters" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Date:" : {
+
+    },
+    "Dates" : {
+
+    },
+    "Dates:" : {
+
+    },
+    "Event type:" : {
+
+    },
+    "Event Types" : {
+
+    },
+    "Event types:" : {
+
+    },
+    "Events" : {
+
+    },
+    "Favorited" : {
+
+    },
+    "From" : {
+
+    },
+    "Happening once" : {
+
+    },
+    "Multiple dates" : {
+
+    },
+    "Quick Dates" : {
+
+    },
+    "Quick Dates:" : {
+
+    },
+    "selected" : {
+
+    },
+    "Source:" : {
+
+    },
+    "Sources" : {
+
+    },
+    "Sources:" : {
+
+    },
+    "Start date" : {
+
+    },
+    "This month" : {
+
+    },
+    "This week" : {
+
+    },
+    "This weekend" : {
+
+    },
+    "To" : {
+
+    },
+    "Today" : {
+
+    }
+  },
+  "version" : "1.0"
+}
