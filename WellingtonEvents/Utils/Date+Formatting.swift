@@ -65,10 +65,11 @@ extension Date {
         let today = calendar.component(.weekday, from: now)
         var startOfWeekend: Date?
 
-        if today <= 6 { // If today is Saturday
+        if today <= 6 {
             startOfWeekend = calendar.date(byAdding: DateComponents(day: 6 - today), to: now)
-        } else { // If today is Sunday
-            startOfWeekend = calendar.date(byAdding: DateComponents(day: 6 - today + 7), to: now)
+        }
+        else {
+            startOfWeekend = now
         }
         
         guard let startOfWeekend else {
