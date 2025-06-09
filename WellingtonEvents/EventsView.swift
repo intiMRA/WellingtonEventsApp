@@ -251,40 +251,6 @@ struct EventsView: View {
     }
 }
 
-struct PullToRefreshView: View {
-    
-    var coordinateSpaceName: String
-    var onRefresh: () -> Void
-    
-    @State var needRefresh: Bool = false
-    
-    var body: some View {
-        GeometryReader { geo in
-            if (geo.frame(in: .named(coordinateSpaceName)).midY > 250) {
-                Spacer()
-                    .task {
-                        needRefresh = true
-                        onRefresh()
-                    }
-            } else if (geo.frame(in: .named(coordinateSpaceName)).maxY < 50) {
-                Spacer()
-                    .onAppear {
-                        if needRefresh {
-                            needRefresh = false
-                        }
-                    }
-            }
-            HStack {
-                Spacer()
-                if needRefresh {
-                    ProgressView()
-                }
-                Spacer()
-            }
-        }.padding(.top, -50)
-    }
-}
-
 #if canImport(UIKit)
 extension View {
     func hideKeyboard() {
