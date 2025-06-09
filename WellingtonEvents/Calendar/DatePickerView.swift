@@ -21,7 +21,7 @@ struct DatePickerView: View {
                         .font(.headline)
                         .foregroundStyle(.text)
                     
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 50))], spacing: 4) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 44))], spacing: 8) {
                         ForEach(month.dates, id: \.self) { date in
                             Button {
                                 viewModel.selectedDate = date

@@ -116,7 +116,9 @@ class EventsViewModel: ObservableObject {
         selectedFilters = []
         isLoading = true
         defer {
-            isLoading = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [unowned self] in
+                self.isLoading = false
+            }
         }
         do {
             let response: EventsResponse? = (try await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: urlBuilder(), httpMethod: .GET)))

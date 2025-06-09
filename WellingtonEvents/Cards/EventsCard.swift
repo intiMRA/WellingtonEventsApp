@@ -31,61 +31,8 @@ struct EventsCardView: View {
         } label: {
             VStack(alignment: .leading, spacing: .xSmall) {
                 ZStack(alignment: .topTrailing) {
-                    AsyncImage(url: URL(string: event.imageUrl ?? "")) { phase in
-                        switch phase {
-                        case .empty:
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(.gray)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 155)
-                                .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1)
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .frame(height: 155)
-                                .roundedShadow()
-                                .clipped()
-                        case .failure(let error):
-                            Image(.noImageAtTime)
-                                .resizable()
-                                .foregroundStyle(.textSecondary)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 155)
-                                .scaledToFit()
-                                .roundedShadow()
-                                .onAppear {
-                                    print(error)
-                                    print(event.imageUrl ?? "")
-                                }
-                        @unknown default:
-                            Rectangle()
-                                .fill(.gray)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 155)
-                        }
-                    }
-                    
-                    HStack(spacing: .xSmall) {
-                        Button {
-                            FavouriteModel.didTapFavorites()
-                        } label: {
-                            (FavouriteModel.isFavourited ? Image(.heartFill) : Image(.heart))
-                                .resizable()
-                                .squareFrame(size: 36)
-                        }
-                        
-                        if let calendarModel {
-                            Button {
-                                calendarModel.addToCalendar()
-                            } label: {
-                                (calendarModel.isInCalendar ? Image(.calendarTick) : Image(.calendar))
-                                    .resizable()
-                                    .squareFrame(size: 36)
-                            }
-                            .foregroundStyle(.text)
-                        }
-                    }
-                    .padding(.all, .medium)
+                    imageView
+                    actionIconsView
                 }
                 
                 Text(event.name)
@@ -104,28 +51,102 @@ struct EventsCardView: View {
                         .foregroundStyle(.textSecondary)
                 }
                 
-                HStack(alignment: .top) {
-                    Text(event.venue)
-                        .multilineTextAlignment(.leading)
-                        .font(.subheadline)
-                        .foregroundStyle(.textSecondary)
-                        .padding(.trailing, .xxSmall)
-                    
-                    Image(systemName: "circle.fill")
-                        .renderingMode(.template)
-                        .font(.system(size: 8))
-                        .foregroundStyle(.textSecondary)
-                        .padding(.top, .xxSmall)
-                        .padding(.trailing, .xxSmall)
-                    
-                    Text(event.source)
-                        .font(.subheadline)
-                        .foregroundStyle(.textSecondary)
-                }
+                infoView
                 
                 Divider()
             }
         }
         .padding(.horizontal, .medium)
+    }
+    
+    @ViewBuilder
+    var imageView: some View {
+        AsyncImage(url: URL(string: event.imageUrl ?? "")) { phase in
+            switch phase {
+            case .empty:
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(.gray)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 155)
+                    .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1)
+            case .success(let image):
+                image
+                    .resizable()
+                    .frame(height: 155)
+                    .roundedShadow()
+                    .clipped()
+            case .failure(let error):
+                Image(.noImageAtTime)
+                    .resizable()
+                    .foregroundStyle(.textSecondary)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 155)
+                    .scaledToFit()
+                    .roundedShadow()
+                    .onAppear {
+                        print(error)
+                        print(event.imageUrl ?? "")
+                    }
+            @unknown default:
+                Rectangle()
+                    .fill(.gray)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 155)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var actionIconsView: some View {
+        HStack(spacing: .xSmall) {
+            Button {
+                FavouriteModel.didTapFavorites()
+            } label: {
+                (FavouriteModel.isFavourited ? Image(.heartFill) : Image(.heart))
+                    .resizable()
+                    .squareFrame(size: 36)
+            }
+            
+            if let calendarModel {
+                Button {
+                    calendarModel.addToCalendar()
+                } label: {
+                    (calendarModel.isInCalendar ? Image(.calendarTick) : Image(.calendar))
+                        .resizable()
+                        .squareFrame(size: 36)
+                }
+                .foregroundStyle(.text)
+            }
+            
+            if let url = URL(string: event.url) {
+                ShareLink(item: url) {
+                    Image(.share)
+                        .squareFrame(size: 36)
+                }
+            }
+        }
+        .padding(.all, .medium)
+    }
+    
+    @ViewBuilder
+    var infoView: some View {
+        HStack(alignment: .top) {
+            Text(event.venue)
+                .multilineTextAlignment(.leading)
+                .font(.subheadline)
+                .foregroundStyle(.textSecondary)
+                .padding(.trailing, .xxSmall)
+            
+            Image(systemName: "circle.fill")
+                .renderingMode(.template)
+                .font(.system(size: 8))
+                .foregroundStyle(.textSecondary)
+                .padding(.top, .xxSmall)
+                .padding(.trailing, .xxSmall)
+            
+            Text(event.source)
+                .font(.subheadline)
+                .foregroundStyle(.textSecondary)
+        }
     }
 }

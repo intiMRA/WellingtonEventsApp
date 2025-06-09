@@ -11,11 +11,14 @@ import SwiftUINavigation
 
 struct EventsView: View {
     @StateObject var viewModel: EventsViewModel = .init()
+    @Environment(\.scenePhase) private var scenePhase
+    private let spaceName = "pullToRefresh"
+    
     var body: some View {
         NavigationStack {
             ZStack(alignment: .topLeading) {
                 if viewModel.isLoading {
-                    ProgressView()
+                    loadingView
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 else {
@@ -23,26 +26,23 @@ struct EventsView: View {
                         .simultaneousGesture(TapGesture().onEnded({ _ in
                             hideKeyboard()
                         }))
-                        .simultaneousGesture(DragGesture().onEnded({ _ in
+                        .simultaneousGesture(DragGesture().onEnded({ value in
                             hideKeyboard()
                         }))
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbar {
                             ToolbarItem(placement: .topBarLeading) {
                                 HStack {
-                                    Spacer(minLength: 16)
+                                    Spacer(minLength: CommonPadding.medium.rawValue)
                                     
                                     Image(.bar)
                                         .resizable()
                                         .renderingMode(.template)
                                         .foregroundStyle(.text)
                                     
-                                    Spacer(minLength: 16)
+                                    Spacer(minLength: CommonPadding.medium.rawValue)
                                 }
                             }
-                        }
-                        .refreshable {
-                            await viewModel.fetchEvents()
                         }
                 }
                 VStack {
@@ -55,8 +55,10 @@ struct EventsView: View {
             }
         }
         .disabled(viewModel.isLoading)
-        .task {
-            await viewModel.setup()
+        .onAppear {
+            Task {
+                await viewModel.setup()
+            }
         }
         .animation(nil, value: viewModel.events)
         .animation(.easeIn, value: viewModel.isLoading)
@@ -103,6 +105,16 @@ struct EventsView: View {
                                      dismiss: viewModel.resetRoute)
             }
             .presentationDetents([ .medium, .large])
+        }
+        .onChange(of: scenePhase) { _, newValue in
+            switch newValue {
+            case .active:
+                Task {
+                    await viewModel.setup()
+                }
+            default:
+                break
+            }
         }
     }
     
@@ -186,6 +198,11 @@ struct EventsView: View {
     @ViewBuilder
     var listView: some View {
         ScrollView {
+            PullToRefreshView(coordinateSpaceName: spaceName) {
+                Task {
+                    await viewModel.fetchEvents()
+                }
+            }
             VStack(alignment: .leading, spacing: .medium) {
                 Text("Events")
                     .font(.headline)
@@ -225,6 +242,46 @@ struct EventsView: View {
             }
         }
         .padding(.top, 150)
+        .coordinateSpace(name: spaceName)
+    }
+    
+    @ViewBuilder
+    var loadingView: some View {
+        LottieView(lottieFile: .fountain, loopMode: .loop)
+    }
+}
+
+struct PullToRefreshView: View {
+    
+    var coordinateSpaceName: String
+    var onRefresh: () -> Void
+    
+    @State var needRefresh: Bool = false
+    
+    var body: some View {
+        GeometryReader { geo in
+            if (geo.frame(in: .named(coordinateSpaceName)).midY > 250) {
+                Spacer()
+                    .task {
+                        needRefresh = true
+                        onRefresh()
+                    }
+            } else if (geo.frame(in: .named(coordinateSpaceName)).maxY < 50) {
+                Spacer()
+                    .onAppear {
+                        if needRefresh {
+                            needRefresh = false
+                        }
+                    }
+            }
+            HStack {
+                Spacer()
+                if needRefresh {
+                    ProgressView()
+                }
+                Spacer()
+            }
+        }.padding(.top, -50)
     }
 }
 
