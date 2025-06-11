@@ -106,16 +106,6 @@ struct EventsView: View {
             }
             .presentationDetents([ .medium, .large])
         }
-        .onChange(of: scenePhase) { _, newValue in
-            switch newValue {
-            case .active:
-                Task {
-                    await viewModel.setup()
-                }
-            default:
-                break
-            }
-        }
     }
     
     @ViewBuilder

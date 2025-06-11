@@ -59,6 +59,12 @@
     "Multiple dates" : {
 
     },
+    "Next month" : {
+
+    },
+    "Next week" : {
+
+    },
     "Quick Dates" : {
 
     },
@@ -93,6 +99,9 @@
 
     },
     "Today" : {
+
+    },
+    "Tomorrow" : {
 
     }
   },

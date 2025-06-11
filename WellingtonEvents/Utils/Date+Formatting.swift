@@ -35,30 +35,68 @@ extension Date {
         self = date
     }
     
+    static func tomorrow() -> Date {
+        let now = Date()
+        
+        guard
+            let today = calendar.date(from: calendar.dateComponents([.day], from: now)),
+            let tomorrow = calendar.date(byAdding: DateComponents(day: 1), to: today)
+        else {
+            fatalError("failed to generate months range")
+        }
+        return tomorrow
+    }
+    
     static func monthRange() -> (Date, Date) {
         let now = Date()
         
-        guard let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: now)) else {
-            fatalError("failed to generate months range")
-        }
-        
-        guard let endOfMonth = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startOfMonth) else {
+        guard
+            let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: now)),
+            let endOfMonth = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startOfMonth)
+        else {
             fatalError("failed to generate months range")
         }
         return (now, endOfMonth)
     }
     
+    static func nextMonthRange() -> (Date, Date) {
+        let now = Date()
+        
+        let thisMonth = calendar.component(.month, from: now)
+        let nextMonth = thisMonth == 12 ? 1 : thisMonth + 1
+        var currentYear = calendar.component(.year, from: now)
+        currentYear = nextMonth == 1 ? currentYear + 1 : currentYear
+        
+        guard let startOfMonth = calendar.date(from: .init(year: currentYear, month: nextMonth, day: 1)),
+              let endOfMonth = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startOfMonth)  else {
+            fatalError("failed to generate next months range")
+        }
+        return (startOfMonth, endOfMonth)
+    }
+    
     static func weekRange() -> (Date, Date) {
         let now = Date()
         
-        guard let startOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))else {
-            fatalError("failed to generate week range")
-        }
-        
-        guard let endOfWeek = calendar.date(byAdding: DateComponents(day: 6), to: startOfWeek) else {
+        guard
+            let startOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now)),
+            let endOfWeek = calendar.date(byAdding: DateComponents(day: 6), to: startOfWeek)
+        else {
             fatalError("failed to generate week range")
         }
         return (now, endOfWeek)
+    }
+    
+    static func nextWeekRange() -> (Date, Date) {
+        let now = Date()
+        
+        guard
+            let startOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now)),
+            let startOfNextWeek = calendar.date(byAdding: .day, value: 7, to: startOfWeek),
+            let endOfNextWeek = calendar.date(byAdding: DateComponents(day: 6), to: startOfNextWeek)
+        else {
+            fatalError("failed to generate week range")
+        }
+        return (startOfNextWeek, endOfNextWeek)
     }
     
     static func weekEndRange() -> (Date, Date) {
@@ -72,14 +110,14 @@ extension Date {
         else {
             startOfWeekend = now
         }
-        
-        guard let startOfWeekend else {
+
+        guard
+            let startOfWeekend,
+            let endOfWeekend = calendar.date(byAdding: DateComponents(day: 1), to: startOfWeekend)
+        else {
             fatalError("failed to generate week end range")
         }
         
-        guard let endOfWeekend = calendar.date(byAdding: DateComponents(day: 1), to: startOfWeekend) else {
-            fatalError("failed to generate week end range")
-        }
         return (startOfWeekend, endOfWeekend)
     }
 }

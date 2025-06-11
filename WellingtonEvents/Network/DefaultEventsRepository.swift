@@ -1,17 +1,52 @@
 //
-//  UserDefaultsEventsRepository.swift
+//  DefaultEventsRepository.swift
 //  WellingtonEvents
 //
 //  Created by ialbuquerque on 25/02/2025.
 //
 
 import Foundation
-class UserDefaultsEventsRepository: EventsRepository {
+import NetworkLayerSPM
+
+private struct urlBuilder: NetworkLayerURLBuilder {
+    func url() -> URL? {
+        .init(string: "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/main/events.json")
+    }
+}
+
+class DefaultEventsRepository: EventsRepository {
+    
+    enum DefaultEventsRepositoryError: Error {
+        case failedToFetchResponse
+    }
 
     static let userDefaults = UserDefaults.standard
+    static let calendar = Calendar.current
+    
     enum Keys: String {
         case favouriteEvents
         case calendar
+        case date
+        case eventsResponse
+    }
+    
+    func fetchEvents() async throws -> EventsResponse? {
+        if
+            let userDefaultsDateString = Self.userDefaults.object(forKey: Keys.date.rawValue) as? String,
+            let userDefaultsDate = userDefaultsDateString.asDate(with: .ddMMYyyy),
+            Self.calendar.isDate(.now, inSameDayAs: userDefaultsDate) {
+            if let cachedResponseData = Self.userDefaults.data(forKey: Keys.eventsResponse.rawValue) {
+                return try JSONDecoder().decode(EventsResponse.self, from: cachedResponseData)
+            }
+        }
+        guard let response: EventsResponse? = try await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: urlBuilder(), httpMethod: .GET)) else {
+            throw DefaultEventsRepositoryError.failedToFetchResponse
+        }
+        
+        Self.userDefaults.set(try JSONEncoder().encode(response), forKey: Keys.eventsResponse.rawValue)
+        Self.userDefaults.set(Date.now.asString(with: .ddMMYyyy), forKey: Keys.date.rawValue)
+        
+        return response
     }
     
     func didSaveToCalendar(event: EventInfo) {

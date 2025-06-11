@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import NetworkLayerSPM
 import CasePaths
 import Combine
 import SwiftUI
@@ -24,12 +23,6 @@ enum Destination {
     case alert(ToastStyle)
     case dateSelector(startDate: Date, endDate: Date, id: String)
     case quickDateSelector(selectedQuickDate: QuickDateType?, id: String)
-}
-
-struct urlBuilder: NetworkLayerURLBuilder {
-    func url() -> URL? {
-        .init(string: "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/main/events.json")
-    }
 }
 
 struct DateModel: Equatable, Identifiable {
@@ -52,7 +45,7 @@ class EventsViewModel: ObservableObject {
     
     @Published var favourites: [EventInfo] = []
     @Published var eventsInCalendar: [EventInfo] = []
-    let repository: EventsRepository = UserDefaultsEventsRepository()
+    let repository: EventsRepository = DefaultEventsRepository()
     
     var allEvents: [EventInfo]
     @Published var events: [EventInfo]
@@ -121,7 +114,7 @@ class EventsViewModel: ObservableObject {
             }
         }
         do {
-            let response: EventsResponse? = (try await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: urlBuilder(), httpMethod: .GET)))
+            let response = try await repository.fetchEvents()
             events = response?.events.filter { !$0.dates.isEmpty } ?? []
             
             filters = response?.filters

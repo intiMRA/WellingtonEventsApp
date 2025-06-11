@@ -8,6 +8,7 @@
 import Foundation
 
 protocol EventsRepository: AnyObject {
+    func fetchEvents() async throws -> EventsResponse?
     func saveToFavorites(event: EventInfo)
     func retrieveFavorites() -> [EventInfo]
     func deleteFromFavorites(event: EventInfo)

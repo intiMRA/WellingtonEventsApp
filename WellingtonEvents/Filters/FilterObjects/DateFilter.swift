@@ -42,9 +42,12 @@ struct DateFilter: FilterObjectProtocol {
 
 enum QuickDateType: String {
     case thisMonth
+    case nextMonth
     case thisWeek
+    case nextWeek
     case thisWeekend
     case today
+    case tomorrow
     
     var name: String {
         switch self {
@@ -56,13 +59,20 @@ enum QuickDateType: String {
             return String(localized: "This weekend")
         case .today:
             return String(localized: "Today")
+        case .nextMonth:
+            return String(localized: "Next month")
+        case .nextWeek:
+            return String(localized: "Next week")
+        case .tomorrow:
+            return String(localized: "Tomorrow")
         }
     }
     
     static var asGrid: [(String, [QuickDateType])] = {
         [
-            (UUID().uuidString, [.today, .thisWeekend, .thisWeek]),
-            (UUID().uuidString, [.thisMonth])
+            (UUID().uuidString, [.today, .tomorrow, .thisWeekend]),
+            (UUID().uuidString, [.thisWeek, .nextWeek, .thisMonth]),
+            (UUID().uuidString, [.nextMonth])
         ]
     }()
 }
@@ -113,6 +123,13 @@ struct QuickDateFilter: FilterObjectProtocol {
             return Date.weekEndRange()
         case .today:
             return (.now, .now)
+        case .nextMonth:
+            return Date.nextMonthRange()
+        case .nextWeek:
+            return Date.nextWeekRange()
+        case .tomorrow:
+            let tomorrow = Date.tomorrow()
+            return (tomorrow, tomorrow)
         }
     }
 }
