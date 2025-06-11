@@ -55,10 +55,8 @@ struct EventsView: View {
             }
         }
         .disabled(viewModel.isLoading)
-        .onAppear {
-            Task {
-                await viewModel.setup()
-            }
+        .task {
+            await viewModel.setup()
         }
         .animation(nil, value: viewModel.events)
         .animation(.easeIn, value: viewModel.isLoading)
@@ -105,6 +103,14 @@ struct EventsView: View {
                                      dismiss: viewModel.resetRoute)
             }
             .presentationDetents([ .medium, .large])
+        }
+        .onChange(of: scenePhase) { _, newValue in
+            switch newValue {
+            case .active:
+                viewModel.appBecameActive()
+            default:
+                break
+            }
         }
     }
     

@@ -31,10 +31,7 @@ class DefaultEventsRepository: EventsRepository {
     }
     
     func fetchEvents() async throws -> EventsResponse? {
-        if
-            let userDefaultsDateString = Self.userDefaults.object(forKey: Keys.date.rawValue) as? String,
-            let userDefaultsDate = userDefaultsDateString.asDate(with: .ddMMYyyy),
-            Self.calendar.isDate(.now, inSameDayAs: userDefaultsDate) {
+        if canFetchFromCache() {
             if let cachedResponseData = Self.userDefaults.data(forKey: Keys.eventsResponse.rawValue) {
                 return try JSONDecoder().decode(EventsResponse.self, from: cachedResponseData)
             }
@@ -47,6 +44,16 @@ class DefaultEventsRepository: EventsRepository {
         Self.userDefaults.set(Date.now.asString(with: .ddMMYyyy), forKey: Keys.date.rawValue)
         
         return response
+    }
+    
+    func canFetchFromCache() -> Bool {
+        guard
+            let userDefaultsDateString = Self.userDefaults.object(forKey: Keys.date.rawValue) as? String,
+            let userDefaultsDate = userDefaultsDateString.asDate(with: .ddMMYyyy)
+        else {
+            return false
+        }
+        return Self.calendar.isDate(.now, inSameDayAs: userDefaultsDate)
     }
     
     func didSaveToCalendar(event: EventInfo) {

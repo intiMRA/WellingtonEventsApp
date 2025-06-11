@@ -126,6 +126,14 @@ class EventsViewModel: ObservableObject {
         }
     }
     
+    func appBecameActive() {
+        if !repository.canFetchFromCache() {
+            Task {
+                await setup()
+            }
+        }
+    }
+    
     func isEventFavourited(id: String) -> Bool {
         favourites.contains(where: { id == $0.id })
     }

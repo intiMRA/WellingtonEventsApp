@@ -17,4 +17,5 @@ protocol EventsRepository: AnyObject {
     func retrieveSavedToCalendar() -> [EventInfo]
     func didDeleteFromCalendar(event: EventInfo)
     func didDeleteFromCalendar(eventIds: [String])
+    func canFetchFromCache() -> Bool
 }
