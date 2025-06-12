@@ -99,12 +99,17 @@ struct EventsCardView: View {
     @ViewBuilder
     var actionIconsView: some View {
         HStack(spacing: .xSmall) {
-            Button {
-                FavouriteModel.didTapFavorites()
-            } label: {
-                (FavouriteModel.isFavourited ? Image(.heartFill) : Image(.heart))
-                    .resizable()
-                    .squareFrame(size: 36)
+            if #available(iOS 26.0, *) {
+                Button {
+                    FavouriteModel.didTapFavorites()
+                } label: {
+                    (FavouriteModel.isFavourited ? Image(.heartFill) : Image(.heart))
+                        .resizable()
+                        .squareFrame(size: 36)
+                }
+                .glassEffect()
+            } else {
+                // Fallback on earlier versions
             }
             
             if let calendarModel {
@@ -117,6 +122,7 @@ struct EventsCardView: View {
                 }
                 .foregroundStyle(.text)
             }
+            
             
             if let url = URL(string: event.url) {
                 ShareLink(item: url) {

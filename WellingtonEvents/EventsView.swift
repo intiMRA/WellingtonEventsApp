@@ -31,7 +31,7 @@ struct EventsView: View {
                         }))
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbar {
-                            ToolbarItem(placement: .topBarLeading) {
+                            ToolbarItem(placement: .principal) {
                                 HStack {
                                     Spacer(minLength: CommonPadding.medium.rawValue)
                                     
