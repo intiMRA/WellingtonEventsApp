@@ -39,6 +39,7 @@ extension EventsViewModel {
         guard !selectedFilters.isEmpty else {
             events = allEvents
             selectedFilters = []
+            self.scrollToTop = true
             return
         }
         
