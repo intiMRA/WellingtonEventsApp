@@ -53,6 +53,7 @@ class EventsViewModel: ObservableObject {
     @Published var isLoading: Bool = true
     
     @Published var searchText = ""
+    @Published var scrollToTop = false
     
     var filters: Filters?
     @Published var selectedFilters: [any FilterObjectProtocol] = []

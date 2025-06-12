@@ -12,47 +12,47 @@ import SwiftUINavigation
 struct EventsView: View {
     @StateObject var viewModel: EventsViewModel = .init()
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.colorScheme) private var colorScheme
     private let spaceName = "pullToRefresh"
+    private let scrollViewId = "scrollView"
+    @State private var safeAreaInsets = EdgeInsets()
     
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .topLeading) {
-                if viewModel.isLoading {
-                    loadingView
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-                else {
-                    listView
-                        .simultaneousGesture(TapGesture().onEnded({ _ in
-                            hideKeyboard()
-                        }))
-                        .simultaneousGesture(DragGesture().onEnded({ value in
-                            hideKeyboard()
-                        }))
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .principal) {
-                                HStack {
-                                    Spacer(minLength: CommonPadding.medium.rawValue)
-                                    
-                                    Image(.bar)
-                                        .resizable()
-                                        .renderingMode(.template)
-                                        .foregroundStyle(.text)
-                                    
-                                    Spacer(minLength: CommonPadding.medium.rawValue)
-                                }
-                            }
+            contentView
+                .simultaneousGesture(TapGesture().onEnded({ _ in
+                    hideKeyboard()
+                }))
+                .simultaneousGesture(DragGesture().onEnded({ value in
+                    hideKeyboard()
+                }))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        HStack {
+                            Spacer(minLength: CommonPadding.medium.rawValue)
+                            
+                            Image(.bar)
+                                .resizable()
+                                .renderingMode(.template)
+                                .foregroundStyle(.text)
+                            
+                            Spacer(minLength: CommonPadding.medium.rawValue)
                         }
-                }
-                VStack {
-                    SearchView(searchText: $viewModel.searchText)
+                    }
                     
-                    filtersView
+                    ToolbarItem(placement: .topBarTrailing) {
+                        let selectedSources = viewModel.selectedFilterSource()
+                        let favoritesSelected = selectedSources.contains(where: { $0 == .favorited })
+                        Button {
+                            viewModel.didTapFavouritesFilter()
+                        } label: {
+                            (favoritesSelected ? Image(.heartFill) : Image(.heart))
+                                .resizable()
+                                .squareFrame(size: 36)
+                        }
+                    }
                 }
-                .padding(.horizontal, .medium)
-                .padding(.top, .xLarge)
-            }
         }
         .disabled(viewModel.isLoading)
         .task {
@@ -115,6 +115,46 @@ struct EventsView: View {
     }
     
     @ViewBuilder
+    var contentView: some View {
+        ZStack(alignment: .topLeading) {
+            if viewModel.isLoading {
+                loadingView
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            else {
+                listView
+            }
+            VStack(spacing: .empty) {
+                SearchView(searchText: $viewModel.searchText)
+                
+                filtersView
+            }
+            .padding(.horizontal, .medium)
+            .padding(.top, .medium)
+            .background {
+                Color(uiColor: .systemBackground)
+                    .opacity(colorScheme == .light ? 0.95 : 0.9)
+            }
+        }
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .background {
+            GeometryReader { geometry in
+                Color.clear
+                    .onChange(of: geometry.safeAreaInsets, { _, newValue in
+                        safeAreaInsets = newValue
+                    })
+            }
+        }
+        .overlay(alignment: .top) {
+            Color(uiColor: .systemBackground)
+                .opacity(colorScheme == .light ? 0.95 : 0.9)
+                .frame(height: safeAreaInsets.top)
+                .frame(maxWidth: .infinity)
+                .ignoresSafeArea()
+        }
+    }
+    
+    @ViewBuilder
     var filtersView: some View {
         ScrollView(.horizontal) {
             HStack {
@@ -160,14 +200,6 @@ struct EventsView: View {
                         viewModel.clearFilters(for: .eventType)
                     }
                 
-                let favoritesSelected = selectedSources.contains(where: { $0 == .favorited })
-                FilterView(
-                    isSelected: favoritesSelected,
-                    title: viewModel.filterTitle(for: .favorited, isSelected: favoritesSelected),
-                    hasIcon: false) {
-                        viewModel.didTapFavouritesFilter()
-                    }
-                
                 let happeningOnceSelected = selectedSources.contains(where: { $0 == .oneOf })
                 FilterView(
                     isSelected: happeningOnceSelected,
@@ -193,51 +225,63 @@ struct EventsView: View {
     
     @ViewBuilder
     var listView: some View {
-        ScrollView {
-            PullToRefreshView(coordinateSpaceName: spaceName) {
-                Task {
-                    await viewModel.fetchEvents()
+        ScrollViewReader { proxy in
+            ScrollView {
+                PullToRefreshView(coordinateSpaceName: spaceName) {
+                    Task {
+                        await viewModel.fetchEvents()
+                    }
                 }
-            }
-            VStack(alignment: .leading, spacing: .medium) {
-                Text("Events")
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-                    .padding(.horizontal, .medium)
-                LazyVStack(spacing: .medium) {
-                    ForEach(viewModel.events) { event in
-                        let isFavourited = viewModel.isEventFavourited(id: event.id)
-                        let isInCalendar = viewModel.isEventInCalendar(id: event.id)
-                        EventsCardView(
-                            event: event,
-                            FavouriteModel: .init(
-                                isFavourited: isFavourited,
-                                didTapFavorites: {
-                                    if isFavourited {
-                                        viewModel.deleteFromFavorites(event: event)
-                                    }
-                                    else {
-                                        viewModel.saveToFavorites(event: event)
-                                    }
-                                }),
-                            calendarModel: .init(
-                                isInCalendar: isInCalendar,
-                                addToCalendar: {
-                                    if isInCalendar {
-                                        viewModel.deleteFromCalendar(event: event)
-                                    }
-                                    else {
-                                        viewModel.saveToCalendar(event: event)
-                                    }
-                                })
-                        ) {
-                            viewModel.didTapOnEvent(with: $0)
+                VStack {
+                    
+                }
+                .background {
+                    Color.clear
+                }
+                .frame(height: 130)
+                .id(scrollViewId)
+                
+                VStack(alignment: .leading, spacing: .medium) {
+                    LazyVStack(spacing: .medium) {
+                        ForEach(viewModel.events) { event in
+                            let isFavourited = viewModel.isEventFavourited(id: event.id)
+                            let isInCalendar = viewModel.isEventInCalendar(id: event.id)
+                            EventsCardView(
+                                event: event,
+                                FavouriteModel: .init(
+                                    isFavourited: isFavourited,
+                                    didTapFavorites: {
+                                        if isFavourited {
+                                            viewModel.deleteFromFavorites(event: event)
+                                        }
+                                        else {
+                                            viewModel.saveToFavorites(event: event)
+                                        }
+                                    }),
+                                calendarModel: .init(
+                                    isInCalendar: isInCalendar,
+                                    addToCalendar: {
+                                        if isInCalendar {
+                                            viewModel.deleteFromCalendar(event: event)
+                                        }
+                                        else {
+                                            viewModel.saveToCalendar(event: event)
+                                        }
+                                    })
+                            ) {
+                                viewModel.didTapOnEvent(with: $0)
+                            }
                         }
                     }
                 }
             }
+            .onChange(of: viewModel.scrollToTop) { _, newValue in
+                if newValue {
+                    proxy.scrollTo(scrollViewId, anchor: .top)
+                    viewModel.scrollToTop = false
+                }
+            }
         }
-        .padding(.top, 150)
         .coordinateSpace(name: spaceName)
     }
     

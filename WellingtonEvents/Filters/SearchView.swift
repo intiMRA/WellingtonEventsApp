@@ -13,7 +13,7 @@ struct SearchView: View {
     @FocusState var focused: Bool
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .trailing) {
             if !focused {
                     HStack {
                         Image(.search)
@@ -40,23 +40,31 @@ struct SearchView: View {
                     .frame(height: 44)
                     .frame(maxWidth: .infinity)
                     .focused($focused)
+                    .padding(.horizontal, .medium)
+                    .background {
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(.cardBackground)
+                    }
                 
                 Spacer()
-                if focused {
-                    Button {
-                        focused = false
-                    } label: {
-                        Text("Cancel")
-                    }
-                }
             }
             .opacity(focused ? 1 : 0)
+            
+            if focused {
+                Button {
+                    focused = false
+                } label: {
+                    Text("Cancel")
+                        .padding(.horizontal, .medium)
+                }
+            }
+            
         }
         .animation(.default, value: focused)
         .interactiveDismissDisabled(true)
         .task {
             focused = false
         }
-        .padding(.bottom, .medium)
+        .padding(.bottom, .xSmall)
     }
 }

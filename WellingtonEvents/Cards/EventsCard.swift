@@ -99,7 +99,6 @@ struct EventsCardView: View {
     @ViewBuilder
     var actionIconsView: some View {
         HStack(spacing: .xSmall) {
-            if #available(iOS 26.0, *) {
                 Button {
                     FavouriteModel.didTapFavorites()
                 } label: {
@@ -107,10 +106,6 @@ struct EventsCardView: View {
                         .resizable()
                         .squareFrame(size: 36)
                 }
-                .glassEffect()
-            } else {
-                // Fallback on earlier versions
-            }
             
             if let calendarModel {
                 Button {

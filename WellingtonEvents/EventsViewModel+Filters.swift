@@ -55,6 +55,7 @@ extension EventsViewModel {
         let searchFilter = selectedFilters.first(where: { $0.id == .search }) as? SearchFilter
         searchFilter?.execute(events: &newEvents)
         self.events = newEvents
+        self.scrollToTop = true
     }
     
     func selectedFilterSource() -> [FilterIds] {
