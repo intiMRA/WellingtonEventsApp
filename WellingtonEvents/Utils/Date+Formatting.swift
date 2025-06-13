@@ -39,7 +39,7 @@ extension Date {
         let now = Date()
         
         guard
-            let today = calendar.date(from: calendar.dateComponents([.day], from: now)),
+            let today = calendar.date(from: calendar.dateComponents([.day, .month, .year], from: now)),
             let tomorrow = calendar.date(byAdding: DateComponents(day: 1), to: today)
         else {
             fatalError("failed to generate months range")
@@ -105,7 +105,7 @@ extension Date {
         var startOfWeekend: Date?
 
         if today <= 6 {
-            startOfWeekend = calendar.date(byAdding: DateComponents(day: 6 - today), to: now)
+            startOfWeekend = calendar.date(byAdding: DateComponents(day: 7 - today), to: now)
         }
         else {
             startOfWeekend = now

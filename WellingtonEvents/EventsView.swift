@@ -243,6 +243,12 @@ struct EventsView: View {
                 
                 VStack(alignment: .leading, spacing: .medium) {
                     LazyVStack(spacing: .medium) {
+                        if viewModel.events.isEmpty {
+                            Text("No events found")
+                                .font(.title3)
+                                .foregroundStyle(.text)
+                        }
+                        
                         ForEach(viewModel.events) { event in
                             let isFavourited = viewModel.isEventFavourited(id: event.id)
                             let isInCalendar = viewModel.isEventInCalendar(id: event.id)

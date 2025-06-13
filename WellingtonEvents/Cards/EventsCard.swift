@@ -40,16 +40,7 @@ struct EventsCardView: View {
                     .font(.body.bold())
                     .foregroundStyle(.text)
                 
-                if event.dates.count > 1 {
-                    Text("\(event.displayDate)")
-                        .font(.subheadline.bold())
-                        .foregroundStyle(.textSecondary)
-                }
-                else {
-                    Text(event.displayDate)
-                        .font(.subheadline.bold())
-                        .foregroundStyle(.textSecondary)
-                }
+                dateAndTypeView
                 
                 infoView
                 
@@ -57,6 +48,26 @@ struct EventsCardView: View {
             }
         }
         .padding(.horizontal, .medium)
+    }
+    
+    @ViewBuilder
+    var dateAndTypeView: some View {
+        if event.dates.count > 1 {
+            Text("\(event.displayDate)")
+                .font(.subheadline.bold())
+                .foregroundStyle(.textSecondary)
+        }
+        else {
+            Text(event.displayDate)
+                .font(.subheadline.bold())
+                .foregroundStyle(.textSecondary)
+        }
+        
+        Text(event.eventType)
+            .multilineTextAlignment(.leading)
+            .font(.subheadline)
+            .foregroundStyle(.textSecondary)
+            .padding(.trailing, .xxSmall)
     }
     
     @ViewBuilder

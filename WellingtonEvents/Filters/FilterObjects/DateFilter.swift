@@ -115,10 +115,8 @@ struct QuickDateFilter: FilterObjectProtocol {
         switch type {
         case .thisMonth:
             return Date.monthRange()
-
         case .thisWeek:
             return Date.weekRange()
-
         case .thisWeekend:
             return Date.weekEndRange()
         case .today:
