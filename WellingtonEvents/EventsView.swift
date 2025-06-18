@@ -13,6 +13,7 @@ struct EventsView: View {
     @StateObject var viewModel: EventsViewModel = .init()
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
     private let spaceName = "pullToRefresh"
     private let scrollViewId = "scrollView"
     @State private var safeAreaInsets = EdgeInsets()
@@ -36,6 +37,7 @@ struct EventsView: View {
                                 .resizable()
                                 .renderingMode(.template)
                                 .foregroundStyle(.text)
+                                .scaledToFit()
                             
                             Spacer(minLength: CommonPadding.medium.rawValue)
                         }
@@ -232,9 +234,7 @@ struct EventsView: View {
                         await viewModel.fetchEvents()
                     }
                 }
-                VStack {
-                    
-                }
+                VStack { }
                 .background {
                     Color.clear
                 }
@@ -242,42 +242,11 @@ struct EventsView: View {
                 .id(scrollViewId)
                 
                 VStack(alignment: .leading, spacing: .medium) {
-                    LazyVStack(spacing: .medium) {
-                        if viewModel.events.isEmpty {
-                            Text("No events found")
-                                .font(.title3)
-                                .foregroundStyle(.text)
-                        }
-                        
-                        ForEach(viewModel.events) { event in
-                            let isFavourited = viewModel.isEventFavourited(id: event.id)
-                            let isInCalendar = viewModel.isEventInCalendar(id: event.id)
-                            EventsCardView(
-                                event: event,
-                                FavouriteModel: .init(
-                                    isFavourited: isFavourited,
-                                    didTapFavorites: {
-                                        if isFavourited {
-                                            viewModel.deleteFromFavorites(event: event)
-                                        }
-                                        else {
-                                            viewModel.saveToFavorites(event: event)
-                                        }
-                                    }),
-                                calendarModel: .init(
-                                    isInCalendar: isInCalendar,
-                                    addToCalendar: {
-                                        if isInCalendar {
-                                            viewModel.deleteFromCalendar(event: event)
-                                        }
-                                        else {
-                                            viewModel.saveToCalendar(event: event)
-                                        }
-                                    })
-                            ) {
-                                viewModel.didTapOnEvent(with: $0)
-                            }
-                        }
+                    switch horizontalSizeClass {
+                    case .regular:
+                        lazyGridView
+                    default:
+                        lazyStackView
                     }
                 }
             }
@@ -292,8 +261,96 @@ struct EventsView: View {
     }
     
     @ViewBuilder
+    var lazyStackView: some View {
+        LazyVStack(spacing: .medium) {
+            if viewModel.events.isEmpty {
+                Text("No events found")
+                    .font(.title3)
+                    .foregroundStyle(.text)
+            }
+            
+            ForEach(viewModel.events) { event in
+                let isFavourited = viewModel.isEventFavourited(id: event.id)
+                let isInCalendar = viewModel.isEventInCalendar(id: event.id)
+                EventsCardView(
+                    event: event,
+                    FavouriteModel: .init(
+                        isFavourited: isFavourited,
+                        didTapFavorites: {
+                            if isFavourited {
+                                viewModel.deleteFromFavorites(event: event)
+                            }
+                            else {
+                                viewModel.saveToFavorites(event: event)
+                            }
+                        }),
+                    calendarModel: .init(
+                        isInCalendar: isInCalendar,
+                        addToCalendar: {
+                            if isInCalendar {
+                                viewModel.deleteFromCalendar(event: event)
+                            }
+                            else {
+                                viewModel.saveToCalendar(event: event)
+                            }
+                        })
+                ) {
+                    viewModel.didTapOnEvent(with: $0)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var lazyGridView: some View {
+        LazyVGrid(columns: [.init(), .init()], spacing: 16) {
+            if viewModel.events.isEmpty {
+                Text("No events found")
+                    .font(.title3)
+                    .foregroundStyle(.text)
+            }
+            
+            ForEach(viewModel.events) { event in
+                let isFavourited = viewModel.isEventFavourited(id: event.id)
+                let isInCalendar = viewModel.isEventInCalendar(id: event.id)
+                EventsCardView(
+                    event: event,
+                    FavouriteModel: .init(
+                        isFavourited: isFavourited,
+                        didTapFavorites: {
+                            if isFavourited {
+                                viewModel.deleteFromFavorites(event: event)
+                            }
+                            else {
+                                viewModel.saveToFavorites(event: event)
+                            }
+                        }),
+                    calendarModel: .init(
+                        isInCalendar: isInCalendar,
+                        addToCalendar: {
+                            if isInCalendar {
+                                viewModel.deleteFromCalendar(event: event)
+                            }
+                            else {
+                                viewModel.saveToCalendar(event: event)
+                            }
+                        })
+                ) {
+                    viewModel.didTapOnEvent(with: $0)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
     var loadingView: some View {
-        LottieView(lottieFile: .fountain, loopMode: .loop)
+        VStack {
+            LottieView(lottieFile: .fountain, loopMode: .loop)
+            Text("Loadding...")
+                .font(.subheadline)
+                .foregroundStyle(.fountainBackground)
+                .padding(.bottom, .medium)
+        }
     }
 }
 

@@ -92,7 +92,6 @@ struct EventsCardView: View {
                     .foregroundStyle(.textSecondary)
                     .frame(maxWidth: .infinity)
                     .frame(height: 155)
-                    .scaledToFit()
                     .roundedShadow()
                     .onAppear {
                         print(error)

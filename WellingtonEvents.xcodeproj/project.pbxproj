@@ -32,7 +32,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		A1112AE52D2B41EA00BE9D0C /* WellingtonEvents.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WellingtonEvents.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1112AE52D2B41EA00BE9D0C /* What's on Welly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "What's on Welly.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1112AF52D2B41EC00BE9D0C /* WellingtonEventsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WellingtonEventsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1112AFF2D2B41EC00BE9D0C /* WellingtonEventsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WellingtonEventsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -99,7 +99,7 @@
 		A1112AE62D2B41EA00BE9D0C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A1112AE52D2B41EA00BE9D0C /* WellingtonEvents.app */,
+				A1112AE52D2B41EA00BE9D0C /* What's on Welly.app */,
 				A1112AF52D2B41EC00BE9D0C /* WellingtonEventsTests.xctest */,
 				A1112AFF2D2B41EC00BE9D0C /* WellingtonEventsUITests.xctest */,
 			);
@@ -140,7 +140,7 @@
 				A19C8BB32DF6B4AC008A3A01 /* SwiftUINavigation */,
 			);
 			productName = WellingtonEvents;
-			productReference = A1112AE52D2B41EA00BE9D0C /* WellingtonEvents.app */;
+			productReference = A1112AE52D2B41EA00BE9D0C /* What's on Welly.app */;
 			productType = "com.apple.product-type.application";
 		};
 		A1112AF42D2B41EC00BE9D0C /* WellingtonEventsTests */ = {
@@ -358,6 +358,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "What's on Welly";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -415,6 +416,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "What's on Welly";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -445,7 +447,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = LocalizationLibraryApp.WellingtonEvents;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "What's on Welly";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -475,7 +477,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = LocalizationLibraryApp.WellingtonEvents;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "What's on Welly";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
