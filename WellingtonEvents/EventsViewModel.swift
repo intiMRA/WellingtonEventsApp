@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import NetworkLayerSPM
 import CasePaths
 import Combine
 import SwiftUI
@@ -23,12 +22,7 @@ enum Destination {
     case filters(for: FilterValues)
     case alert(ToastStyle)
     case dateSelector(startDate: Date, endDate: Date, id: String)
-}
-
-struct urlBuilder: NetworkLayerURLBuilder {
-    func url() -> URL? {
-        .init(string: "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/main/events.json")
-    }
+    case quickDateSelector(selectedQuickDate: QuickDateType?, id: String)
 }
 
 struct DateModel: Equatable, Identifiable {
@@ -50,7 +44,8 @@ struct DateModel: Equatable, Identifiable {
 class EventsViewModel: ObservableObject {
     
     @Published var favourites: [EventInfo] = []
-    private let repository: EventsRepository = UserDefaultsEventsRepository()
+    @Published var eventsInCalendar: [EventInfo] = []
+    let repository: EventsRepository = DefaultEventsRepository()
     
     var allEvents: [EventInfo]
     @Published var events: [EventInfo]
@@ -58,6 +53,7 @@ class EventsViewModel: ObservableObject {
     @Published var isLoading: Bool = true
     
     @Published var searchText = ""
+    @Published var scrollToTop = false
     
     var filters: Filters?
     @Published var selectedFilters: [any FilterObjectProtocol] = []
@@ -68,6 +64,7 @@ class EventsViewModel: ObservableObject {
     func setup() async {
         await fetchEvents()
         self.favourites = repository.retrieveFavorites()
+        refreshCalendarEvents()
         guard !allEvents.isEmpty else {
             return
         }
@@ -77,14 +74,23 @@ class EventsViewModel: ObservableObject {
             }
             return nil
         })
+        
+        repository.didDeleteFromCalendar(eventIds: eventsInCalendar.compactMap { event in
+            if !allEvents.contains(where: { $0.id == event.id }) {
+                return event.id
+            }
+            return nil
+        })
     }
     
     init(
         favourites: [EventInfo] = [],
+        eventsInCalendar: [EventInfo] = [],
         allEvents: [EventInfo] = [],
         events: [EventInfo] = [],
         selectedDate: Date = .now) {
             self.favourites = favourites
+            self.eventsInCalendar = eventsInCalendar
             self.allEvents = allEvents
             self.events = events
             self.selectedDate = selectedDate
@@ -104,10 +110,12 @@ class EventsViewModel: ObservableObject {
         selectedFilters = []
         isLoading = true
         defer {
-            isLoading = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [unowned self] in
+                self.isLoading = false
+            }
         }
         do {
-            let response: EventsResponse? = (try await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: urlBuilder(), httpMethod: .GET)))
+            let response = try await repository.fetchEvents()
             events = response?.events.filter { !$0.dates.isEmpty } ?? []
             
             filters = response?.filters
@@ -119,8 +127,20 @@ class EventsViewModel: ObservableObject {
         }
     }
     
+    func appBecameActive() {
+        if !repository.canFetchFromCache() {
+            Task {
+                await setup()
+            }
+        }
+    }
+    
     func isEventFavourited(id: String) -> Bool {
         favourites.contains(where: { id == $0.id })
+    }
+    
+    func isEventInCalendar(id: String) -> Bool {
+        eventsInCalendar.contains(where: { id == $0.id })
     }
     
     func saveToFavorites(event: EventInfo) {
@@ -139,18 +159,27 @@ class EventsViewModel: ObservableObject {
         }
         else {
             addToCalendar(event: event, date: event.dates.first)
+            refreshCalendarEvents()
         }
     }
     
     private func addToCalendar(event: EventInfo, date: Date?) {
         Task {
             do {
-                try await CalendarManager.saveEventToCalendar(eventInfo: event, date: selectedDate)
+                try await CalendarManager.saveEventToCalendar(eventInfo: event, date: selectedDate, repository: repository)
                 route = .alert(.success(message: "Event successfully added to your calendar."))
+                refreshCalendarEvents()
             }
             catch {
                 route = .alert(.error(message: error.localizedDescription))
             }
+        }
+    }
+    
+    func deleteFromCalendar(event: EventInfo) {
+        Task {
+            try? await CalendarManager.removeFromCalendar(event: event, repository: repository)
+            refreshCalendarEvents()
         }
     }
     
@@ -179,5 +208,9 @@ class EventsViewModel: ObservableObject {
             }
             route = .alert(style)
         }
+    }
+    
+    func refreshCalendarEvents() {
+        eventsInCalendar = repository.retrieveSavedToCalendar()
     }
 }

@@ -11,36 +11,50 @@ import SwiftUINavigation
 
 struct EventsView: View {
     @StateObject var viewModel: EventsViewModel = .init()
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    private let spaceName = "pullToRefresh"
+    private let scrollViewId = "scrollView"
+    @State private var safeAreaInsets = EdgeInsets()
+    
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .topLeading) {
-                if viewModel.isLoading {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-                else {
-                    listView
-                        .navigationTitle( "Events")
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .confirmationAction) {
-                                Button {
-                                    Task {
-                                        await viewModel.fetchEvents()
-                                    }
-                                } label: {
-                                    Text("Refresh")
-                                }
-                            }
+            contentView
+                .simultaneousGesture(TapGesture().onEnded({ _ in
+                    hideKeyboard()
+                }))
+                .simultaneousGesture(DragGesture().onEnded({ value in
+                    hideKeyboard()
+                }))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        HStack {
+                            Spacer(minLength: CommonPadding.medium.rawValue)
+                            
+                            Image(.bar)
+                                .resizable()
+                                .renderingMode(.template)
+                                .foregroundStyle(.text)
+                                .scaledToFit()
+                            
+                            Spacer(minLength: CommonPadding.medium.rawValue)
                         }
-
+                    }
+                    
+                    ToolbarItem(placement: .topBarTrailing) {
+                        let selectedSources = viewModel.selectedFilterSource()
+                        let favoritesSelected = selectedSources.contains(where: { $0 == .favorited })
+                        Button {
+                            viewModel.didTapFavouritesFilter()
+                        } label: {
+                            (favoritesSelected ? Image(.heartFill) : Image(.heart))
+                                .resizable()
+                                .squareFrame(size: 36)
+                        }
+                    }
                 }
-                
-                filtersView
-                    .padding(.horizontal, .medium)
-                    .padding(.top, .medium)
-                    .searchable(text: $viewModel.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: Text("Search For Event Names"))
-            }
         }
         .disabled(viewModel.isLoading)
         .task {
@@ -50,7 +64,13 @@ struct EventsView: View {
         .animation(.easeIn, value: viewModel.isLoading)
         .sheet(item: $viewModel.route.calendar) { event in
             NavigationView {
-                DatePickerView(viewModel: .init(event: event, dismiss: { [weak viewModel] style in viewModel?.dissmissCalendar(style) }))
+                DatePickerView(viewModel: .init(
+                    event: event,
+                    repository: viewModel.repository,
+                    dismiss: { [weak viewModel] style in
+                        viewModel?.dissmissCalendar(style)
+                        viewModel?.refreshCalendarEvents()
+                    }))
             }
         }
         .sheet(item: $viewModel.route.filters, id: \.id) { value in
@@ -78,6 +98,62 @@ struct EventsView: View {
             }
             .presentationDetents([ .medium, .large])
         }
+        .sheet(item: $viewModel.route.quickDateSelector, id: \.id) { value in
+            NavigationView {
+                QuickDatesFilterView(selectedDate: value.selectedQuickDate,
+                                     didSelectDate: viewModel.didSelectQuickDates,
+                                     dismiss: viewModel.resetRoute)
+            }
+            .presentationDetents([ .medium, .large])
+        }
+        .onChange(of: scenePhase) { _, newValue in
+            switch newValue {
+            case .active:
+                viewModel.appBecameActive()
+            default:
+                break
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var contentView: some View {
+        ZStack(alignment: .topLeading) {
+            if viewModel.isLoading {
+                loadingView
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            else {
+                listView
+            }
+            VStack(spacing: .empty) {
+                SearchView(searchText: $viewModel.searchText)
+                
+                filtersView
+            }
+            .padding(.horizontal, .medium)
+            .padding(.top, .medium)
+            .background {
+                Color(uiColor: .systemBackground)
+                    .opacity(colorScheme == .light ? 0.95 : 0.9)
+            }
+        }
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .background {
+            GeometryReader { geometry in
+                Color.clear
+                    .onChange(of: geometry.safeAreaInsets, { _, newValue in
+                        safeAreaInsets = newValue
+                    })
+            }
+        }
+        .overlay(alignment: .top) {
+            Color(uiColor: .systemBackground)
+                .opacity(colorScheme == .light ? 0.95 : 0.9)
+                .frame(height: safeAreaInsets.top)
+                .frame(maxWidth: .infinity)
+                .ignoresSafeArea()
+        }
     }
     
     @ViewBuilder
@@ -85,49 +161,59 @@ struct EventsView: View {
         ScrollView(.horizontal) {
             HStack {
                 let selectedSources = viewModel.selectedFilterSource()
+                
+                let quickDatesSelected = selectedSources.contains(where: { $0 == .quickDate })
                 FilterView(
-                    isSelected: selectedSources.contains(where: { $0 == .date }),
-                    title: "Dates",
+                    isSelected: quickDatesSelected,
+                    title: viewModel.filterTitle(for: .quickDate, isSelected: quickDatesSelected),
+                    hasIcon: true) {
+                        viewModel.showQuickDateSelector()
+                    } clearFilters: {
+                        viewModel.clearFilters(for: .quickDate)
+                    }
+                
+                let datesSelected = selectedSources.contains(where: { $0 == .date })
+                FilterView(
+                    isSelected: datesSelected,
+                    title: viewModel.filterTitle(for: .date, isSelected: datesSelected),
                     hasIcon: true) {
                         viewModel.showDateSelector()
                     } clearFilters: {
                         viewModel.clearFilters(for: .date)
                     }
+                
+                let sourceSelected = selectedSources.contains(where: { $0 == .source })
                 FilterView(
-                    isSelected: selectedSources.contains(where: { $0 == .source }),
-                    title: "Sources",
+                    isSelected: sourceSelected,
+                    title: viewModel.filterTitle(for: .source, isSelected: sourceSelected),
                     hasIcon: true) {
                         viewModel.expandFilter(for: viewModel.filters?.sources ?? [], filterType: .source)
                     } clearFilters: {
                         viewModel.clearFilters(for: .source)
                     }
                 
+                let eventsSelected = selectedSources.contains(where: { $0 == .eventType })
                 FilterView(
-                    isSelected: selectedSources.contains(where: { $0 == .eventType }),
-                    title: "Event Types",
+                    isSelected: eventsSelected,
+                    title: viewModel.filterTitle(for: .eventType, isSelected: eventsSelected),
                     hasIcon: true) {
                         viewModel.expandFilter(for: viewModel.filters?.eventTypes ?? [], filterType: .eventType)
                     } clearFilters: {
                         viewModel.clearFilters(for: .eventType)
                     }
                 
+                let happeningOnceSelected = selectedSources.contains(where: { $0 == .oneOf })
                 FilterView(
-                    isSelected: selectedSources.contains(where: { $0 == .favorited }),
-                    title: "Favorited",
-                    hasIcon: false) {
-                        viewModel.didTapFavouritesFilter()
-                    }
-                
-                FilterView(
-                    isSelected: selectedSources.contains(where: { $0 == .oneOf }),
-                    title: "Happening once",
+                    isSelected: happeningOnceSelected,
+                    title: viewModel.filterTitle(for: .oneOf, isSelected: happeningOnceSelected),
                     hasIcon: false) {
                         viewModel.didTapOneOfFilter()
                     }
                 
+                let multipleDatesSelected = selectedSources.contains(where: { $0 == .multipleDates })
                 FilterView(
-                    isSelected: selectedSources.contains(where: { $0 == .multipleDates }),
-                    title: "Multiple dates",
+                    isSelected: multipleDatesSelected,
+                    title: viewModel.filterTitle(for: .multipleDates, isSelected: multipleDatesSelected),
                     hasIcon: false) {
                         viewModel.didTapMultipleDatesFilter()
                     }
@@ -136,40 +222,142 @@ struct EventsView: View {
             .padding(.vertical, .xxSmall)
             .padding(.horizontal, .xxxSmall)
         }
+        .scrollIndicators(.hidden)
     }
     
     @ViewBuilder
     var listView: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: .medium) {
-                Text("Events")
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-                    .padding(.horizontal, .medium)
-                LazyVStack(spacing: .medium) {
-                    ForEach(viewModel.events) { event in
-                        let isFavourited = viewModel.isEventFavourited(id: event.id)
-                        
-                        EventsCardView(
-                            event: event,
-                            FavouriteModel: .init(
-                                isFavourited: isFavourited,
-                                didTapFavorites: {
-                                    if isFavourited {
-                                        viewModel.deleteFromFavorites(event: event)
-                                    }
-                                    else {
-                                        viewModel.saveToFavorites(event: event)
-                                    }
-                                })) {
-                                    viewModel.saveToCalendar(event: event)
-                                } didTapOnCard: {
-                                    viewModel.didTapOnEvent(with: $0)
-                                }
+        ScrollViewReader { proxy in
+            ScrollView {
+                PullToRefreshView(coordinateSpaceName: spaceName) {
+                    Task {
+                        await viewModel.fetchEvents()
+                    }
+                }
+                VStack { }
+                .background {
+                    Color.clear
+                }
+                .frame(height: 130)
+                .id(scrollViewId)
+                
+                VStack(alignment: .leading, spacing: .medium) {
+                    switch horizontalSizeClass {
+                    case .regular:
+                        lazyGridView
+                    default:
+                        lazyStackView
                     }
                 }
             }
+            .onChange(of: viewModel.scrollToTop) { _, newValue in
+                if newValue {
+                    proxy.scrollTo(scrollViewId, anchor: .top)
+                    viewModel.scrollToTop = false
+                }
+            }
         }
-        .padding(.top, 78)
+        .coordinateSpace(name: spaceName)
+    }
+    
+    @ViewBuilder
+    var lazyStackView: some View {
+        LazyVStack(spacing: .medium) {
+            if viewModel.events.isEmpty {
+                Text("No events found")
+                    .font(.title3)
+                    .foregroundStyle(.text)
+            }
+            
+            ForEach(viewModel.events) { event in
+                let isFavourited = viewModel.isEventFavourited(id: event.id)
+                let isInCalendar = viewModel.isEventInCalendar(id: event.id)
+                EventsCardView(
+                    event: event,
+                    FavouriteModel: .init(
+                        isFavourited: isFavourited,
+                        didTapFavorites: {
+                            if isFavourited {
+                                viewModel.deleteFromFavorites(event: event)
+                            }
+                            else {
+                                viewModel.saveToFavorites(event: event)
+                            }
+                        }),
+                    calendarModel: .init(
+                        isInCalendar: isInCalendar,
+                        addToCalendar: {
+                            if isInCalendar {
+                                viewModel.deleteFromCalendar(event: event)
+                            }
+                            else {
+                                viewModel.saveToCalendar(event: event)
+                            }
+                        })
+                ) {
+                    viewModel.didTapOnEvent(with: $0)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var lazyGridView: some View {
+        LazyVGrid(columns: [.init(), .init()], spacing: 16) {
+            if viewModel.events.isEmpty {
+                Text("No events found")
+                    .font(.title3)
+                    .foregroundStyle(.text)
+            }
+            
+            ForEach(viewModel.events) { event in
+                let isFavourited = viewModel.isEventFavourited(id: event.id)
+                let isInCalendar = viewModel.isEventInCalendar(id: event.id)
+                EventsCardView(
+                    event: event,
+                    FavouriteModel: .init(
+                        isFavourited: isFavourited,
+                        didTapFavorites: {
+                            if isFavourited {
+                                viewModel.deleteFromFavorites(event: event)
+                            }
+                            else {
+                                viewModel.saveToFavorites(event: event)
+                            }
+                        }),
+                    calendarModel: .init(
+                        isInCalendar: isInCalendar,
+                        addToCalendar: {
+                            if isInCalendar {
+                                viewModel.deleteFromCalendar(event: event)
+                            }
+                            else {
+                                viewModel.saveToCalendar(event: event)
+                            }
+                        })
+                ) {
+                    viewModel.didTapOnEvent(with: $0)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var loadingView: some View {
+        VStack {
+            LottieView(lottieFile: .fountain, loopMode: .loop)
+            Text("Loadding...")
+                .font(.subheadline)
+                .foregroundStyle(.fountainBackground)
+                .padding(.bottom, .medium)
+        }
     }
 }
+
+#if canImport(UIKit)
+extension View {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+#endif

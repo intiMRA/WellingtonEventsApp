@@ -84,7 +84,15 @@ struct EventInfo: Codable, Identifiable, Equatable {
             return date > .now ? date : nil
         } ?? []
         self.dates = Array(Set(self.dates))
-        self.displayDate = try container.decode(String.self, forKey: .displayDate)
+        let displayDate = try container.decode(String.self, forKey: .displayDate)
+        
+        if self.dates.count == 1, displayDate.contains(" + more") {
+            self.displayDate = dates[0].asString(with: .eeeddmmmSpaced)
+        }
+        else {
+            self.displayDate = displayDate
+        }
+        
         self.url = try container.decode(String.self, forKey: .url)
         self.source = try container.decode(String.self, forKey: .source)
         do {

@@ -40,8 +40,101 @@ struct DateFilter: FilterObjectProtocol {
     }
 }
 
+enum QuickDateType: String {
+    case thisMonth
+    case nextMonth
+    case thisWeek
+    case nextWeek
+    case thisWeekend
+    case today
+    case tomorrow
+    
+    var name: String {
+        switch self {
+        case .thisMonth:
+            return String(localized: "This month")
+        case .thisWeek:
+            return String(localized: "This week")
+        case .thisWeekend:
+            return String(localized: "This weekend")
+        case .today:
+            return String(localized: "Today")
+        case .nextMonth:
+            return String(localized: "Next month")
+        case .nextWeek:
+            return String(localized: "Next week")
+        case .tomorrow:
+            return String(localized: "Tomorrow")
+        }
+    }
+    
+    static var asGrid: [(String, [QuickDateType])] = {
+        [
+            (UUID().uuidString, [.today, .tomorrow, .thisWeekend]),
+            (UUID().uuidString, [.thisWeek, .nextWeek, .thisMonth]),
+            (UUID().uuidString, [.nextMonth])
+        ]
+    }()
+}
+
+struct QuickDateFilter: FilterObjectProtocol {
+    let id: FilterIds = .quickDate
+    
+    var quickDateType: QuickDateType
+    
+    init(quickDateType: QuickDateType) {
+        self.quickDateType = quickDateType
+    }
+    
+    func execute(event: EventInfo, events: inout [EventInfo]) {
+        let dates = Self.getDateRange(for: quickDateType)
+        let startDate = dates.startDate
+        let endDate = dates.endDate
+        
+        let withInRange = event.dates.oneSatisfies(condition: { date in
+            let greaterThenCondition = startDate.checkConditionIgnoringTime(
+                other: date
+            ) {
+                $0 <= $1
+            }
+
+            let lessThenCondition = endDate.checkConditionIgnoringTime(
+                other: date
+            ) {
+                $0 >= $1
+            }
+
+            return greaterThenCondition && lessThenCondition
+        })
+        if !withInRange {
+            events.removeAll(where: { $0.id == event.id})
+        }
+    }
+    
+    static func getDateRange(for type: QuickDateType) -> (startDate: Date, endDate: Date) {
+        switch type {
+        case .thisMonth:
+            return Date.monthRange()
+        case .thisWeek:
+            return Date.weekRange()
+        case .thisWeekend:
+            return Date.weekEndRange()
+        case .today:
+            return (.now, .now)
+        case .nextMonth:
+            return Date.nextMonthRange()
+        case .nextWeek:
+            return Date.nextWeekRange()
+        case .tomorrow:
+            let tomorrow = Date.tomorrow()
+            return (tomorrow, tomorrow)
+        }
+    }
+}
+
+
 extension Date: @retroactive Identifiable {
-    private static var calendar: Calendar {
+    static var calendar: Calendar {
         .init(identifier: .gregorian)
     }
     public var id: String {

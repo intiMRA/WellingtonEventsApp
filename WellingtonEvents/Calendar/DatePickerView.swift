@@ -21,7 +21,7 @@ struct DatePickerView: View {
                         .font(.headline)
                         .foregroundStyle(.text)
                     
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 50))], spacing: 4) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 44))], spacing: 8) {
                         ForEach(month.dates, id: \.self) { date in
                             Button {
                                 viewModel.selectedDate = date
@@ -29,15 +29,17 @@ struct DatePickerView: View {
                                 VStack {
                                     Text(date.asString(with: .dd))
                                         .lineLimit(1)
+                                        .foregroundStyle(viewModel.isDateSelected(date) ? .selectedChipText : .text)
                                 }
                                 .frame(maxWidth: .infinity)
                                 .background {
-                                    RoundedRectangle(cornerRadius: 2)
-                                        .fill(viewModel.selectedDate == date ? Color.blue.opacity(0.7) : Color.gray.opacity(0.7))
-                                        .frame(width: 44, height: 44)
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .stroke(Color.accentColor, lineWidth: 1)
+                                        .fill(viewModel.isDateSelected(date) ? .accentColor.opacity(0.7) : Color.clear)
+                                        .squareFrame(size: 44)
                                 }
                             }
-                            .frame(width: 44, height: 44)
+                            .squareFrame(size: 44)
                         }
                     }
                 }

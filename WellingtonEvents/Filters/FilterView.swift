@@ -53,13 +53,12 @@ struct FilterView: View {
                     .font(.headline)
             }
         }
-        .foregroundStyle(.text)
+        .foregroundStyle(isSelected ? .selectedChipText : .text)
         .padding(.horizontal, .small)
         .padding(.vertical, .xSmall)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(isSelected && !hasIcon ? .blue : .cardBackground)
-                .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1))
+                .fill(isSelected ? .accent : .cardBackground))
     }
 }

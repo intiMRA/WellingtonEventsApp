@@ -8,10 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		A1112B1E2D2B4CB600BE9D0C /* DesignLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = A1112B1D2D2B4CB600BE9D0C /* DesignLibrary */; };
-		A13F5BFB2D7E447100C7EA06 /* SwiftUINavigation in Frameworks */ = {isa = PBXBuildFile; productRef = A13F5BFA2D7E447100C7EA06 /* SwiftUINavigation */; };
-		A13F5BFD2D7E447100C7EA06 /* SwiftUINavigationCore in Frameworks */ = {isa = PBXBuildFile; productRef = A13F5BFC2D7E447100C7EA06 /* SwiftUINavigationCore */; };
-		A13F5C002D7E465500C7EA06 /* CasePaths in Frameworks */ = {isa = PBXBuildFile; productRef = A13F5BFF2D7E465500C7EA06 /* CasePaths */; };
-		A13F5C022D7E465500C7EA06 /* CasePathsCore in Frameworks */ = {isa = PBXBuildFile; productRef = A13F5C012D7E465500C7EA06 /* CasePathsCore */; };
+		A19C8BB02DF6B499008A3A01 /* CasePaths in Frameworks */ = {isa = PBXBuildFile; productRef = A19C8BAF2DF6B499008A3A01 /* CasePaths */; };
+		A19C8BB22DF6B4AC008A3A01 /* SwiftNavigation in Frameworks */ = {isa = PBXBuildFile; productRef = A19C8BB12DF6B4AC008A3A01 /* SwiftNavigation */; };
+		A19C8BB42DF6B4AC008A3A01 /* SwiftUINavigation in Frameworks */ = {isa = PBXBuildFile; productRef = A19C8BB32DF6B4AC008A3A01 /* SwiftUINavigation */; };
 		A1B319CE2D81669F00FBF2F7 /* NetworkLayerSPM in Frameworks */ = {isa = PBXBuildFile; productRef = A1B319CD2D81669F00FBF2F7 /* NetworkLayerSPM */; };
 /* End PBXBuildFile section */
 
@@ -33,7 +32,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		A1112AE52D2B41EA00BE9D0C /* WellingtonEvents.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WellingtonEvents.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1112AE52D2B41EA00BE9D0C /* What's on Welly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "What's on Welly.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1112AF52D2B41EC00BE9D0C /* WellingtonEventsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WellingtonEventsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1112AFF2D2B41EC00BE9D0C /* WellingtonEventsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WellingtonEventsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -61,12 +60,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A13F5C002D7E465500C7EA06 /* CasePaths in Frameworks */,
+				A19C8BB22DF6B4AC008A3A01 /* SwiftNavigation in Frameworks */,
 				A1112B1E2D2B4CB600BE9D0C /* DesignLibrary in Frameworks */,
 				A1B319CE2D81669F00FBF2F7 /* NetworkLayerSPM in Frameworks */,
-				A13F5C022D7E465500C7EA06 /* CasePathsCore in Frameworks */,
-				A13F5BFD2D7E447100C7EA06 /* SwiftUINavigationCore in Frameworks */,
-				A13F5BFB2D7E447100C7EA06 /* SwiftUINavigation in Frameworks */,
+				A19C8BB42DF6B4AC008A3A01 /* SwiftUINavigation in Frameworks */,
+				A19C8BB02DF6B499008A3A01 /* CasePaths in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -101,7 +99,7 @@
 		A1112AE62D2B41EA00BE9D0C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A1112AE52D2B41EA00BE9D0C /* WellingtonEvents.app */,
+				A1112AE52D2B41EA00BE9D0C /* What's on Welly.app */,
 				A1112AF52D2B41EC00BE9D0C /* WellingtonEventsTests.xctest */,
 				A1112AFF2D2B41EC00BE9D0C /* WellingtonEventsUITests.xctest */,
 			);
@@ -136,14 +134,13 @@
 			name = WellingtonEvents;
 			packageProductDependencies = (
 				A1112B1D2D2B4CB600BE9D0C /* DesignLibrary */,
-				A13F5BFA2D7E447100C7EA06 /* SwiftUINavigation */,
-				A13F5BFC2D7E447100C7EA06 /* SwiftUINavigationCore */,
-				A13F5BFF2D7E465500C7EA06 /* CasePaths */,
-				A13F5C012D7E465500C7EA06 /* CasePathsCore */,
 				A1B319CD2D81669F00FBF2F7 /* NetworkLayerSPM */,
+				A19C8BAF2DF6B499008A3A01 /* CasePaths */,
+				A19C8BB12DF6B4AC008A3A01 /* SwiftNavigation */,
+				A19C8BB32DF6B4AC008A3A01 /* SwiftUINavigation */,
 			);
 			productName = WellingtonEvents;
-			productReference = A1112AE52D2B41EA00BE9D0C /* WellingtonEvents.app */;
+			productReference = A1112AE52D2B41EA00BE9D0C /* What's on Welly.app */;
 			productType = "com.apple.product-type.application";
 		};
 		A1112AF42D2B41EC00BE9D0C /* WellingtonEventsTests */ = {
@@ -226,9 +223,9 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				A1112B132D2B42B800BE9D0C /* XCRemoteSwiftPackageReference "Desing-Library-SPM" */,
-				A13F5BF92D7E447100C7EA06 /* XCRemoteSwiftPackageReference "swiftui-navigation" */,
-				A13F5BFE2D7E465500C7EA06 /* XCRemoteSwiftPackageReference "swift-case-paths" */,
 				A1B319CC2D81657600FBF2F7 /* XCRemoteSwiftPackageReference "NetworkLayerSPM" */,
+				A1BEDF982DF6B34F00A2F362 /* XCRemoteSwiftPackageReference "swift-navigation" */,
+				A1BEDF992DF6B35E00A2F362 /* XCRemoteSwiftPackageReference "swift-case-paths" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A1112AE62D2B41EA00BE9D0C /* Products */;
@@ -361,8 +358,10 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "What's on Welly";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -417,8 +416,10 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "What's on Welly";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -446,7 +447,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = LocalizationLibraryApp.WellingtonEvents;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "What's on Welly";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -476,7 +477,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = LocalizationLibraryApp.WellingtonEvents;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "What's on Welly";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -601,28 +602,28 @@
 				kind = branch;
 			};
 		};
-		A13F5BF92D7E447100C7EA06 /* XCRemoteSwiftPackageReference "swiftui-navigation" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/pointfreeco/swiftui-navigation.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.5.5;
-			};
-		};
-		A13F5BFE2D7E465500C7EA06 /* XCRemoteSwiftPackageReference "swift-case-paths" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/pointfreeco/swift-case-paths.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.6.1;
-			};
-		};
 		A1B319CC2D81657600FBF2F7 /* XCRemoteSwiftPackageReference "NetworkLayerSPM" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/intiMRA/NetworkLayerSPM.git";
 			requirement = {
 				branch = main;
 				kind = branch;
+			};
+		};
+		A1BEDF982DF6B34F00A2F362 /* XCRemoteSwiftPackageReference "swift-navigation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-navigation.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.3.1;
+			};
+		};
+		A1BEDF992DF6B35E00A2F362 /* XCRemoteSwiftPackageReference "swift-case-paths" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-case-paths.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.7.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -633,25 +634,20 @@
 			package = A1112B132D2B42B800BE9D0C /* XCRemoteSwiftPackageReference "Desing-Library-SPM" */;
 			productName = DesignLibrary;
 		};
-		A13F5BFA2D7E447100C7EA06 /* SwiftUINavigation */ = {
+		A19C8BAF2DF6B499008A3A01 /* CasePaths */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A13F5BF92D7E447100C7EA06 /* XCRemoteSwiftPackageReference "swiftui-navigation" */;
-			productName = SwiftUINavigation;
-		};
-		A13F5BFC2D7E447100C7EA06 /* SwiftUINavigationCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A13F5BF92D7E447100C7EA06 /* XCRemoteSwiftPackageReference "swiftui-navigation" */;
-			productName = SwiftUINavigationCore;
-		};
-		A13F5BFF2D7E465500C7EA06 /* CasePaths */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A13F5BFE2D7E465500C7EA06 /* XCRemoteSwiftPackageReference "swift-case-paths" */;
+			package = A1BEDF992DF6B35E00A2F362 /* XCRemoteSwiftPackageReference "swift-case-paths" */;
 			productName = CasePaths;
 		};
-		A13F5C012D7E465500C7EA06 /* CasePathsCore */ = {
+		A19C8BB12DF6B4AC008A3A01 /* SwiftNavigation */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A13F5BFE2D7E465500C7EA06 /* XCRemoteSwiftPackageReference "swift-case-paths" */;
-			productName = CasePathsCore;
+			package = A1BEDF982DF6B34F00A2F362 /* XCRemoteSwiftPackageReference "swift-navigation" */;
+			productName = SwiftNavigation;
+		};
+		A19C8BB32DF6B4AC008A3A01 /* SwiftUINavigation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1BEDF982DF6B34F00A2F362 /* XCRemoteSwiftPackageReference "swift-navigation" */;
+			productName = SwiftUINavigation;
 		};
 		A1B319CD2D81669F00FBF2F7 /* NetworkLayerSPM */ = {
 			isa = XCSwiftPackageProductDependency;

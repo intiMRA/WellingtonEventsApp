@@ -30,7 +30,9 @@ class FilterOptionsViewModel {
     }
     
     func didFinishedFiltering() {
-        finishedFiltering(selectedFilters, filterTye)
+        if !selectedFilters.isEmpty {
+            finishedFiltering(selectedFilters, filterTye)
+        }
         dismiss()
     }
     
