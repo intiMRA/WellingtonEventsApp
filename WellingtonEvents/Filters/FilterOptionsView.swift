@@ -18,25 +18,26 @@ struct FilterOptionsView: View {
         ScrollView {
             VStack(alignment: .leading) {
                 ForEach(viewModel.possibleFilters, id: \.self) { filter in
+                    let isSelected = viewModel.filterIsSelected(filter)
                     HStack {
-                        let isSelected = viewModel.filterIsSelected(filter)
                         Image(systemName: "checkmark.square")
                             .renderingMode(.template)
-                            .foregroundStyle(isSelected ?  Color.blue.opacity(0.7) : Color.gray.opacity(0.7))
-                            .bold(isSelected)
+                        
                         Text(filter)
                             .lineLimit(1)
                             .font(.title3)
-                            .foregroundStyle(.text)
                         
                         Spacer()
                     }
-                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: .infinity, minHeight: 44)
                     .onTapGesture {
                         withAnimation {
                             viewModel.didTapOnFilter(filter)
                         }
                     }
+                    .foregroundStyle(isSelected ?  Color.accentColor : .unselectedTick)
+                    .bold(isSelected)
+                    Divider()
                 }
             }
             .padding(.horizontal, .medium)
