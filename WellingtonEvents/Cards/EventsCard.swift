@@ -87,18 +87,13 @@ struct EventsCardView: View {
             case .empty:
                 RoundedRectangle(cornerRadius: 8)
                     .fill(.gray)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 155)
             case .success(let image):
                 image
                     .resizable()
-                    .frame(height: 155)
             case .failure(let error):
                 Image(.noImageAtTime)
                     .resizable()
                     .foregroundStyle(.textSecondary)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 155)
                     .onAppear {
                         print(error)
                         print(event.imageUrl ?? "")
@@ -106,13 +101,11 @@ struct EventsCardView: View {
             @unknown default:
                 Rectangle()
                     .fill(.gray)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 155)
             }
         }
+        .frame(height: 155)
         .frame(width: width)
         .scaledToFill()
-        .clipped()
         .roundedShadow()
     }
     
