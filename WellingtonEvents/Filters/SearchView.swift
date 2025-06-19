@@ -15,24 +15,24 @@ struct SearchView: View {
     var body: some View {
         ZStack(alignment: .trailing) {
             if !focused {
-                    HStack {
-                        Image(.search)
-                            .padding(.trailing, .medium)
-                        
-                        Text(searchText.nilIfEmpty ?? "Search for events in Welly")
-                            .foregroundStyle(.searchText)
-                        
-                        Spacer()
-                    }
-                    .frame(height: 44)
-                    .padding(.horizontal, .medium)
-                    .background {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(.cardBackground)
-                    }
-                    .onTapGesture {
-                        focused = true
-                    }
+                HStack {
+                    Image(.search)
+                        .padding(.trailing, .medium)
+                    
+                    Text(searchText.nilIfEmpty ?? "Search for events in Welly")
+                        .foregroundStyle(.searchText)
+                    
+                    Spacer()
+                }
+                .frame(height: 44)
+                .padding(.horizontal, .medium)
+                .background {
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(.cardBackground)
+                }
+                .onTapGesture {
+                    focused = true
+                }
             }
             
             HStack(alignment: .center) {

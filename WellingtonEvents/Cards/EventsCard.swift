@@ -23,6 +23,7 @@ struct EventsCardView: View {
     let event: EventInfo
     let FavouriteModel: FavouriteModel
     var calendarModel: CalendarModel?
+    let width: CGFloat
     var didTapOnCard: (String) -> Void
     
     var body: some View {
@@ -30,9 +31,24 @@ struct EventsCardView: View {
             didTapOnCard(event.id)
         } label: {
             VStack(alignment: .leading, spacing: .xSmall) {
-                ZStack(alignment: .topTrailing) {
-                    imageView
-                    actionIconsView
+                ZStack(alignment: .bottomLeading) {
+                    ZStack(alignment: .topTrailing) {
+                        imageView
+                        actionIconsView
+                    }
+                    Text(event.source)
+                        .multilineTextAlignment(.leading)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.selectedChipText)
+                        .padding(.all, .xSmall)
+                        .background {
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(.accent)
+                                .opacity(0.8)
+                                .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1)
+                        }
+                        .padding(.all, .xSmall)
                 }
                 
                 Text(event.name)
@@ -62,12 +78,6 @@ struct EventsCardView: View {
                 .font(.subheadline.bold())
                 .foregroundStyle(.textSecondary)
         }
-        
-        Text(event.eventType)
-            .multilineTextAlignment(.leading)
-            .font(.subheadline)
-            .foregroundStyle(.textSecondary)
-            .padding(.trailing, .xxSmall)
     }
     
     @ViewBuilder
@@ -79,20 +89,16 @@ struct EventsCardView: View {
                     .fill(.gray)
                     .frame(maxWidth: .infinity)
                     .frame(height: 155)
-                    .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1)
             case .success(let image):
                 image
                     .resizable()
                     .frame(height: 155)
-                    .roundedShadow()
-                    .clipped()
             case .failure(let error):
                 Image(.noImageAtTime)
                     .resizable()
                     .foregroundStyle(.textSecondary)
                     .frame(maxWidth: .infinity)
                     .frame(height: 155)
-                    .roundedShadow()
                     .onAppear {
                         print(error)
                         print(event.imageUrl ?? "")
@@ -104,18 +110,22 @@ struct EventsCardView: View {
                     .frame(height: 155)
             }
         }
+        .frame(width: width)
+        .scaledToFill()
+        .clipped()
+        .roundedShadow()
     }
     
     @ViewBuilder
     var actionIconsView: some View {
         HStack(spacing: .xSmall) {
-                Button {
-                    FavouriteModel.didTapFavorites()
-                } label: {
-                    (FavouriteModel.isFavourited ? Image(.heartFill) : Image(.heart))
-                        .resizable()
-                        .squareFrame(size: 36)
-                }
+            Button {
+                FavouriteModel.didTapFavorites()
+            } label: {
+                (FavouriteModel.isFavourited ? Image(.heartFill) : Image(.heart))
+                    .resizable()
+                    .squareFrame(size: 36)
+            }
             
             if let calendarModel {
                 Button {
@@ -155,7 +165,7 @@ struct EventsCardView: View {
                 .padding(.top, .xxSmall)
                 .padding(.trailing, .xxSmall)
             
-            Text(event.source)
+            Text(event.eventType)
                 .font(.subheadline)
                 .foregroundStyle(.textSecondary)
         }

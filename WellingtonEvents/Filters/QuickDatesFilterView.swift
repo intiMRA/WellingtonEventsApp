@@ -21,23 +21,14 @@ struct QuickDatesFilterView: View {
     
     var body: some View {
         ScrollView {
-            Grid(alignment: .leading, horizontalSpacing: 8, verticalSpacing: 8) {
-                ForEach(QuickDateType.asGrid, id: \.0) { row in
-                    GridRow {
-                        HStack {
-                            ForEach(row.1, id: \.rawValue) { value in
-                                FilterView(
-                                    isSelected: selectedDate == value,
-                                    title: value.name,
-                                    hasIcon: false) {
-                                        selectedDate = value
-                                    }
-                            }
-                            
-                            Spacer()
+            LazyVGrid(columns: QuickDateType.lazyGrid, alignment: .leading, spacing: 8) {
+                ForEach(QuickDateType.allCases, id: \.rawValue) { value in
+                    FilterView(
+                        isSelected: selectedDate == value,
+                        title: value.name,
+                        hasIcon: false) {
+                            selectedDate = value
                         }
-                    }
-                    .frame(maxWidth: .infinity)
                 }
             }
         }

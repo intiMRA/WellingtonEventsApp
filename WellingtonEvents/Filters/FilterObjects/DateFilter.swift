@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 struct DateFilter: FilterObjectProtocol {
     let id: FilterIds = .date
@@ -25,13 +26,13 @@ struct DateFilter: FilterObjectProtocol {
             ) {
                 $0 <= $1
             }
-
+            
             let lessThenCondition = endDate.checkConditionIgnoringTime(
                 other: date
             ) {
                 $0 >= $1
             }
-
+            
             return greaterThenCondition && lessThenCondition
         })
         if !withInRange {
@@ -40,14 +41,14 @@ struct DateFilter: FilterObjectProtocol {
     }
 }
 
-enum QuickDateType: String {
-    case thisMonth
-    case nextMonth
-    case thisWeek
-    case nextWeek
-    case thisWeekend
+enum QuickDateType: String, CaseIterable {
     case today
     case tomorrow
+    case thisWeek
+    case thisWeekend
+    case nextWeek
+    case thisMonth
+    case nextMonth
     
     var name: String {
         switch self {
@@ -68,11 +69,10 @@ enum QuickDateType: String {
         }
     }
     
-    static var asGrid: [(String, [QuickDateType])] = {
+    static var lazyGrid: [GridItem] = {
         [
-            (UUID().uuidString, [.today, .tomorrow, .thisWeekend]),
-            (UUID().uuidString, [.thisWeek, .nextWeek, .thisMonth]),
-            (UUID().uuidString, [.nextMonth])
+            GridItem(.flexible(minimum: 50, maximum: .infinity)),
+            GridItem(.flexible(minimum: 50, maximum: .infinity))
         ]
     }()
 }
@@ -97,13 +97,13 @@ struct QuickDateFilter: FilterObjectProtocol {
             ) {
                 $0 <= $1
             }
-
+            
             let lessThenCondition = endDate.checkConditionIgnoringTime(
                 other: date
             ) {
                 $0 >= $1
             }
-
+            
             return greaterThenCondition && lessThenCondition
         })
         if !withInRange {
@@ -140,7 +140,7 @@ extension Date: @retroactive Identifiable {
     public var id: String {
         self.asString(with: .yyyyMMddHHmmDashed)
     }
-
+    
     func checkConditionIgnoringTime(
         other: Date,
         condition: (Date, Date) -> Bool
@@ -157,11 +157,11 @@ extension Date: @retroactive Identifiable {
             second: 0,
             of: other
         )
-
+        
         guard let selfDate, let otherDate else {
             return false
         }
-
+        
         return condition(selfDate, otherDate)
     }
 }

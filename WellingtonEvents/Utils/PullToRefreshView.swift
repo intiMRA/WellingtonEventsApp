@@ -31,7 +31,7 @@ struct PullToRefreshView: View {
                 Spacer()
                     .task {
                         needRefresh = true
-                         onRefresh()
+                        onRefresh()
                     }
             }
             else {

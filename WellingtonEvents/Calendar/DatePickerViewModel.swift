@@ -43,7 +43,7 @@ class DatePickerViewModel {
         
         return monthStrings.compactMap { .init(id: $0, month: $0, dates: monthsDict[$0]) }
     }
-
+    
     func addToCalendar() {
         guard let repository else {
             dismiss(.error(message: "Failed to add event to calander"))

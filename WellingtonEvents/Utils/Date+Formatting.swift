@@ -103,14 +103,14 @@ extension Date {
         let now = Date.now
         let today = calendar.component(.weekday, from: now)
         var startOfWeekend: Date?
-
+        
         if today <= 6 {
             startOfWeekend = calendar.date(byAdding: DateComponents(day: 7 - today), to: now)
         }
         else {
             startOfWeekend = now
         }
-
+        
         guard
             let startOfWeekend,
             let endOfWeekend = calendar.date(byAdding: DateComponents(day: 1), to: startOfWeekend)
