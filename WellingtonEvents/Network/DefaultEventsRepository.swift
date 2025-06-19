@@ -19,7 +19,7 @@ class DefaultEventsRepository: EventsRepository {
     enum DefaultEventsRepositoryError: Error {
         case failedToFetchResponse
     }
-
+    
     static let userDefaults = UserDefaults.standard
     static let calendar = Calendar.current
     

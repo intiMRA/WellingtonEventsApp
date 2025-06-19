@@ -22,12 +22,12 @@ class FilterOptionsViewModel {
         selectedFilters: [String],
         finishedFiltering: @escaping ([String], FilterIds) -> Void,
         dismiss: @escaping () -> Void) {
-        self.selectedFilters = selectedFilters
-        self.finishedFiltering = finishedFiltering
-        self.possibleFilters = possibleFilters
-        self.dismiss = dismiss
+            self.selectedFilters = selectedFilters
+            self.finishedFiltering = finishedFiltering
+            self.possibleFilters = possibleFilters
+            self.dismiss = dismiss
             self.filterTye = filterTye
-    }
+        }
     
     func didFinishedFiltering() {
         if !selectedFilters.isEmpty {

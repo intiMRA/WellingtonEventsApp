@@ -26,13 +26,13 @@ struct DateFilter: FilterObjectProtocol {
             ) {
                 $0 <= $1
             }
-
+            
             let lessThenCondition = endDate.checkConditionIgnoringTime(
                 other: date
             ) {
                 $0 >= $1
             }
-
+            
             return greaterThenCondition && lessThenCondition
         })
         if !withInRange {
@@ -49,7 +49,7 @@ enum QuickDateType: String, CaseIterable {
     case nextWeek
     case thisMonth
     case nextMonth
-
+    
     var name: String {
         switch self {
         case .thisMonth:
@@ -97,13 +97,13 @@ struct QuickDateFilter: FilterObjectProtocol {
             ) {
                 $0 <= $1
             }
-
+            
             let lessThenCondition = endDate.checkConditionIgnoringTime(
                 other: date
             ) {
                 $0 >= $1
             }
-
+            
             return greaterThenCondition && lessThenCondition
         })
         if !withInRange {
@@ -140,7 +140,7 @@ extension Date: @retroactive Identifiable {
     public var id: String {
         self.asString(with: .yyyyMMddHHmmDashed)
     }
-
+    
     func checkConditionIgnoringTime(
         other: Date,
         condition: (Date, Date) -> Bool
@@ -157,11 +157,11 @@ extension Date: @retroactive Identifiable {
             second: 0,
             of: other
         )
-
+        
         guard let selfDate, let otherDate else {
             return false
         }
-
+        
         return condition(selfDate, otherDate)
     }
 }

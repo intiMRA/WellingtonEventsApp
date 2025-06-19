@@ -245,11 +245,11 @@ struct EventsView: View {
                     }
                 }
                 VStack { }
-                .background {
-                    Color.clear
-                }
-                .frame(height: 130)
-                .id(scrollViewId)
+                    .background {
+                        Color.clear
+                    }
+                    .frame(height: 130)
+                    .id(scrollViewId)
                 
                 VStack(alignment: .leading, spacing: .medium) {
                     switch horizontalSizeClass {
@@ -271,86 +271,61 @@ struct EventsView: View {
     }
     
     @ViewBuilder
-    var lazyStackView: some View {
-        LazyVStack(spacing: .medium) {
-            if viewModel.events.isEmpty {
+    var cardItemsView: some View {
+        if viewModel.events.isEmpty {
+            HStack {
                 Text("No events found")
                     .font(.title3)
                     .foregroundStyle(.text)
+                Spacer()
             }
-            
-            ForEach(viewModel.events) { event in
-                let isFavourited = viewModel.isEventFavourited(id: event.id)
-                let isInCalendar = viewModel.isEventInCalendar(id: event.id)
-                EventsCardView(
-                    event: event,
-                    FavouriteModel: .init(
-                        isFavourited: isFavourited,
-                        didTapFavorites: {
-                            if isFavourited {
-                                viewModel.deleteFromFavorites(event: event)
-                            }
-                            else {
-                                viewModel.saveToFavorites(event: event)
-                            }
-                        }),
-                    calendarModel: .init(
-                        isInCalendar: isInCalendar,
-                        addToCalendar: {
-                            if isInCalendar {
-                                viewModel.deleteFromCalendar(event: event)
-                            }
-                            else {
-                                viewModel.saveToCalendar(event: event)
-                            }
-                        }),
-                    width: width
-                ) {
-                    viewModel.didTapOnEvent(with: $0)
-                }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, .medium)
+        }
+        
+        ForEach(viewModel.events) { event in
+            let isFavourited = viewModel.isEventFavourited(id: event.id)
+            let isInCalendar = viewModel.isEventInCalendar(id: event.id)
+            EventsCardView(
+                event: event,
+                FavouriteModel: .init(
+                    isFavourited: isFavourited,
+                    didTapFavorites: {
+                        if isFavourited {
+                            viewModel.deleteFromFavorites(event: event)
+                        }
+                        else {
+                            viewModel.saveToFavorites(event: event)
+                        }
+                    }),
+                calendarModel: .init(
+                    isInCalendar: isInCalendar,
+                    addToCalendar: {
+                        if isInCalendar {
+                            viewModel.deleteFromCalendar(event: event)
+                        }
+                        else {
+                            viewModel.saveToCalendar(event: event)
+                        }
+                    }),
+                width: width
+            ) {
+                viewModel.didTapOnEvent(with: $0)
             }
+        }
+    }
+    
+    @ViewBuilder
+    var lazyStackView: some View {
+        LazyVStack(spacing: .medium) {
+           cardItemsView
         }
     }
     
     @ViewBuilder
     var lazyGridView: some View {
         LazyVGrid(columns: [.init(), .init()], spacing: 16) {
-            if viewModel.events.isEmpty {
-                Text("No events found")
-                    .font(.title3)
-                    .foregroundStyle(.text)
-            }
-            
-            ForEach(viewModel.events) { event in
-                let isFavourited = viewModel.isEventFavourited(id: event.id)
-                let isInCalendar = viewModel.isEventInCalendar(id: event.id)
-                EventsCardView(
-                    event: event,
-                    FavouriteModel: .init(
-                        isFavourited: isFavourited,
-                        didTapFavorites: {
-                            if isFavourited {
-                                viewModel.deleteFromFavorites(event: event)
-                            }
-                            else {
-                                viewModel.saveToFavorites(event: event)
-                            }
-                        }),
-                    calendarModel: .init(
-                        isInCalendar: isInCalendar,
-                        addToCalendar: {
-                            if isInCalendar {
-                                viewModel.deleteFromCalendar(event: event)
-                            }
-                            else {
-                                viewModel.saveToCalendar(event: event)
-                            }
-                        }),
-                    width: width
-                ) {
-                    viewModel.didTapOnEvent(with: $0)
-                }
-            }
+           cardItemsView
         }
     }
     
