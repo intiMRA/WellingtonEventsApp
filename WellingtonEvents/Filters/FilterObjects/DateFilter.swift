@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 struct DateFilter: FilterObjectProtocol {
     let id: FilterIds = .date
@@ -40,15 +41,15 @@ struct DateFilter: FilterObjectProtocol {
     }
 }
 
-enum QuickDateType: String {
-    case thisMonth
-    case nextMonth
-    case thisWeek
-    case nextWeek
-    case thisWeekend
+enum QuickDateType: String, CaseIterable {
     case today
     case tomorrow
-    
+    case thisWeek
+    case thisWeekend
+    case nextWeek
+    case thisMonth
+    case nextMonth
+
     var name: String {
         switch self {
         case .thisMonth:
@@ -68,11 +69,10 @@ enum QuickDateType: String {
         }
     }
     
-    static var asGrid: [(String, [QuickDateType])] = {
+    static var lazyGrid: [GridItem] = {
         [
-            (UUID().uuidString, [.today, .tomorrow, .thisWeekend]),
-            (UUID().uuidString, [.thisWeek, .nextWeek, .thisMonth]),
-            (UUID().uuidString, [.nextMonth])
+            GridItem(.flexible(minimum: 50, maximum: .infinity)),
+            GridItem(.flexible(minimum: 50, maximum: .infinity))
         ]
     }()
 }
