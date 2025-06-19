@@ -17,6 +17,7 @@ struct EventsView: View {
     private let spaceName = "pullToRefresh"
     private let scrollViewId = "scrollView"
     @State private var safeAreaInsets = EdgeInsets()
+    @State private var width: CGFloat = .zero
     
     var body: some View {
         NavigationStack {
@@ -142,9 +143,18 @@ struct EventsView: View {
         .background {
             GeometryReader { geometry in
                 Color.clear
+                    .padding(.horizontal, .medium)
                     .onChange(of: geometry.safeAreaInsets, { _, newValue in
                         safeAreaInsets = newValue
                     })
+                    .onChange(of: geometry.size) { _, newValue in
+                        switch horizontalSizeClass {
+                        case .regular:
+                            width =  (newValue.width / 2) - 32
+                        default:
+                            width =  newValue.width - 32
+                        }
+                    }
             }
         }
         .overlay(alignment: .top) {
@@ -293,7 +303,8 @@ struct EventsView: View {
                             else {
                                 viewModel.saveToCalendar(event: event)
                             }
-                        })
+                        }),
+                    width: width
                 ) {
                     viewModel.didTapOnEvent(with: $0)
                 }
@@ -334,7 +345,8 @@ struct EventsView: View {
                             else {
                                 viewModel.saveToCalendar(event: event)
                             }
-                        })
+                        }),
+                    width: width
                 ) {
                     viewModel.didTapOnEvent(with: $0)
                 }
