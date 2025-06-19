@@ -19,24 +19,25 @@ struct FilterOptionsView: View {
             VStack(alignment: .leading) {
                 ForEach(viewModel.possibleFilters, id: \.self) { filter in
                     let isSelected = viewModel.filterIsSelected(filter)
-                    HStack {
-                        Image(systemName: "checkmark.square")
-                            .renderingMode(.template)
-                        
-                        Text(filter)
-                            .lineLimit(1)
-                            .font(.title3)
-                        
-                        Spacer()
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                    .onTapGesture {
+                    Button {
                         withAnimation {
                             viewModel.didTapOnFilter(filter)
                         }
+                    } label: {
+                        HStack {
+                            Image(systemName: "checkmark.square")
+                                .renderingMode(.template)
+                            
+                            Text(filter)
+                                .lineLimit(1)
+                                .font(.title3)
+                            
+                            Spacer()
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .foregroundStyle(isSelected ?  Color.accentColor : .unselectedTick)
+                        .bold(isSelected)
                     }
-                    .foregroundStyle(isSelected ?  Color.accentColor : .unselectedTick)
-                    .bold(isSelected)
                     Divider()
                 }
             }
