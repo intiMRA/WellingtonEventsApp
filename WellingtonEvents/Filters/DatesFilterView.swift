@@ -21,19 +21,9 @@ struct DatesFilterView: View {
     }
     
     var body: some View {
-        Group {
-            if UIDevice.current.userInterfaceIdiom == .phone {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: .xxSmall) {
-                        datePickers
-                    }
-                }
-            }
-            else {
-                HStack(alignment: .center, spacing: .xxSmall) {
-                    datePickers
-                }
-            }
+        VStack(alignment: .leading, spacing: .medium) {
+            datePickers
+            Spacer()
         }
         .padding(.horizontal, .medium)
         .toolbar {
@@ -60,20 +50,20 @@ struct DatesFilterView: View {
     
     @ViewBuilder
     var datePickers: some View {
-        VStack(alignment: .leading, spacing: .xxxSmall) {
+        HStack(spacing: .xxxSmall) {
             Text("From")
                 .bold()
             
-            DatePicker("Start date", selection: $startDate, displayedComponents: .date)
-                .datePickerStyle(.graphical)
+            DatePicker("", selection: $startDate, displayedComponents: .date)
+                .datePickerStyle(.compact)
         }
         
-        VStack(alignment: .leading, spacing: .xxxSmall) {
+        HStack(spacing: .xxxSmall) {
             Text("To")
                 .bold()
             
             DatePicker("", selection: $endDate, in: startDate..., displayedComponents: .date)
-                .datePickerStyle(.graphical)
+                .datePickerStyle(.compact)
         }
     }
 }
