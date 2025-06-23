@@ -21,6 +21,11 @@ extension EventsViewModel {
         applyFilters()
     }
     
+    func clearFilters(for sources: [FilterIds]) {
+        selectedFilters.removeAll(where: { filter in sources.contains(where: { $0 == filter.id }) })
+        applyFilters()
+    }
+    
     func didSelectFilterValues(values: [String], type: FilterIds) {
         switch type {
         case .source:
@@ -63,32 +68,24 @@ extension EventsViewModel {
         return selectedFilters.map { $0.id }
     }
     
-    func didSelectDates(_ startDate: Date, _ endDate: Date) {
-        selectedFilters.removeAll(where: { $0.id == .date })
-        selectedFilters.append(DateFilter(startDate: startDate, endDate: endDate))
-        resetRoute()
-        applyFilters()
-    }
-    
-    func didSelectQuickDates(_ selectedDate: QuickDateType?) {
-        selectedFilters.removeAll(where: { $0.id == .quickDate })
-        if let selectedDate {
-            selectedFilters.append(QuickDateFilter(quickDateType: selectedDate))
+    func didSelectDates(_ startDate: Date, _ endDate: Date, _ quickDateType: QuickDateType?) {
+        clearFilters(for: [.date, .quickDate])
+        if let quickDateType {
+            selectedFilters.append(QuickDateFilter(quickDateType: quickDateType))
+        }
+        else {
+            selectedFilters.append(DateFilter(startDate: startDate, endDate: endDate))
         }
         resetRoute()
         applyFilters()
     }
     
     func showDateSelector() {
-        let filter = selectedFilters.first(where: { $0.id == .date }) as? DateFilter
-        let startDate = filter?.startDate ?? .now
-        let endDate = filter?.endDate ?? .now
-        route = .dateSelector(startDate: startDate, endDate: endDate, id: startDate.id + endDate.id)
-    }
-    
-    func showQuickDateSelector() {
-        let filter = selectedFilters.first(where: { $0.id == .quickDate }) as? QuickDateFilter
-        route = .quickDateSelector(selectedQuickDate: filter?.quickDateType, id: FilterIds.quickDate.rawValue)
+        let dateFilter = selectedFilters.first(where: { $0.id == .date }) as? DateFilter
+        let startDate = dateFilter?.startDate ?? .now
+        let endDate = dateFilter?.endDate ?? .now
+        let quickDateFilter = selectedFilters.first(where: { $0.id == .quickDate }) as? QuickDateFilter
+        route = .dateSelector(startDate: startDate, endDate: endDate, selectedQuickDate: quickDateFilter?.quickDateType, id: startDate.id + endDate.id)
     }
     
     func didTapFavouritesFilter() {
@@ -147,7 +144,7 @@ extension EventsViewModel {
         case .date:
             return isSelected ? getSelectedDatesFilterString() : String(localized: "Dates")
         case .quickDate:
-            return isSelected ? getSelectedQuickDatesFilterString() : String(localized: "Quick Dates")
+            return isSelected ? getSelectedQuickDatesFilterString() : String(localized: "Dates")
         case .source:
             return isSelected ? getSelectedSourcesFilterString() : String(localized: "Sources")
         case .eventType:
@@ -177,7 +174,7 @@ extension EventsViewModel {
     
     private func getSelectedQuickDatesFilterString() -> String {
         guard let datesFilter = (selectedFilters.first(where: { $0.id == .quickDate }) as? QuickDateFilter) else {
-            return String(localized: "Quick Dates")
+            return String(localized: "Dates")
         }
         
         return "\(String(localized: "Quick Dates:")) \(datesFilter.quickDateType.name)"

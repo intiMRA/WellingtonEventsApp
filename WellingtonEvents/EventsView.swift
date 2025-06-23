@@ -94,16 +94,9 @@ struct EventsView: View {
             NavigationView {
                 DatesFilterView(startDate: dates.startDate,
                                 endDate: dates.endDate,
+                                selectedQuickDate: dates.selectedQuickDate,
                                 dismiss: viewModel.resetRoute,
                                 didSelectDates: viewModel.didSelectDates)
-            }
-            .presentationDetents([ .medium, .large])
-        }
-        .sheet(item: $viewModel.route.quickDateSelector, id: \.id) { value in
-            NavigationView {
-                QuickDatesFilterView(selectedDate: value.selectedQuickDate,
-                                     didSelectDate: viewModel.didSelectQuickDates,
-                                     dismiss: viewModel.resetRoute)
             }
             .presentationDetents([ .medium, .large])
         }
@@ -173,23 +166,15 @@ struct EventsView: View {
                 let selectedSources = viewModel.selectedFilterSource()
                 
                 let quickDatesSelected = selectedSources.contains(where: { $0 == .quickDate })
-                FilterView(
-                    isSelected: quickDatesSelected,
-                    title: viewModel.filterTitle(for: .quickDate, isSelected: quickDatesSelected),
-                    hasIcon: true) {
-                        viewModel.showQuickDateSelector()
-                    } clearFilters: {
-                        viewModel.clearFilters(for: .quickDate)
-                    }
                 
                 let datesSelected = selectedSources.contains(where: { $0 == .date })
                 FilterView(
-                    isSelected: datesSelected,
-                    title: viewModel.filterTitle(for: .date, isSelected: datesSelected),
+                    isSelected: datesSelected || quickDatesSelected,
+                    title: quickDatesSelected ? viewModel.filterTitle(for: .quickDate, isSelected: true) : viewModel.filterTitle(for: .date, isSelected: datesSelected),
                     hasIcon: true) {
                         viewModel.showDateSelector()
                     } clearFilters: {
-                        viewModel.clearFilters(for: .date)
+                        viewModel.clearFilters(for: [.date, .quickDate])
                     }
                 
                 let sourceSelected = selectedSources.contains(where: { $0 == .source })

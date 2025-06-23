@@ -71,10 +71,11 @@ enum QuickDateType: String, CaseIterable {
     
     static var lazyGrid: [GridItem] = {
         [
-            GridItem(.flexible(minimum: 50, maximum: .infinity)),
-            GridItem(.flexible(minimum: 50, maximum: .infinity))
+            GridItem(.flexible(minimum: 50, maximum: .infinity), alignment: .leading),
+            GridItem(.flexible(minimum: 50, maximum: .infinity), alignment: .trailing)
         ]
     }()
+    
 }
 
 struct QuickDateFilter: FilterObjectProtocol {
