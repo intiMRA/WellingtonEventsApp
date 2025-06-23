@@ -21,8 +21,7 @@ enum Destination {
     case calendar(event: EventInfo)
     case filters(for: FilterValues)
     case alert(ToastStyle)
-    case dateSelector(startDate: Date, endDate: Date, id: String)
-    case quickDateSelector(selectedQuickDate: QuickDateType?, id: String)
+    case dateSelector(startDate: Date, endDate: Date, selectedQuickDate: QuickDateType?, id: String)
 }
 
 struct DateModel: Equatable, Identifiable {

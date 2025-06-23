@@ -10,6 +10,7 @@ import Foundation
 enum Formats: String {
     
     case ddMMYyyy = "dd-MM-yyyy"
+    case ddMMMYyyySpaced = "dd MMM yyyy"
     case mmm = "MMM"
     case dd
     case yyyyMMddHHmmDashed = "yyyy-MM-dd-HH:mm"

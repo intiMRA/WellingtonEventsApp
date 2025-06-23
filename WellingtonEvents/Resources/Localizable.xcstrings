@@ -47,7 +47,7 @@
     "Favorited" : {
 
     },
-    "From" : {
+    "From:" : {
 
     },
     "Happening once" : {
@@ -66,9 +66,6 @@
 
     },
     "No events found" : {
-
-    },
-    "Quick Dates" : {
 
     },
     "Quick Dates:" : {
@@ -95,7 +92,7 @@
     "This weekend" : {
 
     },
-    "To" : {
+    "To:" : {
 
     },
     "Today" : {
