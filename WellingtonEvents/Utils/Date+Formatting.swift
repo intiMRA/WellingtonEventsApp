@@ -121,10 +121,21 @@ extension Date {
         
         return (startOfWeekend, endOfWeekend)
     }
+    
+    func addingDay() -> Date? {
+        let currentDate = Date.calendar.date(from: Date.calendar.dateComponents([.day, .month, .year, .hour], from: self))
+        return Date.calendar.date(byAdding: DateComponents(day: 1), to: currentDate!)
+    }
 }
 
 extension String {
     func asDate(with format: Formats) -> Date? {
         Formats.formatter(for: format).date(from: self)
+    }
+}
+
+extension Collection where Element == Date {
+    var firstValidDate: Date? {
+        self.first(where: { Date.now <= $0 })
     }
 }

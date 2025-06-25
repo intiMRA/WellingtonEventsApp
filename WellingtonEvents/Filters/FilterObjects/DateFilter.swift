@@ -69,6 +69,7 @@ enum QuickDateType: String, CaseIterable {
         }
     }
     
+    @MainActor
     static var lazyGrid: [GridItem] = {
         [
             GridItem(.flexible(minimum: 50, maximum: .infinity), alignment: .leading),
