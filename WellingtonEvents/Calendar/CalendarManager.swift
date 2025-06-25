@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import EventKit
+@preconcurrency import EventKit
 
 class CalendarManager {
     
@@ -31,23 +31,26 @@ class CalendarManager {
         event.calendar = eventStore.defaultCalendarForNewEvents
         
         try eventStore.save(event, span: .thisEvent, commit: true)
-        repository.didSaveToCalendar(event: eventInfo)
+        await repository.didSaveToCalendar(event: eventInfo)
     }
     
     static func removeFromCalendar(event: EventInfo, repository: EventsRepository) async throws {
         guard (try await eventStore.requestFullAccessToEvents()) == true,
-              let startDate = event.dates.first,
-              let endDate = event.dates.last,
+              let endDate = event.dates.last?.addingDay(),
               let calendar = eventStore.defaultCalendarForNewEvents
         else {
             return
         }
+        let startDate = Date.now
         
         let predicate = eventStore.predicateForEvents(withStart: startDate, end: endDate, calendars: [calendar])
         let existingEvents = eventStore.events(matching: predicate)
-        if let eventToDelete = existingEvents.first(where: { $0.title == event.name }) {
-            try? eventStore.remove(eventToDelete, span: .thisEvent)
+        let eventsToDelete = existingEvents.filter { $0.title == event.name }
+        if !eventsToDelete.isEmpty {
+            for event in eventsToDelete {
+                try eventStore.remove(event, span: .futureEvents)
+            }
         }
-        repository.didDeleteFromCalendar(event: event)
+        await repository.didDeleteFromCalendar(event: event)
     }
 }

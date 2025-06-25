@@ -48,7 +48,6 @@ class EventsViewModel: ObservableObject {
     
     var allEvents: [EventInfo]
     @Published var events: [EventInfo]
-    @Published var selectedDate: Date
     @Published var isLoading: Bool = true
     
     @Published var searchText = ""
@@ -62,19 +61,19 @@ class EventsViewModel: ObservableObject {
     
     func setup() async {
         await fetchEvents()
-        self.favourites = repository.retrieveFavorites()
+        self.favourites = await repository.retrieveFavorites()
         refreshCalendarEvents()
         guard !allEvents.isEmpty else {
             return
         }
-        repository.deleteFromFavorites(eventIds: favourites.compactMap { event in
+        await repository.deleteFromFavorites(eventIds: favourites.compactMap { event in
             if !allEvents.contains(where: { $0.id == event.id }) {
                 return event.id
             }
             return nil
         })
         
-        repository.didDeleteFromCalendar(eventIds: eventsInCalendar.compactMap { event in
+        await repository.didDeleteFromCalendar(eventIds: eventsInCalendar.compactMap { event in
             if !allEvents.contains(where: { $0.id == event.id }) {
                 return event.id
             }
@@ -86,13 +85,11 @@ class EventsViewModel: ObservableObject {
         favourites: [EventInfo] = [],
         eventsInCalendar: [EventInfo] = [],
         allEvents: [EventInfo] = [],
-        events: [EventInfo] = [],
-        selectedDate: Date = .now) {
+        events: [EventInfo] = []) {
             self.favourites = favourites
             self.eventsInCalendar = eventsInCalendar
             self.allEvents = allEvents
             self.events = events
-            self.selectedDate = selectedDate
             $searchText
                 .dropFirst()
                 .debounce(for: .seconds(0.1), scheduler: DispatchQueue.main)
@@ -115,7 +112,13 @@ class EventsViewModel: ObservableObject {
         }
         do {
             let response = try await repository.fetchEvents()
-            events = response?.events.filter { !$0.dates.isEmpty } ?? []
+            events = (response?.events.filter { !$0.dates.isEmpty } ?? [])
+                .sorted(by: {
+                    guard let date1 = $0.dates.first, let date2 = $1.dates.first else {
+                        return false
+                    }
+                    return date1 < date2
+                })
             
             filters = response?.filters
             
@@ -127,8 +130,8 @@ class EventsViewModel: ObservableObject {
     }
     
     func appBecameActive() {
-        if !repository.canFetchFromCache() {
-            Task {
+        Task {
+            if await !repository.canFetchFromCache() {
                 await setup()
             }
         }
@@ -143,13 +146,17 @@ class EventsViewModel: ObservableObject {
     }
     
     func saveToFavorites(event: EventInfo) {
-        repository.saveToFavorites(event: event)
-        favourites.append(event)
+        Task {
+            await repository.saveToFavorites(event: event)
+            favourites.append(event)
+        }
     }
     
     func deleteFromFavorites(event: EventInfo) {
-        repository.deleteFromFavorites(event: event)
-        favourites.removeAll(where: { event.id == $0.id })
+        Task {
+            await repository.deleteFromFavorites(event: event)
+            favourites.removeAll(where: { event.id == $0.id })
+        }
     }
     
     func saveToCalendar(event: EventInfo) {
@@ -157,7 +164,7 @@ class EventsViewModel: ObservableObject {
             route = .calendar(event: event)
         }
         else {
-            addToCalendar(event: event, date: event.dates.first)
+            addToCalendar(event: event, date: event.dates.firstValidDate)
             refreshCalendarEvents()
         }
     }
@@ -165,7 +172,7 @@ class EventsViewModel: ObservableObject {
     private func addToCalendar(event: EventInfo, date: Date?) {
         Task {
             do {
-                try await CalendarManager.saveEventToCalendar(eventInfo: event, date: selectedDate, repository: repository)
+                try await CalendarManager.saveEventToCalendar(eventInfo: event, date: date, repository: repository)
                 route = .alert(.success(message: "Event successfully added to your calendar."))
                 refreshCalendarEvents()
             }
@@ -177,7 +184,12 @@ class EventsViewModel: ObservableObject {
     
     func deleteFromCalendar(event: EventInfo) {
         Task {
-            try? await CalendarManager.removeFromCalendar(event: event, repository: repository)
+            do {
+                try await CalendarManager.removeFromCalendar(event: event, repository: repository)
+            }
+            catch {
+                print(error.localizedDescription)
+            }
             refreshCalendarEvents()
         }
     }
@@ -210,6 +222,8 @@ class EventsViewModel: ObservableObject {
     }
     
     func refreshCalendarEvents() {
-        eventsInCalendar = repository.retrieveSavedToCalendar()
+        Task {
+            eventsInCalendar = await repository.retrieveSavedToCalendar()
+        }
     }
 }

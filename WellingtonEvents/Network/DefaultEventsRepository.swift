@@ -14,7 +14,7 @@ private struct urlBuilder: NetworkLayerURLBuilder {
     }
 }
 
-class DefaultEventsRepository: EventsRepository {
+actor DefaultEventsRepository: EventsRepository {
     
     enum DefaultEventsRepositoryError: Error {
         case failedToFetchResponse
