@@ -25,8 +25,9 @@ enum Formats: String {
 }
 
 extension Date {
-    func asString(with format: Formats) -> String {
-        Formats.formatter(for: format).string(from: self)
+    var displayAsAllDay: Bool {
+        let components = Self.calendar.dateComponents([.hour, .minute], from: self)
+        return components.hour == 1 && components.minute == 1
     }
     
     init?(from string: String, with format: Formats) {
@@ -34,6 +35,10 @@ extension Date {
             return nil
         }
         self = date
+    }
+    
+    func asString(with format: Formats) -> String {
+        Formats.formatter(for: format).string(from: self)
     }
     
     static func tomorrow() -> Date {
