@@ -33,6 +33,7 @@ struct DatesFilterView: View {
                 datePickers
                 Divider()
                 quickFiltersView
+                confirmationButtonView
             }
         }
         .padding(.horizontal, .medium)
@@ -47,15 +48,36 @@ struct DatesFilterView: View {
             
             ToolbarItem(placement: .confirmationAction) {
                 Button {
-                    if endDate < startDate {
-                        endDate = startDate
-                    }
-                    didSelectDates(startDate, endDate, selectedQuickDate)
+                   didTapConfirmationButton()
                 } label : {
                     Text("Apply Filters")
                 }
             }
         }
+    }
+    
+    @ViewBuilder
+    var confirmationButtonView: some View {
+        Button{
+            didTapConfirmationButton()
+        } label: {
+            Text("Apply Filters")
+                .frame(maxWidth: .infinity, idealHeight: 44)
+                .background {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(.accent)
+                }
+                .foregroundStyle(.selectedChipText)
+                .bold()
+        }
+        
+    }
+    
+    func didTapConfirmationButton() {
+        if endDate < startDate {
+            endDate = startDate
+        }
+        didSelectDates(startDate, endDate, selectedQuickDate)
     }
     
     @ViewBuilder

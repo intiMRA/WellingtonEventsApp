@@ -29,7 +29,7 @@ class CalendarManager {
         event.endDate = date
         event.notes = eventInfo.venue
         event.calendar = eventStore.defaultCalendarForNewEvents
-        
+        event.isAllDay = date.displayAsAllDay
         try eventStore.save(event, span: .thisEvent, commit: true)
         await repository.didSaveToCalendar(event: eventInfo)
     }
