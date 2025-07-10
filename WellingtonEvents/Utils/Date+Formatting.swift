@@ -85,7 +85,7 @@ extension Date {
         
         guard
             let startOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now)),
-            let endOfWeek = calendar.date(byAdding: DateComponents(day: 6), to: startOfWeek)
+            let endOfWeek = calendar.date(byAdding: DateComponents(day: 7), to: startOfWeek)
         else {
             fatalError("failed to generate week range")
         }
@@ -97,7 +97,7 @@ extension Date {
         
         guard
             let startOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now)),
-            let startOfNextWeek = calendar.date(byAdding: .day, value: 7, to: startOfWeek),
+            let startOfNextWeek = calendar.date(byAdding: .day, value: 8, to: startOfWeek),
             let endOfNextWeek = calendar.date(byAdding: DateComponents(day: 6), to: startOfNextWeek)
         else {
             fatalError("failed to generate week range")
