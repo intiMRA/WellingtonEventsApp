@@ -22,6 +22,7 @@ enum Destination {
     case filters(for: FilterValues)
     case alert(ToastStyle)
     case dateSelector(startDate: Date, endDate: Date, selectedQuickDate: QuickDateType?, id: String)
+    case webView(url: String)
 }
 
 struct DateModel: Equatable, Identifiable {
@@ -199,12 +200,7 @@ class EventsViewModel: ObservableObject {
             return
         }
         
-        if let url = URL(string: event.url), UIApplication.shared.canOpenURL(url) {
-            print(event.url)
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
-        } else {
-            print("Cannot open URL")
-        }
+        route = .webView(url: event.url)
     }
     
     func resetRoute() {

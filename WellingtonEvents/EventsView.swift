@@ -100,6 +100,13 @@ struct EventsView: View {
             }
             .presentationDetents([ .medium, .large])
         }
+        .sheet(item: $viewModel.route.webView, id: \.self) { url in
+            if let url = URL(string: url) {
+                NavigationView {
+                    WebView(url: url)
+                }
+            }
+        }
         .onChange(of: scenePhase) { _, newValue in
             switch newValue {
             case .active:
