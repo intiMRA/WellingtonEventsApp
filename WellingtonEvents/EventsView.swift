@@ -20,7 +20,7 @@ struct EventsView: View {
     @State private var width: CGFloat = .zero
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $viewModel.navigationPath) {
             contentView
                 .simultaneousGesture(TapGesture().onEnded({ _ in
                     hideKeyboard()
@@ -163,6 +163,12 @@ struct EventsView: View {
                 .frame(height: safeAreaInsets.top)
                 .frame(maxWidth: .infinity)
                 .ignoresSafeArea()
+        }
+        .navigationDestination(for: StackDestination.self) { path in
+            switch path {
+            case .eventDetails(let eventInfo):
+                EventDetailsView(viewModel: .init(event: eventInfo))
+            }
         }
     }
     

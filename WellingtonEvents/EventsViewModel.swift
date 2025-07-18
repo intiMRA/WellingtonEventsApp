@@ -25,6 +25,10 @@ enum Destination {
     case webView(url: String)
 }
 
+enum StackDestination: Hashable {
+    case eventDetails(EventInfo)
+}
+
 struct DateModel: Equatable, Identifiable {
     let id: String
     let month: String
@@ -59,6 +63,8 @@ class EventsViewModel: ObservableObject {
     
     @Published var route: Destination?
     var cancellables = Set<AnyCancellable>()
+    
+    @Published var navigationPath: [StackDestination] = []
     
     func setup() async {
         await fetchEvents()
@@ -200,7 +206,7 @@ class EventsViewModel: ObservableObject {
             return
         }
         
-        route = .webView(url: event.url)
+        navigationPath.append(.eventDetails(event))
     }
     
     func resetRoute() {
