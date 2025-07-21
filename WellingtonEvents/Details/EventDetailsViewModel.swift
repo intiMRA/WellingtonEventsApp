@@ -17,7 +17,7 @@ class EventDetailsViewModel: ObservableObject {
         case webView(url: URL)
     }
     
-    static let snapshorSize = CGSize(width: 400, height: 200)
+    static let snapshorSize = CGSize(width: UITraitCollection.current.horizontalSizeClass == .regular ? 800 : 400, height: UITraitCollection.current.horizontalSizeClass == .regular ? 400 : 200)
     static let ratio = snapshorSize.width / snapshorSize.height
     let event: EventInfo
     var image: UIImage?
@@ -73,9 +73,9 @@ class EventDetailsViewModel: ObservableObject {
                 let pointOnImage = snapshot.point(for: location)
                 let pinRect = CGRect(
                     x: pointOnImage.x - 20, // Center the pin horizontally
-                    y: pointOnImage.y - 50,    // Position pin at the bottom of its image
+                    y: pointOnImage.y - 45,    // Position pin at the bottom of its image
                     width: 40,
-                    height: 50
+                    height: 45
                 )
             pinImage.draw(in: pinRect)
                 

@@ -78,6 +78,14 @@ struct EventDetailsView: View {
                                 Text("Close")
                             }
                         }
+                        ToolbarItem(placement: .automatic) {
+                            Button {
+                                UIApplication.shared.open(url)
+                            }
+                            label: {
+                                Text("Open In Browser")
+                            }
+                        }
                     }
             }
         }
@@ -109,7 +117,6 @@ struct EventDetailsView: View {
                     .fill(.gray)
             }
         }
-        .frame(height: 155)
         .frame(maxWidth: .infinity)
         .scaledToFill()
         .roundedShadow()
@@ -129,22 +136,7 @@ struct EventDetailsView: View {
                         .aspectRatio(EventDetailsViewModel.ratio, contentMode: .fit)
                         .roundedCorner(8, corners: [.topLeft, .topRight])
                     
-                    HStack(alignment: .top) {
-                        Text("Address:")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.textSecondary)
-                        Text(viewModel.event.venue)
-                            .font(.subheadline)
-                            .foregroundStyle(.textSecondary)
-                            .multilineTextAlignment(.leading)
-                    }
-                    .padding(.all, .small)
-                    .frame(maxWidth: .infinity)
-                    .background {
-                        Rectangle()
-                            .fill(.cardBackground)
-                            .roundedCorner(8, corners: [.bottomLeft, .bottomRight])
-                    }
+                    addressView
                 }
             }
         }
@@ -162,25 +154,30 @@ struct EventDetailsView: View {
                                     .foregroundStyle(.text)
                             }
                     }
-                HStack(alignment: .top) {
-                    Text("Address:")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.textSecondary)
-                    Text(viewModel.event.venue)
-                        .font(.subheadline)
-                        .foregroundStyle(.textSecondary)
-                        .multilineTextAlignment(.leading)
-                }
-                .padding(.all, .small)
-                .frame(maxWidth: .infinity)
-                .background {
-                    Rectangle()
-                        .fill(.cardBackground)
-                        .roundedCorner(8, corners: [.bottomLeft, .bottomRight])
-                }
-                
+                addressView
             }
             .frame(maxWidth: .infinity)
+        }
+    }
+    
+    @ViewBuilder
+    var addressView: some View {
+        HStack(alignment: .top) {
+            Text("Address:")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.textSecondary)
+            Text(viewModel.event.venue)
+                .font(.subheadline)
+                .foregroundStyle(.textSecondary)
+                .multilineTextAlignment(.leading)
+            Spacer()
+        }
+        .padding(.all, .small)
+        .frame(maxWidth: .infinity)
+        .background {
+            Rectangle()
+                .fill(.cardBackground)
+                .roundedCorner(8, corners: [.bottomLeft, .bottomRight])
         }
     }
     
