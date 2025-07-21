@@ -24,6 +24,9 @@ class EventDetailsViewModel: ObservableObject {
     var location: CLLocationCoordinate2D?
     var loadingImage: Bool = false
     var route: Destination?
+    let favouriteModel: FavouriteModel
+    var calendarModel: CalendarModel?
+    
     private let options: MKMapSnapshotter.Options = .init()
     
     var eventDate: String? {
@@ -41,8 +44,10 @@ class EventDetailsViewModel: ObservableObject {
         return dateString
     }
     
-    init(event: EventInfo) {
+    init(event: EventInfo, favouriteModel: FavouriteModel, calendarModel: CalendarModel?) {
         self.event = event
+        self.favouriteModel = favouriteModel
+        self.calendarModel = calendarModel
     }
     
     func generateSnapshot() async {

@@ -22,12 +22,6 @@ struct EventsView: View {
     var body: some View {
         NavigationStack(path: $viewModel.navigationPath) {
             contentView
-                .simultaneousGesture(TapGesture().onEnded({ _ in
-                    hideKeyboard()
-                }))
-                .simultaneousGesture(DragGesture().onEnded({ value in
-                    hideKeyboard()
-                }))
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .principal) {
@@ -126,6 +120,12 @@ struct EventsView: View {
             }
             else {
                 listView
+                    .simultaneousGesture(TapGesture().onEnded({ _ in
+                        hideKeyboard()
+                    }))
+                    .simultaneousGesture(DragGesture().onEnded({ value in
+                        hideKeyboard()
+                    }))
             }
             VStack(spacing: .empty) {
                 SearchView(searchText: $viewModel.searchText)

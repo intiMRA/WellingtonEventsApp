@@ -10,7 +10,7 @@ import NetworkLayerSPM
 
 private struct urlBuilder: NetworkLayerURLBuilder {
     func url() -> URL? {
-        .init(string: "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/add-coordinates/events.json")
+        .init(string: "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/main/events.json")
     }
 }
 
