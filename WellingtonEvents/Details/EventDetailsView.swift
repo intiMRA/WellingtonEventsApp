@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import MapKit
 import DesignLibrary
+import SwiftUINavigation
 
 struct EventDetailsView: View {
     @State var viewModel: EventDetailsViewModel
@@ -19,17 +20,66 @@ struct EventDetailsView: View {
     
     var body: some View {
         ScrollView {
-            imageView(url: viewModel.event.url)
-            Text(viewModel.event.name)
-                .font(.headline)
-                .padding()
-            Text(viewModel.event.description)
-                .padding()
-            mapImage
-
+            VStack(alignment: .leading, spacing: .small) {
+                imageView(url: viewModel.event.imageUrl ?? "")
+                Divider()
+                    .foregroundStyle(.text)
+                
+                Text(viewModel.event.name)
+                    .font(.title)
+                    .foregroundStyle(.text)
+                    .multilineTextAlignment(.leading)
+                
+                HStack(alignment: .top) {
+                    Text("Date:")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.textSecondary)
+                    
+                    Text(viewModel.event.displayDate)
+                        .font(.subheadline)
+                        .foregroundStyle(.textSecondary)
+                        .multilineTextAlignment(.leading)
+                }
+                Divider()
+                    .foregroundStyle(.text)
+                
+                Text(viewModel.event.description)
+                    .foregroundStyle(.text)
+                    .multilineTextAlignment(.leading)
+                
+                Divider()
+                    .foregroundStyle(.text)
+                mapImage
+            }
         }
+        .padding(.horizontal, .medium)
         .task {
-            viewModel.generateSnapshot()
+            await viewModel.generateSnapshot()
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    viewModel.showWebView()
+                }
+                label: {
+                    Text("View Event")
+                }
+            }
+        }
+        .sheet(item: $viewModel.route.webView, id: \.self) { url in
+            NavigationView {
+                WebView(url: url)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button {
+                                viewModel.resetRoute()
+                            }
+                            label: {
+                                Text("Close")
+                            }
+                        }
+                    }
+            }
         }
     }
     
@@ -40,6 +90,10 @@ struct EventDetailsView: View {
             case .empty:
                 RoundedRectangle(cornerRadius: 8)
                     .fill(.gray)
+                    .overlay {
+                        ProgressView()
+                            .foregroundStyle(.text)
+                    }
             case .success(let image):
                 image
                     .resizable()
@@ -63,22 +117,70 @@ struct EventDetailsView: View {
     
     @ViewBuilder
     var mapImage: some View {
-        if let image = viewModel.image, let location = viewModel.event.location {
+        if let image = viewModel.image, let location = viewModel.location {
             Button {
-                openDirectionsInAppleMaps(coordinate: .init(latitude: location.lat, longitude: location.long), arress: viewModel.event.venue)
+                openDirectionsInAppleMaps(coordinate: location, arress: viewModel.event.venue)
             }
             label: {
-                Image(uiImage: image)
-                    .resizable()
-                    .frame(width: EventDetailsViewModel.snapshorSize.width, height: EventDetailsViewModel.snapshorSize.height)
-                    .roundedShadow()
+                VStack(spacing: .empty) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .frame(maxWidth: .infinity, maxHeight: EventDetailsViewModel.snapshorSize.height)
+                        .aspectRatio(EventDetailsViewModel.ratio, contentMode: .fit)
+                        .roundedCorner(8, corners: [.topLeft, .topRight])
+                    
+                    HStack(alignment: .top) {
+                        Text("Address:")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.textSecondary)
+                        Text(viewModel.event.venue)
+                            .font(.subheadline)
+                            .foregroundStyle(.textSecondary)
+                            .multilineTextAlignment(.leading)
+                    }
+                    .padding(.all, .small)
+                    .frame(maxWidth: .infinity)
+                    .background {
+                        Rectangle()
+                            .fill(.cardBackground)
+                            .roundedCorner(8, corners: [.bottomLeft, .bottomRight])
+                    }
+                }
             }
         }
         else {
-            Rectangle()
-                .fill(Color.gray)
-                .frame(width: EventDetailsViewModel.snapshorSize.width, height: EventDetailsViewModel.snapshorSize.height)
-                .roundedShadow()
+            VStack(spacing: .empty) {
+                Rectangle()
+                    .fill(Color.cardBackground)
+                    .frame(maxWidth: .infinity, maxHeight: EventDetailsViewModel.snapshorSize.height)
+                    .aspectRatio(EventDetailsViewModel.ratio, contentMode: .fit)
+                    .roundedShadow()
+                    .if(viewModel.loadingImage) { view in
+                        view
+                            .overlay {
+                                ProgressView()
+                                    .foregroundStyle(.text)
+                            }
+                    }
+                HStack(alignment: .top) {
+                    Text("Address:")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.textSecondary)
+                    Text(viewModel.event.venue)
+                        .font(.subheadline)
+                        .foregroundStyle(.textSecondary)
+                        .multilineTextAlignment(.leading)
+                }
+                .padding(.all, .small)
+                .frame(maxWidth: .infinity)
+                .background {
+                    Rectangle()
+                        .fill(.cardBackground)
+                        .roundedCorner(8, corners: [.bottomLeft, .bottomRight])
+                }
+                
+            }
+            .frame(maxWidth: .infinity)
         }
     }
     
@@ -86,9 +188,9 @@ struct EventDetailsView: View {
         let destinationPlacemark = MKPlacemark(coordinate: coordinate)
         let destinationMapItem = MKMapItem(placemark: destinationPlacemark)
         destinationMapItem.name = arress
-
+        
         let launchOptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
-
+        
         MKMapItem.openMaps(with: [destinationMapItem], launchOptions: launchOptions)
     }
 }

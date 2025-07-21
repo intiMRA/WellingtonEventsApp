@@ -20,10 +20,16 @@
     "Add To Calendar" : {
 
     },
+    "Address:" : {
+
+    },
     "Apply Filters" : {
 
     },
     "Cancel" : {
+
+    },
+    "Close" : {
 
     },
     "Date:" : {
@@ -99,6 +105,9 @@
 
     },
     "Tomorrow" : {
+
+    },
+    "View Event" : {
 
     }
   },

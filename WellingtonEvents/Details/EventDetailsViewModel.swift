@@ -6,57 +6,95 @@
 //
 
 import Foundation
-import MapKit
+@preconcurrency import MapKit
+import CasePaths
 
 @MainActor
 @Observable
-class EventDetailsViewModel {
-    static let snapshorSize = CGSize(width: 300, height: 200)
+class EventDetailsViewModel: ObservableObject {
+    @CasePathable
+    enum Destination: Hashable {
+        case webView(url: URL)
+    }
+    
+    static let snapshorSize = CGSize(width: 400, height: 200)
+    static let ratio = snapshorSize.width / snapshorSize.height
     let event: EventInfo
     var image: UIImage?
+    var location: CLLocationCoordinate2D?
+    var loadingImage: Bool = false
+    var route: Destination?
     private let options: MKMapSnapshotter.Options = .init()
     
     init(event: EventInfo) {
         self.event = event
     }
     
-    func generateSnapshot() {
-        guard let lat = event.location?.lat, let long = event.location?.long else {
+    func generateSnapshot() async {
+        loadingImage = true
+        defer {
+            loadingImage = false
+        }
+        var location: CLLocationCoordinate2D?
+        let geocoder = CLGeocoder()
+        if let lat = event.location?.lat, let long = event.location?.long {
+            location = .init(latitude: lat, longitude: long)
+        }
+        else {
+            do {
+                let locationFromAddress = try await geocoder.geocodeAddressString(event.venue)
+                location = locationFromAddress.first?.location?.coordinate
+            }
+            catch {
+                print("Error geocoding address: \(error)")
+            }
+        }
+        
+        guard let location else {
             return
         }
+        self.location = location
         let mapOptions = MKMapSnapshotter.Options()
-        mapOptions.region = MKCoordinateRegion(center: .init(latitude: lat, longitude: long), span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+        mapOptions.region = MKCoordinateRegion(center: location, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
         mapOptions.size = EventDetailsViewModel.snapshorSize
         mapOptions.showsBuildings = true
         mapOptions.pointOfInterestFilter = .includingAll
         let snapshotter = MKMapSnapshotter(options: mapOptions)
-        snapshotter.start { snapshot, error in
-            guard let snapshot = snapshot, error == nil else {
-                print("Snapshot error: \(error?.localizedDescription ?? "Unknown error")")
-                return
-            }
-            let pinImage = UIImage(systemName: "circle.fill")?.withTintColor(.red) // Your pin image
+        do {
+            let snapshot = try await snapshotter.start()
+            
+            let pinImage = UIImage(resource: .location) // Your pin image
             var finalImage: UIImage?
             let mapImage = snapshot.image
             
-            if let pin = pinImage {
                 UIGraphicsBeginImageContextWithOptions(mapImage.size, true, mapImage.scale)
                 mapImage.draw(at: .zero)
                 
-                let pointOnImage = snapshot.point(for: .init(latitude: lat, longitude: long))
+                let pointOnImage = snapshot.point(for: location)
                 let pinRect = CGRect(
-                    x: pointOnImage.x - 5, // Center the pin horizontally
-                    y: pointOnImage.y - 10,    // Position pin at the bottom of its image
-                    width: 10,
-                    height: 10
+                    x: pointOnImage.x - 20, // Center the pin horizontally
+                    y: pointOnImage.y - 50,    // Position pin at the bottom of its image
+                    width: 40,
+                    height: 50
                 )
-                pin.draw(in: pinRect)
+            pinImage.draw(in: pinRect)
                 
                 finalImage = UIGraphicsGetImageFromCurrentImageContext()
                 UIGraphicsEndImageContext()
-            }
+            
             self.image = finalImage ?? mapImage
+        }
+        catch {
+            print("Error creating snapshot: \(error.localizedDescription)")
         }
     }
     
+    func showWebView() {
+        guard let url = URL(string: event.url) else { return }
+        route = .webView(url: url)
+    }
+    
+    func resetRoute() {
+        route = nil
+    }
 }
