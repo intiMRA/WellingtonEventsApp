@@ -26,6 +26,21 @@ class EventDetailsViewModel: ObservableObject {
     var route: Destination?
     private let options: MKMapSnapshotter.Options = .init()
     
+    var eventDate: String? {
+        guard let firstDate = event.dates.first else { return nil }
+        let dateString: String
+        if firstDate.displayAsAllDay {
+            dateString = firstDate.asString(with: .eeeddmmmSpaced)
+        }
+        else {
+            dateString = firstDate.asString(with: .eeeddmmmSpacedHMMA)
+        }
+        if event.dates.count > 1 {
+            return String(localized: "\(dateString) + more")
+        }
+        return dateString
+    }
+    
     init(event: EventInfo) {
         self.event = event
     }
@@ -72,10 +87,10 @@ class EventDetailsViewModel: ObservableObject {
                 
                 let pointOnImage = snapshot.point(for: location)
                 let pinRect = CGRect(
-                    x: pointOnImage.x - 20, // Center the pin horizontally
-                    y: pointOnImage.y - 45,    // Position pin at the bottom of its image
+                    x: pointOnImage.x - 20,
+                    y: pointOnImage.y - 43,
                     width: 40,
-                    height: 45
+                    height: 43
                 )
             pinImage.draw(in: pinRect)
                 

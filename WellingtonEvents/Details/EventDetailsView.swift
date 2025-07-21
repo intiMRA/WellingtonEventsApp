@@ -34,11 +34,12 @@ struct EventDetailsView: View {
                     Text("Date:")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.textSecondary)
-                    
-                    Text(viewModel.event.displayDate)
-                        .font(.subheadline)
-                        .foregroundStyle(.textSecondary)
-                        .multilineTextAlignment(.leading)
+                    if let eventDate = viewModel.eventDate {
+                        Text(eventDate)
+                            .font(.subheadline)
+                            .foregroundStyle(.textSecondary)
+                            .multilineTextAlignment(.leading)
+                    }
                 }
                 Divider()
                     .foregroundStyle(.text)
