@@ -19,7 +19,7 @@ class DatePickerViewModel {
         event.dates
     }
     
-    init(selectedDate: Date? = nil, event: EventInfo, repository: EventsRepository, dismiss: @escaping (ToastStyle?) -> Void) {
+    init(selectedDate: Date? = nil, event: EventInfo, repository: EventsRepository?, dismiss: @escaping (ToastStyle?) -> Void) {
         self.selectedDate = selectedDate
         self.event = event
         self.dismiss = dismiss
@@ -44,20 +44,8 @@ class DatePickerViewModel {
         return monthStrings.compactMap { .init(id: $0, month: $0, dates: monthsDict[$0]) }
     }
     
-    func addToCalendar() {
-        guard let repository else {
-            dismiss(.error(message: "Failed to add event to calander"))
-            return
-        }
-        Task {
-            do {
-                try await CalendarManager.saveEventToCalendar(eventInfo: event, date: selectedDate, repository: repository)
-                dismiss(.success(message: "Event successfully added to your calendar."))
-            }
-            catch {
-                dismiss(.error(message: error.localizedDescription))
-            }
-        }
+    func errorHandler(_ title: String?, message: String) {
+        dismiss(.error(title: title, message: message))
     }
     
     func isDateSelected(_ date: Date) -> Bool {

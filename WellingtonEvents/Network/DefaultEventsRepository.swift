@@ -56,85 +56,63 @@ actor DefaultEventsRepository: EventsRepository {
         return Self.calendar.isDate(.now, inSameDayAs: userDefaultsDate)
     }
     
-    func didSaveToCalendar(event: EventInfo) {
-        var calendar = retrieveSavedToCalendar()
+    func didSaveToCalendar(event: EventInfo) throws {
+        var calendar = try retrieveSavedToCalendar()
         calendar.append(event)
-        save(toCalendar: calendar)
+        try save(toCalendar: calendar)
     }
     
-    func retrieveSavedToCalendar() -> [EventInfo] {
+    func retrieveSavedToCalendar() throws -> [EventInfo] {
         guard let data = Self.userDefaults.object(forKey: Keys.calendar.rawValue) as? Data else {
             return []
         }
-        do {
-            let events = try JSONDecoder().decode([EventInfo].self, from: data)
-            return events
-        }
-        catch {
-            print(error)
-            return []
-        }
+        let events = try JSONDecoder().decode([EventInfo].self, from: data)
+        return events
     }
     
-    func didDeleteFromCalendar(event: EventInfo) {
-        var calendar = retrieveSavedToCalendar()
+    func didDeleteFromCalendar(event: EventInfo) throws {
+        var calendar = try retrieveSavedToCalendar()
         calendar.removeAll(where: { $0.id == event.id })
-        save(toCalendar: calendar)
+        try save(toCalendar: calendar)
     }
     
-    func saveToFavorites(event: EventInfo) {
-        var favourites = retrieveFavorites()
+    func saveToFavorites(event: EventInfo) throws {
+        var favourites = try retrieveFavorites()
         favourites.append(event)
-        save(favourites: favourites)
+        try save(favourites: favourites)
     }
     
-    func retrieveFavorites() -> [EventInfo] {
+    func retrieveFavorites() throws -> [EventInfo] {
         guard let data = Self.userDefaults.object(forKey: Keys.favouriteEvents.rawValue) as? Data else {
             return []
         }
-        do {
-            let events = try JSONDecoder().decode([EventInfo].self, from: data)
-            return events
-        }
-        catch {
-            print(error)
-            return []
-        }
+        let events = try JSONDecoder().decode([EventInfo].self, from: data)
+        return events
     }
     
-    func deleteFromFavorites(event: EventInfo) {
-        var favourites = retrieveFavorites()
+    func deleteFromFavorites(event: EventInfo) throws {
+        var favourites = try retrieveFavorites()
         favourites.removeAll(where: { $0.id == event.id })
-        save(favourites: favourites)
+        try save(favourites: favourites)
     }
     
-    func deleteFromFavorites(eventIds: [String]) {
-        var favourites = retrieveFavorites()
+    func deleteFromFavorites(eventIds: [String]) throws {
+        var favourites = try retrieveFavorites()
         favourites.removeAll(where: { event in eventIds.contains(where: { event.id == $0 }) })
-        save(favourites: favourites)
+        try save(favourites: favourites)
     }
     
-    func didDeleteFromCalendar(eventIds: [String]) {
-        var calendar = retrieveSavedToCalendar()
+    func didDeleteFromCalendar(eventIds: [String]) throws {
+        var calendar = try retrieveSavedToCalendar()
         calendar.removeAll(where: { event in eventIds.contains(where: { event.id == $0 }) })
-        save(toCalendar: calendar)
+        try save(toCalendar: calendar)
     }
     
-    private func save(favourites: [EventInfo]) {
-        do {
-            Self.userDefaults.set(try JSONEncoder().encode(favourites), forKey: Keys.favouriteEvents.rawValue)
-        }
-        catch {
-            print(error)
-        }
+    private func save(favourites: [EventInfo]) throws {
+        Self.userDefaults.set(try JSONEncoder().encode(favourites), forKey: Keys.favouriteEvents.rawValue)
     }
     
-    private func save(toCalendar events: [EventInfo]) {
-        do {
-            Self.userDefaults.set(try JSONEncoder().encode(events), forKey: Keys.calendar.rawValue)
-        }
-        catch {
-            print(error)
-        }
+    private func save(toCalendar events: [EventInfo]) throws {
+        Self.userDefaults.set(try JSONEncoder().encode(events), forKey: Keys.calendar.rawValue)
     }
 }

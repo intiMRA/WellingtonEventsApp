@@ -46,18 +46,18 @@ struct SearchView: View {
                             .fill(.cardBackground)
                     }
                 
-                Spacer()
-            }
-            .opacity(focused ? 1 : 0)
-            
-            if focused {
-                Button {
-                    focused = false
-                } label: {
-                    Text("Cancel")
-                        .padding(.horizontal, .medium)
+                if focused {
+                    HStack {
+                        Button {
+                            focused = false
+                        } label: {
+                            Text("Cancel")
+                        }
+                    }
+                    .padding(.trailing, .medium)
                 }
             }
+            .opacity(focused ? 1 : 0)
             
         }
         .animation(.default, value: focused)

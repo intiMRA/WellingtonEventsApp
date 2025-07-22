@@ -9,13 +9,13 @@ import Foundation
 
 protocol EventsRepository: AnyObject, Actor {
     func fetchEvents() async throws -> EventsResponse?
-    func saveToFavorites(event: EventInfo)
-    func retrieveFavorites() -> [EventInfo]
-    func deleteFromFavorites(event: EventInfo)
-    func deleteFromFavorites(eventIds: [String])
-    func didSaveToCalendar(event: EventInfo)
-    func retrieveSavedToCalendar() -> [EventInfo]
-    func didDeleteFromCalendar(event: EventInfo)
-    func didDeleteFromCalendar(eventIds: [String])
+    func saveToFavorites(event: EventInfo) throws
+    func retrieveFavorites() throws -> [EventInfo]
+    func deleteFromFavorites(event: EventInfo) throws
+    func deleteFromFavorites(eventIds: [String]) throws
+    func didSaveToCalendar(event: EventInfo) throws
+    func retrieveSavedToCalendar() throws -> [EventInfo]
+    func didDeleteFromCalendar(event: EventInfo) throws
+    func didDeleteFromCalendar(eventIds: [String]) throws
     func canFetchFromCache() -> Bool
 }

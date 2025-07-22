@@ -31,7 +31,7 @@ class CalendarManager {
         event.calendar = eventStore.defaultCalendarForNewEvents
         event.isAllDay = date.displayAsAllDay
         try eventStore.save(event, span: .thisEvent, commit: true)
-        await repository.didSaveToCalendar(event: eventInfo)
+        try await repository.didSaveToCalendar(event: eventInfo)
     }
     
     static func removeFromCalendar(event: EventInfo, repository: EventsRepository) async throws {
@@ -51,6 +51,6 @@ class CalendarManager {
                 try eventStore.remove(event, span: .futureEvents)
             }
         }
-        await repository.didDeleteFromCalendar(event: event)
+        try await repository.didDeleteFromCalendar(event: event)
     }
 }
