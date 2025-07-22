@@ -89,20 +89,20 @@ class EventDetailsViewModel: ObservableObject {
             var finalImage: UIImage?
             let mapImage = snapshot.image
             
-                UIGraphicsBeginImageContextWithOptions(mapImage.size, true, mapImage.scale)
-                mapImage.draw(at: .zero)
-                
-                let pointOnImage = snapshot.point(for: location)
-                let pinRect = CGRect(
-                    x: pointOnImage.x - 20,
-                    y: pointOnImage.y - 43,
-                    width: 40,
-                    height: 43
-                )
+            UIGraphicsBeginImageContextWithOptions(mapImage.size, true, mapImage.scale)
+            mapImage.draw(at: .zero)
+            
+            let pointOnImage = snapshot.point(for: location)
+            let pinRect = CGRect(
+                x: pointOnImage.x - 20,
+                y: pointOnImage.y - 43,
+                width: 40,
+                height: 43
+            )
             pinImage.draw(in: pinRect)
-                
-                finalImage = UIGraphicsGetImageFromCurrentImageContext()
-                UIGraphicsEndImageContext()
+            
+            finalImage = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
             
             self.image = finalImage ?? mapImage
         }

@@ -48,7 +48,7 @@ struct DatesFilterView: View {
             
             ToolbarItem(placement: .confirmationAction) {
                 Button {
-                   didTapConfirmationButton()
+                    didTapConfirmationButton()
                 } label : {
                     Text("Apply Filters")
                 }

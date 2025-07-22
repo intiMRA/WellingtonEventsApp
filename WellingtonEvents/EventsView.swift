@@ -326,14 +326,14 @@ struct EventsView: View {
     @ViewBuilder
     var lazyStackView: some View {
         LazyVStack(spacing: .medium) {
-           cardItemsView
+            cardItemsView
         }
     }
     
     @ViewBuilder
     var lazyGridView: some View {
         LazyVGrid(columns: [.init(), .init()], spacing: 16) {
-           cardItemsView
+            cardItemsView
         }
     }
     

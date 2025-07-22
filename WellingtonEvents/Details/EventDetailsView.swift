@@ -236,23 +236,23 @@ struct EventDetailsView: View {
                     .squareFrame(size: 36)
             }
             
-                Button {
-                    Task {
-                        if isInCalendar {
-                            if await actionsManager.deleteFromCalendar(event: viewModel.event, errorHandler: viewModel.showErrorAlert) {
-                                viewModel.route = .alert(.success(message: String(localized: "The event was removed from your calendar")))
-                            }
-                        }
-                        else {
-                            await saveTocalendar(event: viewModel.event)
+            Button {
+                Task {
+                    if isInCalendar {
+                        if await actionsManager.deleteFromCalendar(event: viewModel.event, errorHandler: viewModel.showErrorAlert) {
+                            viewModel.route = .alert(.success(message: String(localized: "The event was removed from your calendar")))
                         }
                     }
-                } label: {
-                    (isInCalendar ? Image(.calendarTick) : Image(.calendar))
-                        .resizable()
-                        .squareFrame(size: 36)
+                    else {
+                        await saveTocalendar(event: viewModel.event)
+                    }
                 }
-                .foregroundStyle(.text)
+            } label: {
+                (isInCalendar ? Image(.calendarTick) : Image(.calendar))
+                    .resizable()
+                    .squareFrame(size: 36)
+            }
+            .foregroundStyle(.text)
             
             
             if let url = URL(string: viewModel.event.url) {
