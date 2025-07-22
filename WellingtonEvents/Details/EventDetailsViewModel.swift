@@ -8,6 +8,8 @@
 import Foundation
 @preconcurrency import MapKit
 import CasePaths
+import DesignLibrary
+import SwiftUI
 
 @MainActor
 @Observable
@@ -15,6 +17,8 @@ class EventDetailsViewModel: ObservableObject {
     @CasePathable
     enum Destination: Hashable {
         case webView(url: URL)
+        case calendar(event: EventInfo)
+        case alert(ToastStyle)
     }
     
     static let snapshorSize = CGSize(width: UITraitCollection.current.horizontalSizeClass == .regular ? 800 : 400, height: UITraitCollection.current.horizontalSizeClass == .regular ? 400 : 200)
@@ -24,6 +28,7 @@ class EventDetailsViewModel: ObservableObject {
     var location: CLLocationCoordinate2D?
     var loadingImage: Bool = false
     var route: Destination?
+    weak var repository: EventsRepository?
     
     private let options: MKMapSnapshotter.Options = .init()
     
@@ -42,8 +47,9 @@ class EventDetailsViewModel: ObservableObject {
         return dateString
     }
     
-    init(event: EventInfo) {
+    init(event: EventInfo, repository: EventsRepository?) {
         self.event = event
+        self.repository = repository
     }
     
     func generateSnapshot() async {
@@ -112,5 +118,19 @@ class EventDetailsViewModel: ObservableObject {
     
     func resetRoute() {
         route = nil
+    }
+    
+    func showErrorAlert(_ title: String? = nil, _ message: String) {
+        route = .alert(.error(title: title, message: message))
+    }
+    
+    func dissmissCalendar(_ style: ToastStyle?) {
+        withAnimation {
+            guard let style else {
+                resetRoute()
+                return
+            }
+            route = .alert(style)
+        }
     }
 }

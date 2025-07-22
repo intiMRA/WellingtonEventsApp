@@ -88,7 +88,7 @@ extension EventsViewModel {
         route = .dateSelector(startDate: startDate, endDate: endDate, selectedQuickDate: quickDateFilter?.quickDateType, id: startDate.id + endDate.id)
     }
     
-    func didTapFavouritesFilter() {
+    func didTapFavouritesFilter(favourites: [EventInfo]) {
         if selectedFilters.contains(where: { $0.id == .favorited }) {
             selectedFilters.removeAll(where: { $0.id == .favorited })
         }

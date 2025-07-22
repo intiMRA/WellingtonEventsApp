@@ -13,6 +13,7 @@ import SwiftUINavigation
 
 struct EventDetailsView: View {
     @State var viewModel: EventDetailsViewModel
+    @EnvironmentObject var actionsManager: ActionsManager
     
     init(viewModel: EventDetailsViewModel) {
         self._viewModel = State(wrappedValue: viewModel)
@@ -21,7 +22,23 @@ struct EventDetailsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: .small) {
-                imageView(url: viewModel.event.imageUrl ?? "")
+                ZStack(alignment: .bottomTrailing) {
+                    imageView(url: viewModel.event.imageUrl ?? "")
+                    Text(viewModel.event.source)
+                        .multilineTextAlignment(.leading)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.selectedChipText)
+                        .padding(.all, .xSmall)
+                        .background {
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(.accent)
+                                .opacity(0.8)
+                                .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1)
+                        }
+                        .padding(.all, .xSmall)
+                }
+                actionIconsView
                 Divider()
                     .foregroundStyle(.text)
                 
@@ -64,6 +81,7 @@ struct EventDetailsView: View {
                 }
                 label: {
                     Text("View Event")
+                        .bold()
                 }
             }
         }
@@ -89,6 +107,22 @@ struct EventDetailsView: View {
                         }
                     }
             }
+        }
+        .sheet(item: $viewModel.route.calendar) { event in
+            NavigationView {
+                DatePickerView(viewModel: .init(
+                    event: viewModel.event,
+                    repository: viewModel.repository,
+                    dismiss: { [weak viewModel] style in
+                        viewModel?.dissmissCalendar(style)
+                    }))
+                .environmentObject(actionsManager)
+            }
+        }
+        .sheet(item: $viewModel.route.alert, id: \.self) { style in
+            ToastView(model: .init(style: style, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+                .presentationBackground(.clear)
+                .presentationDetents([.fraction(1/7)])
         }
     }
     
@@ -182,6 +216,55 @@ struct EventDetailsView: View {
         }
     }
     
+    @ViewBuilder
+    var actionIconsView: some View {
+        let isFavourited = actionsManager.isEventFavourited(id: viewModel.event.id)
+        let isInCalendar = actionsManager.isEventInCalendar(id: viewModel.event.id)
+        HStack(spacing: .xSmall) {
+            Button {
+                Task {
+                    if isFavourited {
+                        await actionsManager.deleteFromFavorites(event: viewModel.event, errorHandler: viewModel.showErrorAlert)
+                    }
+                    else {
+                        await actionsManager.saveToFavorites(event: viewModel.event, errorHandler: viewModel.showErrorAlert)
+                    }
+                }
+            } label: {
+                (isFavourited ? Image(.heartFill) : Image(.heart))
+                    .resizable()
+                    .squareFrame(size: 36)
+            }
+            
+                Button {
+                    Task {
+                        if isInCalendar {
+                            if await actionsManager.deleteFromCalendar(event: viewModel.event, errorHandler: viewModel.showErrorAlert) {
+                                viewModel.route = .alert(.success(message: String(localized: "The event was removed from your calendar")))
+                            }
+                        }
+                        else {
+                            await saveTocalendar(event: viewModel.event)
+                        }
+                    }
+                } label: {
+                    (isInCalendar ? Image(.calendarTick) : Image(.calendar))
+                        .resizable()
+                        .squareFrame(size: 36)
+                }
+                .foregroundStyle(.text)
+            
+            
+            if let url = URL(string: viewModel.event.url) {
+                ShareLink(item: url) {
+                    Image(.share)
+                        .squareFrame(size: 36)
+                }
+            }
+        }
+        .padding(.all, .medium)
+    }
+    
     private func openDirectionsInAppleMaps(coordinate: CLLocationCoordinate2D, arress: String) {
         let destinationPlacemark = MKPlacemark(coordinate: coordinate)
         let destinationMapItem = MKMapItem(placemark: destinationPlacemark)
@@ -190,5 +273,16 @@ struct EventDetailsView: View {
         let launchOptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
         
         MKMapItem.openMaps(with: [destinationMapItem], launchOptions: launchOptions)
+    }
+    
+    func saveTocalendar(event: EventInfo) async {
+        if event.dates.count > 1 {
+            viewModel.route = .calendar(event: event)
+        }
+        else {
+            if await actionsManager.addToCalendar(event: event, date: event.dates.firstValidDate, errorHandler: viewModel.showErrorAlert) {
+                viewModel.route = .alert(.success(message: String(localized: "The event was added to your calendar!")))
+            }
+        }
     }
 }

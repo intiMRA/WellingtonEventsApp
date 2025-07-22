@@ -10,6 +10,7 @@ import DesignLibrary
 
 struct DatePickerView: View {
     @State var viewModel: DatePickerViewModel
+    @EnvironmentObject var actionsManager: ActionsManager
     init(viewModel: DatePickerViewModel) {
         self._viewModel = State(wrappedValue: viewModel)
     }
@@ -57,11 +58,19 @@ struct DatePickerView: View {
             
             ToolbarItem(placement: .confirmationAction) {
                 Button {
-                    viewModel.addToCalendar()
+                    Task {
+                        await addToCalander()
+                    }
                 } label: {
                     Text("Add To Calendar")
                 }
             }
+        }
+    }
+    
+    func addToCalander() async {
+        if await actionsManager.addToCalendar(event: viewModel.event, date: viewModel.selectedDate, errorHandler: viewModel.errorHandler) {
+            viewModel.dismiss(.success(message: String(localized: "The event was added to your calendar!")))
         }
     }
 }

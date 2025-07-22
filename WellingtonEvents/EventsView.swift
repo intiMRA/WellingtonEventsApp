@@ -11,6 +11,7 @@ import SwiftUINavigation
 
 struct EventsView: View {
     @StateObject var viewModel: EventsViewModel = .init()
+    @StateObject var actionsManager: ActionsManager = .init()
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
@@ -42,7 +43,7 @@ struct EventsView: View {
                         let selectedSources = viewModel.selectedFilterSource()
                         let favoritesSelected = selectedSources.contains(where: { $0 == .favorited })
                         Button {
-                            viewModel.didTapFavouritesFilter()
+                            viewModel.didTapFavouritesFilter(favourites: actionsManager.favourites)
                         } label: {
                             (favoritesSelected ? Image(.heartFill) : Image(.heart))
                                 .resizable()
@@ -54,6 +55,7 @@ struct EventsView: View {
         .disabled(viewModel.isLoading)
         .task {
             await viewModel.setup()
+            await actionsManager.setUp(events: viewModel.events)
         }
         .animation(nil, value: viewModel.events)
         .animation(.easeIn, value: viewModel.isLoading)
@@ -64,8 +66,8 @@ struct EventsView: View {
                     repository: viewModel.repository,
                     dismiss: { [weak viewModel] style in
                         viewModel?.dissmissCalendar(style)
-                        viewModel?.refreshCalendarEvents()
                     }))
+                .environmentObject(actionsManager)
             }
         }
         .sheet(item: $viewModel.route.filters, id: \.id) { value in
@@ -167,7 +169,8 @@ struct EventsView: View {
         .navigationDestination(for: StackDestination.self) { path in
             switch path {
             case .eventDetails(let eventInfo):
-                EventDetailsView(viewModel: .init(event: eventInfo))
+                EventDetailsView(viewModel: .init(event: eventInfo, repository: viewModel.repository))
+                    .environmentObject(actionsManager)
             }
         }
     }
@@ -240,6 +243,7 @@ struct EventsView: View {
                 PullToRefreshView(coordinateSpaceName: spaceName) {
                     Task {
                         await viewModel.fetchEvents()
+                        await actionsManager.setUp(events: viewModel.events)
                     }
                 }
                 VStack { }
@@ -282,28 +286,34 @@ struct EventsView: View {
         }
         
         ForEach(viewModel.events) { event in
-            let isFavourited = viewModel.isEventFavourited(id: event.id)
-            let isInCalendar = viewModel.isEventInCalendar(id: event.id)
+            let isFavourited = actionsManager.isEventFavourited(id: event.id)
+            let isInCalendar = actionsManager.isEventInCalendar(id: event.id)
             EventsCardView(
                 event: event,
-                FavouriteModel: .init(
+                favouriteModel: .init(
                     isFavourited: isFavourited,
                     didTapFavorites: {
-                        if isFavourited {
-                            viewModel.deleteFromFavorites(event: event)
-                        }
-                        else {
-                            viewModel.saveToFavorites(event: event)
+                        Task {
+                            if isFavourited {
+                                await actionsManager.deleteFromFavorites(event: event, errorHandler: viewModel.showErrorAlert)
+                            }
+                            else {
+                                await actionsManager.saveToFavorites(event: event, errorHandler: viewModel.showErrorAlert)
+                            }
                         }
                     }),
                 calendarModel: .init(
                     isInCalendar: isInCalendar,
                     addToCalendar: {
-                        if isInCalendar {
-                            viewModel.deleteFromCalendar(event: event)
-                        }
-                        else {
-                            viewModel.saveToCalendar(event: event)
+                        Task {
+                            if isInCalendar {
+                                if await actionsManager.deleteFromCalendar(event: event, errorHandler: viewModel.showErrorAlert) {
+                                    viewModel.route = .alert(.success(message: String(localized: "The event was removed from your calendar")))
+                                }
+                            }
+                            else {
+                                await saveTocalendar(event: event)
+                            }
                         }
                     }),
                 width: width
@@ -335,6 +345,17 @@ struct EventsView: View {
                 .font(.subheadline)
                 .foregroundStyle(.fountainBackground)
                 .padding(.bottom, .medium)
+        }
+    }
+    
+    func saveTocalendar(event: EventInfo) async {
+        if event.dates.count > 1 {
+            viewModel.route = .calendar(event: event)
+        }
+        else {
+            if await actionsManager.addToCalendar(event: event, date: event.dates.firstValidDate, errorHandler: viewModel.showErrorAlert) {
+                viewModel.route = .alert(.success(message: String(localized: "The event was added to your calendar!")))
+            }
         }
     }
 }

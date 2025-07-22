@@ -47,8 +47,6 @@ struct DateModel: Equatable, Identifiable {
 @MainActor
 class EventsViewModel: ObservableObject {
     
-    @Published var favourites: [EventInfo] = []
-    @Published var eventsInCalendar: [EventInfo] = []
     let repository: EventsRepository = DefaultEventsRepository()
     
     var allEvents: [EventInfo]
@@ -68,24 +66,6 @@ class EventsViewModel: ObservableObject {
     
     func setup() async {
         await fetchEvents()
-        self.favourites = await repository.retrieveFavorites()
-        refreshCalendarEvents()
-        guard !allEvents.isEmpty else {
-            return
-        }
-        await repository.deleteFromFavorites(eventIds: favourites.compactMap { event in
-            if !allEvents.contains(where: { $0.id == event.id }) {
-                return event.id
-            }
-            return nil
-        })
-        
-        await repository.didDeleteFromCalendar(eventIds: eventsInCalendar.compactMap { event in
-            if !allEvents.contains(where: { $0.id == event.id }) {
-                return event.id
-            }
-            return nil
-        })
     }
     
     init(
@@ -93,8 +73,6 @@ class EventsViewModel: ObservableObject {
         eventsInCalendar: [EventInfo] = [],
         allEvents: [EventInfo] = [],
         events: [EventInfo] = []) {
-            self.favourites = favourites
-            self.eventsInCalendar = eventsInCalendar
             self.allEvents = allEvents
             self.events = events
             $searchText
@@ -142,64 +120,7 @@ class EventsViewModel: ObservableObject {
                 await setup()
             }
         }
-    }
-    
-    func isEventFavourited(id: String) -> Bool {
-        favourites.contains(where: { id == $0.id })
-    }
-    
-    func isEventInCalendar(id: String) -> Bool {
-        eventsInCalendar.contains(where: { id == $0.id })
-    }
-    
-    func saveToFavorites(event: EventInfo) {
-        Task {
-            await repository.saveToFavorites(event: event)
-            favourites.append(event)
-        }
-    }
-    
-    func deleteFromFavorites(event: EventInfo) {
-        Task {
-            await repository.deleteFromFavorites(event: event)
-            favourites.removeAll(where: { event.id == $0.id })
-        }
-    }
-    
-    func saveToCalendar(event: EventInfo) {
-        if event.dates.count > 1 {
-            route = .calendar(event: event)
-        }
-        else {
-            addToCalendar(event: event, date: event.dates.firstValidDate)
-            refreshCalendarEvents()
-        }
-    }
-    
-    private func addToCalendar(event: EventInfo, date: Date?) {
-        Task {
-            do {
-                try await CalendarManager.saveEventToCalendar(eventInfo: event, date: date, repository: repository)
-                route = .alert(.success(message: "Event successfully added to your calendar."))
-                refreshCalendarEvents()
-            }
-            catch {
-                route = .alert(.error(message: error.localizedDescription))
-            }
-        }
-    }
-    
-    func deleteFromCalendar(event: EventInfo) {
-        Task {
-            do {
-                try await CalendarManager.removeFromCalendar(event: event, repository: repository)
-            }
-            catch {
-                print(error.localizedDescription)
-            }
-            refreshCalendarEvents()
-        }
-    }
+    }    
     
     func didTapOnEvent(with id: String) {
         guard let event = allEvents.first(where: { $0.id == id }) else {
@@ -223,9 +144,7 @@ class EventsViewModel: ObservableObject {
         }
     }
     
-    func refreshCalendarEvents() {
-        Task {
-            eventsInCalendar = await repository.retrieveSavedToCalendar()
-        }
+    func showErrorAlert(_ title: String? = nil, _ message: String) {
+        route = .alert(.error(title: title, message: message))
     }
 }

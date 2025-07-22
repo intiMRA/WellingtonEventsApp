@@ -21,7 +21,7 @@ struct CalendarModel {
 
 struct EventsCardView: View {
     let event: EventInfo
-    let FavouriteModel: FavouriteModel
+    let favouriteModel: FavouriteModel
     var calendarModel: CalendarModel?
     let width: CGFloat
     var didTapOnCard: (String) -> Void
@@ -113,9 +113,9 @@ struct EventsCardView: View {
     var actionIconsView: some View {
         HStack(spacing: .xSmall) {
             Button {
-                FavouriteModel.didTapFavorites()
+                favouriteModel.didTapFavorites()
             } label: {
-                (FavouriteModel.isFavourited ? Image(.heartFill) : Image(.heart))
+                (favouriteModel.isFavourited ? Image(.heartFill) : Image(.heart))
                     .resizable()
                     .squareFrame(size: 36)
             }

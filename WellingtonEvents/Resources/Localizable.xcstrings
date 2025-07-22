@@ -23,6 +23,9 @@
     "Add To Calendar" : {
 
     },
+    "Adding To Calendar" : {
+
+    },
     "Address:" : {
 
     },
@@ -42,6 +45,9 @@
 
     },
     "Dates:" : {
+
+    },
+    "Deleting Favourite" : {
 
     },
     "Event type:" : {
@@ -83,7 +89,22 @@
     "Quick Dates:" : {
 
     },
+    "Saving Favourite" : {
+
+    },
     "selected" : {
+
+    },
+    "Sorry the event could not be added to favourites." : {
+
+    },
+    "Sorry the event could not be added to your calendar." : {
+
+    },
+    "Sorry the event could not be deleted form favourites." : {
+
+    },
+    "Sorry the event could not be deleted from your calendar." : {
 
     },
     "Source:" : {
@@ -93,6 +114,12 @@
 
     },
     "Sources:" : {
+
+    },
+    "The event was added to your calendar!" : {
+
+    },
+    "The event was removed from your calendar" : {
 
     },
     "This month" : {
