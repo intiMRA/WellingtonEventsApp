@@ -17,6 +17,7 @@ enum Formats: String {
     case ddMMMMSpaced = "dd MMMM"
     case eeeddmmmSpaced = "EEE dd MMM"
     case eeeddmmmSpacedHMMA = "EEE dd MMM h:mm a"
+    case hhmm = "h:mm a"
     
     static func formatter(for format: Self) -> DateFormatter {
         let formatter = DateFormatter()
