@@ -19,7 +19,7 @@ struct SearchView: View {
                     Image(.search)
                         .padding(.trailing, .medium)
                     
-                    Text(searchText.nilIfEmpty ?? "Search for events in Welly")
+                    Text(searchText.nilIfEmpty ?? String(localized: "Search for events in Welly"))
                         .foregroundStyle(.searchText)
                     
                     Spacer()

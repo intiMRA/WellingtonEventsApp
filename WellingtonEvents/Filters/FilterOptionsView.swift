@@ -41,6 +41,7 @@ struct FilterOptionsView: View {
                     .bold(isSelected)
                     Divider()
                 }
+                ConfirmationButtonView(didTapConfirmationButton: viewModel.didFinishedFiltering)
             }
             .padding(.horizontal, .medium)
         }

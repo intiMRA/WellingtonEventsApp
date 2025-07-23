@@ -14,6 +14,7 @@ struct DatePickerView: View {
     init(viewModel: DatePickerViewModel) {
         self._viewModel = State(wrappedValue: viewModel)
     }
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
