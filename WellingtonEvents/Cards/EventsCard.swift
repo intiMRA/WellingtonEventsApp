@@ -65,50 +65,33 @@ struct EventsCardView: View {
         }
         .padding(.horizontal, .medium)
     }
-    
+}
+
+extension EventsCardView {
     @ViewBuilder
-    var dateAndTypeView: some View {
-        if event.dates.count > 1 {
-            Text("\(event.displayDate)")
-                .font(.subheadline.bold())
+    var infoView: some View {
+        HStack(alignment: .top) {
+            Text(event.venue)
+                .multilineTextAlignment(.leading)
+                .font(.subheadline)
                 .foregroundStyle(.textSecondary)
-        }
-        else {
-            Text(event.displayDate)
-                .font(.subheadline.bold())
+                .padding(.trailing, .xxSmall)
+            
+            Image(systemName: "circle.fill")
+                .renderingMode(.template)
+                .font(.system(size: 8))
+                .foregroundStyle(.textSecondary)
+                .padding(.top, .xxSmall)
+                .padding(.trailing, .xxSmall)
+            
+            Text(event.eventType)
+                .font(.subheadline)
                 .foregroundStyle(.textSecondary)
         }
     }
-    
-    @ViewBuilder
-    var imageView: some View {
-        AsyncImage(url: URL(string: event.imageUrl ?? "")) { phase in
-            switch phase {
-            case .empty:
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(.gray)
-            case .success(let image):
-                image
-                    .resizable()
-            case .failure(let error):
-                Image(.noImageAtTime)
-                    .resizable()
-                    .foregroundStyle(.textSecondary)
-                    .onAppear {
-                        print(error)
-                        print(event.imageUrl ?? "")
-                    }
-            @unknown default:
-                Rectangle()
-                    .fill(.gray)
-            }
-        }
-        .frame(height: 155)
-        .frame(width: width)
-        .scaledToFill()
-        .roundedShadow()
-    }
-    
+}
+
+extension EventsCardView {
     @ViewBuilder
     var actionIconsView: some View {
         HStack(spacing: .xSmall) {
@@ -141,25 +124,50 @@ struct EventsCardView: View {
         }
         .padding(.all, .medium)
     }
-    
+}
+
+extension EventsCardView {
     @ViewBuilder
-    var infoView: some View {
-        HStack(alignment: .top) {
-            Text(event.venue)
-                .multilineTextAlignment(.leading)
-                .font(.subheadline)
+    var imageView: some View {
+        AsyncImage(url: URL(string: event.imageUrl ?? "")) { phase in
+            switch phase {
+            case .empty:
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(.gray)
+            case .success(let image):
+                image
+                    .resizable()
+            case .failure(let error):
+                Image(.noImageAtTime)
+                    .resizable()
+                    .foregroundStyle(.textSecondary)
+                    .onAppear {
+                        print(error)
+                        print(event.imageUrl ?? "")
+                    }
+            @unknown default:
+                Rectangle()
+                    .fill(.gray)
+            }
+        }
+        .frame(height: 155)
+        .frame(width: width)
+        .scaledToFill()
+        .roundedShadow()
+    }
+}
+
+extension EventsCardView {
+    @ViewBuilder
+    var dateAndTypeView: some View {
+        if event.dates.count > 1 {
+            Text("\(event.displayDate)")
+                .font(.subheadline.bold())
                 .foregroundStyle(.textSecondary)
-                .padding(.trailing, .xxSmall)
-            
-            Image(systemName: "circle.fill")
-                .renderingMode(.template)
-                .font(.system(size: 8))
-                .foregroundStyle(.textSecondary)
-                .padding(.top, .xxSmall)
-                .padding(.trailing, .xxSmall)
-            
-            Text(event.eventType)
-                .font(.subheadline)
+        }
+        else {
+            Text(event.displayDate)
+                .font(.subheadline.bold())
                 .foregroundStyle(.textSecondary)
         }
     }

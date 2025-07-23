@@ -114,67 +114,136 @@ struct EventsView: View {
     }
     
     @ViewBuilder
-    var contentView: some View {
-        ZStack(alignment: .topLeading) {
-            if viewModel.isLoading {
-                loadingView
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-            else {
-                listView
-                    .simultaneousGesture(TapGesture().onEnded({ _ in
-                        hideKeyboard()
-                    }))
-                    .simultaneousGesture(DragGesture().onEnded({ value in
-                        hideKeyboard()
-                    }))
-            }
-            VStack(spacing: .empty) {
-                SearchView(searchText: $viewModel.searchText)
-                
-                filtersView
-            }
-            .padding(.horizontal, .medium)
-            .padding(.top, .medium)
-            .background {
-                Color(uiColor: .systemBackground)
-                    .opacity(colorScheme == .light ? 0.95 : 0.9)
-            }
-        }
-        .toolbarBackground(.hidden, for: .navigationBar)
-        .background {
-            GeometryReader { geometry in
-                Color.clear
-                    .padding(.horizontal, .medium)
-                    .onChange(of: geometry.safeAreaInsets, { _, newValue in
-                        safeAreaInsets = newValue
-                    })
-                    .onChange(of: geometry.size) { _, newValue in
-                        switch horizontalSizeClass {
-                        case .regular:
-                            width =  (newValue.width / 2) - 32
-                        default:
-                            width =  newValue.width - 32
-                        }
-                    }
-            }
-        }
-        .overlay(alignment: .top) {
-            Color(uiColor: .systemBackground)
-                .opacity(colorScheme == .light ? 0.95 : 0.9)
-                .frame(height: safeAreaInsets.top)
-                .frame(maxWidth: .infinity)
-                .ignoresSafeArea()
-        }
-        .navigationDestination(for: StackDestination.self) { path in
-            switch path {
-            case .eventDetails(let eventInfo):
-                EventDetailsView(viewModel: .init(event: eventInfo, repository: viewModel.repository))
-                    .environmentObject(actionsManager)
-            }
+    var lazyStackView: some View {
+        LazyVStack(spacing: .medium) {
+            cardItemsView
         }
     }
     
+    @ViewBuilder
+    var lazyGridView: some View {
+        LazyVGrid(columns: [.init(), .init()], spacing: 16) {
+            cardItemsView
+        }
+    }
+    
+    func saveTocalendar(event: EventInfo) async {
+        if event.dates.count > 1 {
+            viewModel.route = .calendar(event: event)
+        }
+        else {
+            if await actionsManager.addToCalendar(event: event, date: event.dates.firstValidDate, errorHandler: viewModel.showErrorAlert) {
+                viewModel.route = .alert(.success(message: String(localized: "The event was added to your calendar!")))
+            }
+        }
+    }
+}
+
+extension EventsView {
+    @ViewBuilder
+    var loadingView: some View {
+        VStack {
+            LottieView(lottieFile: .fountain, loopMode: .loop)
+            Text("Loadding...")
+                .font(.subheadline)
+                .foregroundStyle(.fountainBackground)
+                .padding(.bottom, .medium)
+        }
+    }
+}
+
+extension EventsView {
+    @ViewBuilder
+    var cardItemsView: some View {
+        if viewModel.events.isEmpty {
+            HStack {
+                Text("No events found")
+                    .font(.title3)
+                    .foregroundStyle(.text)
+                Spacer()
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, .medium)
+        }
+        
+        ForEach(viewModel.events) { event in
+            let isFavourited = actionsManager.isEventFavourited(id: event.id)
+            let isInCalendar = actionsManager.isEventInCalendar(id: event.id)
+            EventsCardView(
+                event: event,
+                favouriteModel: .init(
+                    isFavourited: isFavourited,
+                    didTapFavorites: {
+                        Task {
+                            if isFavourited {
+                                await actionsManager.deleteFromFavorites(event: event, errorHandler: viewModel.showErrorAlert)
+                            }
+                            else {
+                                await actionsManager.saveToFavorites(event: event, errorHandler: viewModel.showErrorAlert)
+                            }
+                        }
+                    }),
+                calendarModel: .init(
+                    isInCalendar: isInCalendar,
+                    addToCalendar: {
+                        Task {
+                            if isInCalendar {
+                                if await actionsManager.deleteFromCalendar(event: event, errorHandler: viewModel.showErrorAlert) {
+                                    viewModel.route = .alert(.success(message: String(localized: "The event was removed from your calendar")))
+                                }
+                            }
+                            else {
+                                await saveTocalendar(event: event)
+                            }
+                        }
+                    }),
+                width: width
+            ) {
+                viewModel.didTapOnEvent(with: $0)
+            }
+        }
+    }
+}
+
+extension EventsView {
+    @ViewBuilder
+    var listView: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                PullToRefreshView(coordinateSpaceName: spaceName) {
+                    Task {
+                        await viewModel.fetchEvents()
+                        await actionsManager.setUp(events: viewModel.events)
+                    }
+                }
+                VStack { }
+                    .background {
+                        Color.clear
+                    }
+                    .frame(height: 130)
+                    .id(scrollViewId)
+                
+                VStack(alignment: .leading, spacing: .medium) {
+                    switch horizontalSizeClass {
+                    case .regular:
+                        lazyGridView
+                    default:
+                        lazyStackView
+                    }
+                }
+            }
+            .onChange(of: viewModel.scrollToTop) { _, newValue in
+                if newValue {
+                    proxy.scrollTo(scrollViewId, anchor: .top)
+                    viewModel.scrollToTop = false
+                }
+            }
+        }
+        .coordinateSpace(name: spaceName)
+    }
+}
+
+extension EventsView {
     @ViewBuilder
     var filtersView: some View {
         ScrollView(.horizontal) {
@@ -235,126 +304,67 @@ struct EventsView: View {
         }
         .scrollIndicators(.hidden)
     }
-    
+}
+
+extension EventsView {
     @ViewBuilder
-    var listView: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                PullToRefreshView(coordinateSpaceName: spaceName) {
-                    Task {
-                        await viewModel.fetchEvents()
-                        await actionsManager.setUp(events: viewModel.events)
-                    }
-                }
-                VStack { }
-                    .background {
-                        Color.clear
-                    }
-                    .frame(height: 130)
-                    .id(scrollViewId)
+    var contentView: some View {
+        ZStack(alignment: .topLeading) {
+            if viewModel.isLoading {
+                loadingView
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            else {
+                listView
+                    .simultaneousGesture(TapGesture().onEnded({ _ in
+                        hideKeyboard()
+                    }))
+                    .simultaneousGesture(DragGesture().onEnded({ value in
+                        hideKeyboard()
+                    }))
+            }
+            VStack(spacing: .empty) {
+                SearchView(searchText: $viewModel.searchText)
                 
-                VStack(alignment: .leading, spacing: .medium) {
-                    switch horizontalSizeClass {
-                    case .regular:
-                        lazyGridView
-                    default:
-                        lazyStackView
-                    }
-                }
+                filtersView
             }
-            .onChange(of: viewModel.scrollToTop) { _, newValue in
-                if newValue {
-                    proxy.scrollTo(scrollViewId, anchor: .top)
-                    viewModel.scrollToTop = false
-                }
-            }
-        }
-        .coordinateSpace(name: spaceName)
-    }
-    
-    @ViewBuilder
-    var cardItemsView: some View {
-        if viewModel.events.isEmpty {
-            HStack {
-                Text("No events found")
-                    .font(.title3)
-                    .foregroundStyle(.text)
-                Spacer()
-            }
-            .frame(maxWidth: .infinity)
             .padding(.horizontal, .medium)
-        }
-        
-        ForEach(viewModel.events) { event in
-            let isFavourited = actionsManager.isEventFavourited(id: event.id)
-            let isInCalendar = actionsManager.isEventInCalendar(id: event.id)
-            EventsCardView(
-                event: event,
-                favouriteModel: .init(
-                    isFavourited: isFavourited,
-                    didTapFavorites: {
-                        Task {
-                            if isFavourited {
-                                await actionsManager.deleteFromFavorites(event: event, errorHandler: viewModel.showErrorAlert)
-                            }
-                            else {
-                                await actionsManager.saveToFavorites(event: event, errorHandler: viewModel.showErrorAlert)
-                            }
-                        }
-                    }),
-                calendarModel: .init(
-                    isInCalendar: isInCalendar,
-                    addToCalendar: {
-                        Task {
-                            if isInCalendar {
-                                if await actionsManager.deleteFromCalendar(event: event, errorHandler: viewModel.showErrorAlert) {
-                                    viewModel.route = .alert(.success(message: String(localized: "The event was removed from your calendar")))
-                                }
-                            }
-                            else {
-                                await saveTocalendar(event: event)
-                            }
-                        }
-                    }),
-                width: width
-            ) {
-                viewModel.didTapOnEvent(with: $0)
+            .padding(.top, .medium)
+            .background {
+                Color(uiColor: .systemBackground)
+                    .opacity(colorScheme == .light ? 0.95 : 0.9)
             }
         }
-    }
-    
-    @ViewBuilder
-    var lazyStackView: some View {
-        LazyVStack(spacing: .medium) {
-            cardItemsView
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .background {
+            GeometryReader { geometry in
+                Color.clear
+                    .padding(.horizontal, .medium)
+                    .onChange(of: geometry.safeAreaInsets, { _, newValue in
+                        safeAreaInsets = newValue
+                    })
+                    .onChange(of: geometry.size) { _, newValue in
+                        switch horizontalSizeClass {
+                        case .regular:
+                            width =  (newValue.width / 2) - 32
+                        default:
+                            width =  newValue.width - 32
+                        }
+                    }
+            }
         }
-    }
-    
-    @ViewBuilder
-    var lazyGridView: some View {
-        LazyVGrid(columns: [.init(), .init()], spacing: 16) {
-            cardItemsView
+        .overlay(alignment: .top) {
+            Color(uiColor: .systemBackground)
+                .opacity(colorScheme == .light ? 0.95 : 0.9)
+                .frame(height: safeAreaInsets.top)
+                .frame(maxWidth: .infinity)
+                .ignoresSafeArea()
         }
-    }
-    
-    @ViewBuilder
-    var loadingView: some View {
-        VStack {
-            LottieView(lottieFile: .fountain, loopMode: .loop)
-            Text("Loadding...")
-                .font(.subheadline)
-                .foregroundStyle(.fountainBackground)
-                .padding(.bottom, .medium)
-        }
-    }
-    
-    func saveTocalendar(event: EventInfo) async {
-        if event.dates.count > 1 {
-            viewModel.route = .calendar(event: event)
-        }
-        else {
-            if await actionsManager.addToCalendar(event: event, date: event.dates.firstValidDate, errorHandler: viewModel.showErrorAlert) {
-                viewModel.route = .alert(.success(message: String(localized: "The event was added to your calendar!")))
+        .navigationDestination(for: StackDestination.self) { path in
+            switch path {
+            case .eventDetails(let eventInfo):
+                EventDetailsView(viewModel: .init(event: eventInfo, repository: viewModel.repository))
+                    .environmentObject(actionsManager)
             }
         }
     }

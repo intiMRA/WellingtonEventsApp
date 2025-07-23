@@ -33,7 +33,7 @@ struct DatesFilterView: View {
                 datePickers
                 Divider()
                 quickFiltersView
-                confirmationButtonView
+                ConfirmationButtonView(didTapConfirmationButton: didTapConfirmationButton)
             }
         }
         .padding(.horizontal, .medium)
@@ -54,23 +54,6 @@ struct DatesFilterView: View {
                 }
             }
         }
-    }
-    
-    @ViewBuilder
-    var confirmationButtonView: some View {
-        Button{
-            didTapConfirmationButton()
-        } label: {
-            Text("Apply Filters")
-                .frame(maxWidth: .infinity, idealHeight: 44)
-                .background {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(.accent)
-                }
-                .foregroundStyle(.selectedChipText)
-                .bold()
-        }
-        
     }
     
     func didTapConfirmationButton() {
