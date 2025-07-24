@@ -32,11 +32,12 @@ struct DatePickerView: View {
                                     Text(date.asString(with: .dd))
                                         .lineLimit(1)
                                         .foregroundStyle(viewModel.isDateSelected(date) ? .selectedChipText : .text)
-                                    
-                                    Text(date.asString(with: .hhmm))
-                                        .font(.caption)
-                                        .lineLimit(1)
-                                        .foregroundStyle(viewModel.isDateSelected(date) ? .selectedChipText : .text)
+                                    if !date.isAllDay {
+                                        Text(date.asString(with: .hhmm))
+                                            .font(.caption)
+                                            .lineLimit(1)
+                                            .foregroundStyle(viewModel.isDateSelected(date) ? .selectedChipText : .text)
+                                    }
                                 }
                                 .frame(maxWidth: .infinity)
                                 .background {
