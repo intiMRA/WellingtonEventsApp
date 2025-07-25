@@ -31,10 +31,11 @@ struct EventDetailsView: View {
                 
                 Divider()
                     .foregroundStyle(.text)
-                
-                Text(viewModel.event.description)
-                    .foregroundStyle(.text)
-                    .multilineTextAlignment(.leading)
+                ForEach(viewModel.event.description.replacingOccurrences(of: "!\n", with: ".\n").split(separator: ".\n"), id: \.self) { line in
+                    Text(line.description.contains(".") || line.description.contains("!") ? line : "\(line).")
+                        .foregroundStyle(.text)
+                        .multilineTextAlignment(.leading)
+                }
                 
                 Divider()
                     .foregroundStyle(.text)
