@@ -20,6 +20,7 @@ class ActionsManager: ObservableObject {
         eventsInCalendar.contains(where: { id == $0.id })
     }
     
+    @discardableResult
     func saveToFavorites(event: EventInfo, errorHandler: (String?, String) -> Void) async -> Bool {
         do {
             try await repository.saveToFavorites(event: event)
@@ -32,6 +33,7 @@ class ActionsManager: ObservableObject {
         }
     }
     
+    @discardableResult
     func deleteFromFavorites(event: EventInfo, errorHandler: (String?, String) -> Void) async -> Bool  {
         do {
             try await repository.deleteFromFavorites(event: event)

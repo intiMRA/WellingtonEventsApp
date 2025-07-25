@@ -9,12 +9,16 @@ import SwiftUI
 import DesignLibrary
 import SwiftUINavigation
 
+enum EventsViewFocusState: Equatable, Hashable {
+    case search
+}
 struct EventsView: View {
     @StateObject var viewModel: EventsViewModel = .init()
     @StateObject var actionsManager: ActionsManager = .init()
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    @FocusState private var focusState: EventsViewFocusState?
     private let spaceName = "pullToRefresh"
     private let scrollViewId = "scrollView"
     @State private var safeAreaInsets = EdgeInsets()
@@ -181,6 +185,7 @@ extension EventsView {
                             else {
                                 await actionsManager.saveToFavorites(event: event, errorHandler: viewModel.showErrorAlert)
                             }
+                            viewModel.didFavoriteEvent(favourites: actionsManager.favourites)
                         }
                     }),
                 calendarModel: .init(
@@ -232,8 +237,9 @@ extension EventsView {
                     }
                 }
             }
-            .onChange(of: viewModel.scrollToTop) { _, newValue in
-                if newValue {
+            .scrollDismissesKeyboard(.immediately)
+            .onChange(of: viewModel.scrollToTop) { oldValue, newValue in
+                if newValue != oldValue && newValue {
                     proxy.scrollTo(scrollViewId, anchor: .top)
                     viewModel.scrollToTop = false
                 }
@@ -317,14 +323,11 @@ extension EventsView {
             else {
                 listView
                     .simultaneousGesture(TapGesture().onEnded({ _ in
-                        hideKeyboard()
-                    }))
-                    .simultaneousGesture(DragGesture().onEnded({ value in
-                        hideKeyboard()
+                        focusState = nil
                     }))
             }
             VStack(spacing: .empty) {
-                SearchView(searchText: $viewModel.searchText)
+                SearchView(searchText: $viewModel.searchText, focusState: $focusState)
                 
                 filtersView
             }
@@ -369,11 +372,3 @@ extension EventsView {
         }
     }
 }
-
-#if canImport(UIKit)
-extension View {
-    func hideKeyboard() {
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-    }
-}
-#endif

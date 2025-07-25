@@ -10,11 +10,11 @@ import DesignLibrary
 
 struct SearchView: View {
     @Binding var searchText: String
-    @FocusState var focused: Bool
+    var focusState: FocusState<EventsViewFocusState?>.Binding
     
     var body: some View {
         ZStack(alignment: .trailing) {
-            if !focused {
+            if focusState.wrappedValue != .search {
                 HStack {
                     Image(.search)
                         .padding(.trailing, .medium)
@@ -31,7 +31,7 @@ struct SearchView: View {
                         .fill(.cardBackground)
                 }
                 .onTapGesture {
-                    focused = true
+                    focusState.wrappedValue = .search
                 }
             }
             
@@ -39,17 +39,17 @@ struct SearchView: View {
                 TextField("", text: $searchText)
                     .frame(height: 44)
                     .frame(maxWidth: .infinity)
-                    .focused($focused)
+                    .focused(focusState, equals: .search)
                     .padding(.horizontal, .medium)
                     .background {
                         RoundedRectangle(cornerRadius: 20)
                             .fill(.cardBackground)
                     }
                 
-                if focused {
+                if focusState.wrappedValue == .search {
                     HStack {
                         Button {
-                            focused = false
+                            focusState.wrappedValue = nil
                         } label: {
                             Text("Cancel")
                         }
@@ -57,13 +57,13 @@ struct SearchView: View {
                     .padding(.trailing, .medium)
                 }
             }
-            .opacity(focused ? 1 : 0)
+            .opacity(focusState.wrappedValue == .search ? 1 : 0)
             
         }
-        .animation(.default, value: focused)
+        .animation(.default, value: focusState.wrappedValue)
         .interactiveDismissDisabled(true)
         .task {
-            focused = false
+            focusState.wrappedValue = nil
         }
         .padding(.bottom, .xSmall)
     }
