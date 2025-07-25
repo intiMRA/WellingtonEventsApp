@@ -33,7 +33,10 @@ struct DatesFilterView: View {
                 datePickers
                 Divider()
                 quickFiltersView
-                ConfirmationButtonView(didTapConfirmationButton: didTapConfirmationButton)
+                StyledButtonView(type: .applyFilters) {
+                    didTapConfirmationButton()
+                }
+                .padding(.top, .small)
             }
         }
         .padding(.horizontal, .medium)

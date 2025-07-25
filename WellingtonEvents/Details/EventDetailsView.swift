@@ -39,7 +39,15 @@ struct EventDetailsView: View {
                 
                 Divider()
                     .foregroundStyle(.text)
+                
                 mapImage
+                
+                Divider()
+                    .foregroundStyle(.text)
+                
+                StyledButtonView(type: .openWebView) {
+                    viewModel.showWebView()
+                }
             }
         }
         .padding(.horizontal, .medium)

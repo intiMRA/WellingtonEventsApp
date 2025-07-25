@@ -7,13 +7,29 @@
 import SwiftUI
 import DesignLibrary
 
-struct ConfirmationButtonView: View {
+struct StyledButtonView: View {
+    enum StyledButtonViewType {
+        case applyFilters
+        case openWebView
+        
+        var title: String {
+            switch self {
+            case .applyFilters:
+                return String(localized: "Apply Filters")
+            case .openWebView:
+                return String(localized: "View Event")
+            }
+        }
+    }
+    
+    let type: StyledButtonViewType
     var didTapConfirmationButton: () -> Void
+    
     var body: some View {
         Button{
             didTapConfirmationButton()
         } label: {
-            Text("Apply Filters")
+            Text(type.title)
                 .frame(maxWidth: .infinity, idealHeight: 44)
                 .background {
                     RoundedRectangle(cornerRadius: 8)
@@ -22,6 +38,5 @@ struct ConfirmationButtonView: View {
                 .foregroundStyle(.selectedChipText)
                 .bold()
         }
-        .padding(.top, .small)
     }
 }
