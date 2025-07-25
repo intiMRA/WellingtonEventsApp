@@ -40,6 +40,9 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A1112AE72D2B41EA00BE9D0C /* WellingtonEvents */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFolders = (
+				Resources/.xcassets,
+			);
 			path = WellingtonEvents;
 			sourceTree = "<group>";
 		};

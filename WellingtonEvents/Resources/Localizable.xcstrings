@@ -17,13 +17,7 @@
         }
       }
     },
-    "%@ + more" : {
-
-    },
     "Add To Calendar" : {
-
-    },
-    "Adding To Calendar" : {
 
     },
     "Address:" : {
@@ -47,7 +41,10 @@
     "Dates:" : {
 
     },
-    "Deleting Favourite" : {
+    "Event succesfully added to your calendar. Some events may be displayed as a whole day. Please check the event page for more details." : {
+
+    },
+    "Event succesfully removed from your calendar." : {
 
     },
     "Event type:" : {
@@ -65,10 +62,25 @@
     "From:" : {
 
     },
+    "Happening now!" : {
+
+    },
     "Happening once" : {
 
     },
-    "Loadding..." : {
+    "Happening soon!" : {
+
+    },
+    "Loading..." : {
+
+    },
+    "Managing Calendar" : {
+
+    },
+    "Managing Favourites" : {
+
+    },
+    "multiple dates" : {
 
     },
     "Multiple dates" : {
@@ -89,9 +101,6 @@
     "Quick Dates:" : {
 
     },
-    "Saving Favourite" : {
-
-    },
     "Search for events in Welly" : {
 
     },
@@ -104,10 +113,13 @@
     "Sorry the event could not be added to your calendar." : {
 
     },
-    "Sorry the event could not be deleted form favourites." : {
+    "Sorry the event could not be added to your calendar. Please allow access to your calendar in your settings." : {
 
     },
     "Sorry the event could not be deleted from your calendar." : {
+
+    },
+    "Sorry the event could not be removed from favourites." : {
 
     },
     "Source:" : {
@@ -117,12 +129,6 @@
 
     },
     "Sources:" : {
-
-    },
-    "The event was added to your calendar!" : {
-
-    },
-    "The event was removed from your calendar" : {
 
     },
     "This month" : {

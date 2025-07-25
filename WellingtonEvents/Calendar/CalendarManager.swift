@@ -9,12 +9,12 @@ import Foundation
 @preconcurrency import EventKit
 
 class CalendarManager {
-    
+    static let accessDeniedError : NSError = NSError(domain: "CalendarAccessDenied", code: 1, userInfo: nil)
     static let eventStore : EKEventStore = EKEventStore()
     
     static func saveEventToCalendar(eventInfo: EventInfo, date: Date?, repository: EventsRepository) async throws {
         guard (try await eventStore.requestFullAccessToEvents()) == true else {
-            return
+            throw Self.accessDeniedError
         }
         
         guard let date else {
@@ -35,8 +35,11 @@ class CalendarManager {
     }
     
     static func removeFromCalendar(event: EventInfo, repository: EventsRepository) async throws {
-        guard (try await eventStore.requestFullAccessToEvents()) == true,
-              let endDate = event.dates.last?.addingDay(),
+        guard (try await eventStore.requestFullAccessToEvents()) == true else {
+            throw Self.accessDeniedError
+        }
+        
+        guard let endDate = event.dates.last?.addingDay(),
               let calendar = eventStore.defaultCalendarForNewEvents
         else {
             return

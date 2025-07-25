@@ -84,7 +84,7 @@ struct EventsView: View {
         .sheet(item: $viewModel.route.alert, id: \.self) { style in
             ToastView(model: .init(style: style, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
                 .presentationBackground(.clear)
-                .presentationDetents([.fraction(1/7)])
+                .presentationDetents([.fraction(1/6)])
         }
         .sheet(item: $viewModel.route.dateSelector, id: \.id) { dates in
             NavigationView {
@@ -133,7 +133,7 @@ struct EventsView: View {
         }
         else {
             if await actionsManager.addToCalendar(event: event, date: event.dates.firstValidDate, errorHandler: viewModel.showErrorAlert) {
-                viewModel.route = .alert(.success(message: String(localized: "The event was added to your calendar!")))
+                viewModel.route = .alert(.success(title: AlertMessages.addCalendarSuccess.title, message: AlertMessages.addCalendarSuccess.message))
             }
         }
     }
@@ -144,7 +144,7 @@ extension EventsView {
     var loadingView: some View {
         VStack {
             LottieView(lottieFile: .fountain, loopMode: .loop)
-            Text("Loadding...")
+            Text("Loading...")
                 .font(.subheadline)
                 .foregroundStyle(.fountainBackground)
                 .padding(.bottom, .medium)
@@ -189,7 +189,7 @@ extension EventsView {
                         Task {
                             if isInCalendar {
                                 if await actionsManager.deleteFromCalendar(event: event, errorHandler: viewModel.showErrorAlert) {
-                                    viewModel.route = .alert(.success(message: String(localized: "The event was removed from your calendar")))
+                                    viewModel.route = .alert(.success(title: AlertMessages.deleteCalendarSuccess.title, message: AlertMessages.deleteCalendarSuccess.message))
                                 }
                             }
                             else {
