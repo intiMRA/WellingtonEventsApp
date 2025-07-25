@@ -87,6 +87,7 @@ struct EventsView: View {
         }
         .sheet(item: $viewModel.route.alert, id: \.self) { style in
             ToastView(model: .init(style: style, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+                .padding(.top, .medium)
                 .presentationBackground(.clear)
                 .presentationDetents([.fraction(1/6)])
         }
