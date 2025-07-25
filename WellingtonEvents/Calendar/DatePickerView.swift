@@ -32,7 +32,7 @@ struct DatePickerView: View {
                                     Text(date.asString(with: .dd))
                                         .lineLimit(1)
                                         .foregroundStyle(viewModel.isDateSelected(date) ? .selectedChipText : .text)
-                                    if !date.isAllDay {
+                                    if !date.displayAsAllDay {
                                         Text(date.asString(with: .hhmm))
                                             .font(.caption)
                                             .lineLimit(1)
@@ -77,7 +77,7 @@ struct DatePickerView: View {
     
     func addToCalander() async {
         if await actionsManager.addToCalendar(event: viewModel.event, date: viewModel.selectedDate, errorHandler: viewModel.errorHandler) {
-            viewModel.dismiss(.success(message: String(localized: "The event was added to your calendar!")))
+            viewModel.dismiss(.success(title: AlertMessages.addCalendarSuccess.title, message: AlertMessages.addCalendarSuccess.message))
         }
     }
 }

@@ -31,14 +31,23 @@ struct EventDetailsView: View {
                 
                 Divider()
                     .foregroundStyle(.text)
-                
-                Text(viewModel.event.description)
-                    .foregroundStyle(.text)
-                    .multilineTextAlignment(.leading)
+                ForEach(viewModel.event.description.replacingOccurrences(of: "!\n", with: ".\n").split(separator: ".\n"), id: \.self) { line in
+                    Text(line.description.contains(".") || line.description.contains("!") ? line : "\(line).")
+                        .foregroundStyle(.text)
+                        .multilineTextAlignment(.leading)
+                }
                 
                 Divider()
                     .foregroundStyle(.text)
+                
                 mapImage
+                
+                Divider()
+                    .foregroundStyle(.text)
+                
+                StyledButtonView(type: .openWebView) {
+                    viewModel.showWebView()
+                }
             }
         }
         .padding(.horizontal, .medium)
@@ -93,7 +102,7 @@ struct EventDetailsView: View {
         .sheet(item: $viewModel.route.alert, id: \.self) { style in
             ToastView(model: .init(style: style, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
                 .presentationBackground(.clear)
-                .presentationDetents([.fraction(1/7)])
+                .presentationDetents([.fraction(1/6)])
         }
     }
     
@@ -113,7 +122,7 @@ struct EventDetailsView: View {
         }
         else {
             if await actionsManager.addToCalendar(event: event, date: event.dates.firstValidDate, errorHandler: viewModel.showErrorAlert) {
-                viewModel.route = .alert(.success(message: String(localized: "The event was added to your calendar!")))
+                viewModel.route = .alert(.success(title: AlertMessages.addCalendarSuccess.title, message: AlertMessages.addCalendarSuccess.message))
             }
         }
     }
@@ -126,14 +135,34 @@ extension EventDetailsView {
             .font(.title)
             .foregroundStyle(.text)
             .multilineTextAlignment(.leading)
-        
-        HStack(alignment: .top) {
-            Text("Date:")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.textSecondary)
-            if let eventDate = viewModel.eventDate {
-                Text(eventDate)
+        VStack(alignment: .leading, spacing: .xxSmall) {
+            if viewModel.happeningSoon {
+                Text("Happening soon!")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
+            if viewModel.happeningNow {
+                Text("Happening now!")
                     .font(.subheadline)
+                    .foregroundStyle(.red)
+            }
+            else {
+                HStack(alignment: .top) {
+                    Text("Date:")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.textSecondary)
+                    if let eventDate = viewModel.eventDate {
+                        Text(eventDate)
+                            .font(.subheadline)
+                            .foregroundStyle(.textSecondary)
+                            .multilineTextAlignment(.leading)
+                    }
+                }
+            }
+            
+            if viewModel.multipleDates {
+                Text("multiple dates")
+                    .font(.caption)
                     .foregroundStyle(.textSecondary)
                     .multilineTextAlignment(.leading)
             }
@@ -188,7 +217,7 @@ extension EventDetailsView {
                 Task {
                     if isInCalendar {
                         if await actionsManager.deleteFromCalendar(event: viewModel.event, errorHandler: viewModel.showErrorAlert) {
-                            viewModel.route = .alert(.success(message: String(localized: "The event was removed from your calendar")))
+                            viewModel.route = .alert(.success(title: AlertMessages.deleteCalendarSuccess.title, message: AlertMessages.deleteCalendarSuccess.message))
                         }
                     }
                     else {

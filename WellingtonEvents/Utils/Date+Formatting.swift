@@ -32,6 +32,16 @@ extension Date {
         return components.hour == 1 && components.minute == 1
     }
     
+    var happeningSoon: Bool {
+        let component = Self.calendar.dateComponents([.day, .hour, .minute], from: .now, to: self)
+        return !happeningNow && component.day ?? 0 < 1 && component.hour ?? 0 <= 1 && component.minute ?? 0 <= 30
+    }
+    
+    var happeningNow: Bool {
+        let component = Self.calendar.dateComponents([.day, .hour, .minute], from: .now, to: self)
+        return component.day ?? 0 < 1 && component.hour ?? 0 <= 1 && component.minute ?? 0 <= 10
+    }
+    
     init?(from string: String, with format: Formats) {
         guard let date = Formats.formatter(for: format).date(from: string) else {
             return nil

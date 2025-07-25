@@ -54,6 +54,7 @@ class EventsViewModel: ObservableObject {
     @Published var isLoading: Bool = true
     
     @Published var searchText = ""
+    var oldSearchText: String = ""
     @Published var scrollToTop = false
     
     var filters: Filters?
@@ -82,7 +83,10 @@ class EventsViewModel: ObservableObject {
                     guard let self else {
                         return
                     }
-                    didTypeSearch(string: value)
+                    if oldSearchText != value {
+                        didTypeSearch(string: value)
+                        oldSearchText = value
+                    }
                 }
                 .store(in: &cancellables)
         }

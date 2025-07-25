@@ -32,17 +32,26 @@ class EventDetailsViewModel: ObservableObject {
     
     private let options: MKMapSnapshotter.Options = .init()
     
+    var happeningSoon: Bool {
+        event.dates.firstValidDate?.happeningSoon ?? false
+    }
+    
+    var happeningNow: Bool {
+        event.dates.firstValidDate?.happeningNow ?? false
+    }
+    
+    var multipleDates: Bool {
+        event.dates.count > 1
+    }
+    
     var eventDate: String? {
-        guard let firstDate = event.dates.first else { return nil }
+        guard let firstDate = event.dates.firstValidDate else { return nil }
         let dateString: String
         if firstDate.displayAsAllDay {
             dateString = firstDate.asString(with: .eeeddmmmSpaced)
         }
         else {
             dateString = firstDate.asString(with: .eeeddmmmSpacedHMMA)
-        }
-        if event.dates.count > 1 {
-            return String(localized: "\(dateString) + more")
         }
         return dateString
     }

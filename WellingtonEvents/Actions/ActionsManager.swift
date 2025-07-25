@@ -20,6 +20,7 @@ class ActionsManager: ObservableObject {
         eventsInCalendar.contains(where: { id == $0.id })
     }
     
+    @discardableResult
     func saveToFavorites(event: EventInfo, errorHandler: (String?, String) -> Void) async -> Bool {
         do {
             try await repository.saveToFavorites(event: event)
@@ -27,11 +28,12 @@ class ActionsManager: ObservableObject {
             return true
         }
         catch {
-            errorHandler(String(localized: "Saving Favourite"), String(localized: "Sorry the event could not be added to favourites."))
+            errorHandler(AlertMessages.addFavoritesFail.title, AlertMessages.addFavoritesFail.message)
             return false
         }
     }
     
+    @discardableResult
     func deleteFromFavorites(event: EventInfo, errorHandler: (String?, String) -> Void) async -> Bool  {
         do {
             try await repository.deleteFromFavorites(event: event)
@@ -39,7 +41,7 @@ class ActionsManager: ObservableObject {
             return true
         }
         catch {
-            errorHandler(String(localized: "Deleting Favourite"), String(localized: "Sorry the event could not be deleted form favourites."))
+            errorHandler(AlertMessages.deleteFavoritesFail.title, AlertMessages.deleteFavoritesFail.message)
             return false
         }
     }
@@ -51,7 +53,12 @@ class ActionsManager: ObservableObject {
             return true
         }
         catch {
-            errorHandler(String(localized: "Adding To Calendar"), String(localized: "Sorry the event could not be added to your calendar."))
+            if error as NSError == CalendarManager.accessDeniedError {
+                errorHandler(AlertMessages.calenderDeneid.title, AlertMessages.calenderDeneid.message)
+            }
+            else {
+                errorHandler(AlertMessages.addCalendarFail.title, AlertMessages.addCalendarFail.message)
+            }
             return false
         }
     }
@@ -63,7 +70,12 @@ class ActionsManager: ObservableObject {
             return true
         }
         catch {
-            errorHandler(String(localized: "Adding To Calendar"), String(localized: "Sorry the event could not be deleted from your calendar."))
+            if error as NSError == CalendarManager.accessDeniedError {
+                errorHandler(AlertMessages.calenderDeneid.title, AlertMessages.calenderDeneid.message)
+            }
+            else {
+                errorHandler(AlertMessages.deleteCalendarFail.title, AlertMessages.deleteCalendarFail.message)
+            }
             return false
         }
     }

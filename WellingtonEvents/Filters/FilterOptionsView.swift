@@ -41,7 +41,10 @@ struct FilterOptionsView: View {
                     .bold(isSelected)
                     Divider()
                 }
-                ConfirmationButtonView(didTapConfirmationButton: viewModel.didFinishedFiltering)
+                StyledButtonView(type: .applyFilters) {
+                    viewModel.didFinishedFiltering()
+                }
+                .padding(.top, .small)
             }
             .padding(.horizontal, .medium)
         }

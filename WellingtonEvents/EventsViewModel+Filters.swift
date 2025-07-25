@@ -98,6 +98,12 @@ extension EventsViewModel {
         applyFilters()
     }
     
+    func didFavoriteEvent(favourites: [EventInfo]) {
+        if selectedFilters.contains(where: { $0.id == .favorited }) {
+            events.removeAll(where: { event in !favourites.contains(where: { $0.id == event.id })})
+        }
+    }
+    
     func didTapOneOfFilter() {
         if selectedFilters.contains(where: { $0.id == .oneOf }) {
             selectedFilters.removeAll(where: { $0.id == .oneOf })
