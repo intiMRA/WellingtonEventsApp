@@ -17,6 +17,7 @@ struct MapView: View {
     @FocusState private var focusState: ListViewFocusState?
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @State private var width: CGFloat = .zero
+    @State var dotSize: CGFloat = 10
     var body: some View {
         NavigationStack(path: $viewModel.navigationPath) {
             ZStack(alignment: .topLeading) {
@@ -31,15 +32,9 @@ struct MapView: View {
                                     viewModel.didTapOnEvent(firstEvent)
                                 }
                             } label: {
-                                VStack {
                                     Circle()
                                         .fill( model.events.count > 1 ? Color.yellow : Color.blue)
-                                        .squareFrame(size: 10)
-                                }
-                                .background {
-                                    Color.clear
-                                }
-                                .squareFrame(size: 20)
+                                        .squareFrame(size: dotSize)
                             }
                         }
                     }
@@ -47,6 +42,19 @@ struct MapView: View {
                 .mapControls {
                     MapUserLocationButton()
                     MapPitchToggle()
+                }
+                .onMapCameraChange { context in
+                    switch context.camera.distance {
+                    case ..<500:
+                        dotSize = 25
+                    case 500..<4000:
+                        dotSize = 20
+                    case 4000..<5000:
+                        dotSize = 15
+                    default:
+                        dotSize = 10
+                    
+                    }
                 }
                 
                 filtersView
