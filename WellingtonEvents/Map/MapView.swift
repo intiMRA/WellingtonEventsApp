@@ -18,23 +18,30 @@ struct MapView: View {
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @State private var width: CGFloat = .zero
     @State var dotSize: CGFloat = 10
+    
     var body: some View {
         NavigationStack(path: $viewModel.navigationPath) {
             ZStack(alignment: .topLeading) {
                 Map(initialPosition: .userLocation(fallback: .region(MapViewModel.wellingtonRegion))) {
                     ForEach(viewModel.events) { model in
-                        Annotation("", coordinate: model.coordinate, accessoryAnchor: .bottom) {
+                        Annotation((model.isOneEvent && dotSize > 15) ? model.title : "", coordinate: model.coordinate, accessoryAnchor: .bottom) {
                             Button {
-                                if model.events.count > 1 {
+                                if !model.isOneEvent {
                                     viewModel.showCards(for: model)
                                 }
                                 else if let firstEvent = model.events.first {
                                     viewModel.didTapOnEvent(firstEvent)
                                 }
                             } label: {
-                                    Circle()
-                                        .fill( model.events.count > 1 ? Color.yellow : Color.blue)
-                                        .squareFrame(size: dotSize)
+                                Circle()
+                                    .fill(model.isOneEvent ? Color.blue : Color.yellow)
+                                    .squareFrame(size: dotSize)
+                                    .overlay {
+                                        if !model.isOneEvent , dotSize > 10 {
+                                            Text("\(model.events.count)")
+                                                .font(.caption2)
+                                        }
+                                    }
                             }
                         }
                     }
@@ -53,7 +60,7 @@ struct MapView: View {
                         dotSize = 15
                     default:
                         dotSize = 10
-                    
+                        
                     }
                 }
                 
