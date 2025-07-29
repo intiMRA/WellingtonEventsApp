@@ -8,8 +8,19 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject var actionsManager: ActionsManager = .init()
+    
     var body: some View {
-        EventsView()
+        TabView {
+            Tab("Events", image: "events") {
+                ListView()
+                    .environmentObject(actionsManager)
+            }
+            Tab("Map", image: "map") {
+                MapView()
+                    .environmentObject(actionsManager)
+            }
+        }
     }
 }
 

@@ -9,16 +9,16 @@ import SwiftUI
 import DesignLibrary
 import SwiftUINavigation
 
-enum EventsViewFocusState: Equatable, Hashable {
+enum ListViewFocusState: Equatable, Hashable {
     case search
 }
-struct EventsView: View {
-    @StateObject var viewModel: EventsViewModel = .init()
-    @StateObject var actionsManager: ActionsManager = .init()
+struct ListView: View {
+    @StateObject var viewModel: ListViewModel = .init()
+    @EnvironmentObject var actionsManager: ActionsManager
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
-    @FocusState private var focusState: EventsViewFocusState?
+    @FocusState private var focusState: ListViewFocusState?
     private let spaceName = "pullToRefresh"
     private let scrollViewId = "scrollView"
     @State private var safeAreaInsets = EdgeInsets()
@@ -74,6 +74,12 @@ struct EventsView: View {
                 .environmentObject(actionsManager)
             }
         }
+        .sheet(item: $viewModel.route.alert, id: \.self) { style in
+            ToastView(model: .init(style: style, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+                .padding(.top, .medium)
+                .presentationBackground(.clear)
+                .presentationDetents([.fraction(1/6)])
+        }
         .sheet(item: $viewModel.route.filters, id: \.id) { value in
             NavigationView {
                 FilterOptionsView(viewModel: .init(
@@ -84,12 +90,6 @@ struct EventsView: View {
                     dismiss: { [weak viewModel] in viewModel?.resetRoute() }))
             }
             .presentationDetents([ .medium, .large])
-        }
-        .sheet(item: $viewModel.route.alert, id: \.self) { style in
-            ToastView(model: .init(style: style, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
-                .padding(.top, .medium)
-                .presentationBackground(.clear)
-                .presentationDetents([.fraction(1/6)])
         }
         .sheet(item: $viewModel.route.dateSelector, id: \.id) { dates in
             NavigationView {
@@ -144,7 +144,7 @@ struct EventsView: View {
     }
 }
 
-extension EventsView {
+extension ListView {
     @ViewBuilder
     var loadingView: some View {
         VStack {
@@ -157,7 +157,7 @@ extension EventsView {
     }
 }
 
-extension EventsView {
+extension ListView {
     @ViewBuilder
     var cardItemsView: some View {
         if viewModel.events.isEmpty {
@@ -205,13 +205,13 @@ extension EventsView {
                     }),
                 width: width
             ) {
-                viewModel.didTapOnEvent(with: $0)
+                viewModel.didTapOnEvent($0)
             }
         }
     }
 }
 
-extension EventsView {
+extension ListView {
     @ViewBuilder
     var listView: some View {
         ScrollViewReader { proxy in
@@ -250,7 +250,7 @@ extension EventsView {
     }
 }
 
-extension EventsView {
+extension ListView {
     @ViewBuilder
     var filtersView: some View {
         ScrollView(.horizontal) {
@@ -313,7 +313,7 @@ extension EventsView {
     }
 }
 
-extension EventsView {
+extension ListView {
     @ViewBuilder
     var contentView: some View {
         ZStack(alignment: .topLeading) {

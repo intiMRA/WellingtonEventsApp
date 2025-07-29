@@ -36,10 +36,14 @@ actor DefaultEventsRepository: EventsRepository {
                 return try JSONDecoder().decode(EventsResponse.self, from: cachedResponseData)
             }
         }
-        guard let response: EventsResponse? = try await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: urlBuilder(), httpMethod: .GET)) else {
-            throw DefaultEventsRepositoryError.failedToFetchResponse
+        guard let response: EventsResponse = try? await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: urlBuilder(), httpMethod: .GET)) else {
+            if let cachedResponseData = Self.userDefaults.data(forKey: Keys.eventsResponse.rawValue) {
+                return try JSONDecoder().decode(EventsResponse.self, from: cachedResponseData)
+            }
+            else {
+                throw DefaultEventsRepositoryError.failedToFetchResponse
+            }
         }
-        
         Self.userDefaults.set(try JSONEncoder().encode(response), forKey: Keys.eventsResponse.rawValue)
         Self.userDefaults.set(Date.now.asString(with: .ddMMYyyy), forKey: Keys.date.rawValue)
         

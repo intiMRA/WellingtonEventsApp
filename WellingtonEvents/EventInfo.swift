@@ -115,6 +115,10 @@ struct EventInfo: Codable, Identifiable, Equatable {
         }
         self.location = try container.decodeIfPresent(Location.self, forKey: .coordinates)
     }
+    
+    static func == (lhs: EventInfo, rhs: EventInfo) -> Bool {
+        return lhs.id == rhs.id
+    }
 }
 
 extension EventInfo: Hashable {

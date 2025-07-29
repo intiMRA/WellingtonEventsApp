@@ -16,4 +16,6 @@ struct SourcesFilter: FilterObjectProtocol {
             events.removeAll { $0.id == event.id }
         }
     }
+    
+    func execute(event: MapEventtModel, events: inout [MapEventtModel]) { }
 }

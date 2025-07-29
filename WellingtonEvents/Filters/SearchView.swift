@@ -10,7 +10,7 @@ import DesignLibrary
 
 struct SearchView: View {
     @Binding var searchText: String
-    var focusState: FocusState<EventsViewFocusState?>.Binding
+    var focusState: FocusState<ListViewFocusState?>.Binding
     
     var body: some View {
         ZStack(alignment: .trailing) {

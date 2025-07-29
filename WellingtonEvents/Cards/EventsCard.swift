@@ -24,11 +24,11 @@ struct EventsCardView: View {
     let favouriteModel: FavouriteModel
     var calendarModel: CalendarModel?
     let width: CGFloat
-    var didTapOnCard: (String) -> Void
+    var didTapOnCard: (EventInfo) -> Void
     
     var body: some View {
         Button {
-            didTapOnCard(event.id)
+            didTapOnCard(event)
         } label: {
             VStack(alignment: .leading, spacing: .xSmall) {
                 ZStack(alignment: .bottomLeading) {
@@ -63,7 +63,7 @@ struct EventsCardView: View {
                 Divider()
             }
         }
-        .padding(.horizontal, .medium)
+        .frame(width: width)
     }
 }
 

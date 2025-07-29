@@ -11,4 +11,5 @@ protocol FilterObjectProtocol {
     var id: FilterIds { get }
     
     func execute(event: EventInfo, events: inout [EventInfo])
+    func execute(event: MapEventtModel, events: inout [MapEventtModel])
 }
