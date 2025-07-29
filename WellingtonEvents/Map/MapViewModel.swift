@@ -25,6 +25,7 @@ class MapViewModel: ObservableObject {
         case alert(ToastStyle)
         case calendar(event: EventInfo)
         case filters(for: FilterValues)
+        case distance(distance: Double)
         case dateSelector(startDate: Date, endDate: Date, selectedQuickDate: QuickDateType?, id: String)
     }
     
@@ -33,7 +34,7 @@ class MapViewModel: ObservableObject {
         span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
     )
 
-    private var locationManager: CLLocationManager?
+    var locationManager: CLLocationManager?
     var allEvents: [MapEventtModel] = []
     let repository: EventsRepository
     

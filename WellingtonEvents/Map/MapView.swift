@@ -99,6 +99,15 @@ struct MapView: View {
                 }
                 .presentationDetents([ .medium, .large])
             }
+            .sheet(item: $viewModel.route.distance, id: \.self) { distance in
+                NavigationView {
+                    DistanceFilterView(
+                        selectedDistance: distance,
+                        dismiss: viewModel.resetRoute,
+                        didSelectDistance: viewModel.didSelectDistance)
+                }
+                .presentationDetents([ .medium, .large])
+            }
             .navigationDestination(for: StackDestination.self) { path in
                 switch path {
                 case .eventDetails(let eventInfo):
@@ -184,18 +193,38 @@ extension MapView {
 extension MapView {
     @ViewBuilder
     var filtersView: some View {
-        let selectedSources = viewModel.selectedFilterSource()
-        
-        let quickDatesSelected = selectedSources.contains(where: { $0 == .quickDate })
-        
-        let datesSelected = selectedSources.contains(where: { $0 == .date })
-        FilterView(
-            isSelected: datesSelected || quickDatesSelected,
-            title: quickDatesSelected ? viewModel.filterTitle(for: .quickDate, isSelected: true) : viewModel.filterTitle(for: .date, isSelected: datesSelected),
-            hasIcon: true) {
-                viewModel.showDateSelector()
-            } clearFilters: {
-                viewModel.clearFilters(for: [.date, .quickDate])
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+                let selectedSources = viewModel.selectedFilterSource()
+                
+                let quickDatesSelected = selectedSources.contains(where: { $0 == .quickDate })
+                
+                let datesSelected = selectedSources.contains(where: { $0 == .date })
+                FilterView(
+                    isSelected: datesSelected || quickDatesSelected,
+                    title: quickDatesSelected ? viewModel.filterTitle(for: .quickDate, isSelected: true) : viewModel.filterTitle(for: .date, isSelected: datesSelected),
+                    hasIcon: true) {
+                        viewModel.showDateSelector()
+                    } clearFilters: {
+                        viewModel.clearFilters(for: [.date, .quickDate])
+                    }
+                
+                switch viewModel.locationManager?.authorizationStatus {
+                case .authorizedAlways, .authorizedWhenInUse:
+                    let distanceSelected = selectedSources.contains(where: { $0 == .distance })
+                    FilterView(
+                        isSelected: distanceSelected,
+                        title: viewModel.filterTitle(for: .distance, isSelected: distanceSelected),
+                        hasIcon: true) {
+                            viewModel.showDistanceSelector()
+                        } clearFilters: {
+                            viewModel.clearFilters(for: .distance)
+                        }
+                default:
+                    EmptyView()
+                }
             }
+        }
+        .padding(.trailing, 45)
     }
 }
