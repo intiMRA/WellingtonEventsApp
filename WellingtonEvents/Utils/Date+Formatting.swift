@@ -143,6 +143,17 @@ extension Date {
         let currentDate = Date.calendar.date(from: Date.calendar.dateComponents([.day, .month, .year, .hour], from: self))
         return Date.calendar.date(byAdding: DateComponents(day: 1), to: currentDate!)
     }
+    
+    func isToday() -> Bool {
+        let now = Date()
+        
+        let nowComponents = Self.calendar.dateComponents([.day, .month, .year], from: now)
+        let selfComponents = Self.calendar.dateComponents([.day, .month, .year], from: self)
+        
+        return nowComponents.day == selfComponents.day
+        && nowComponents.month == selfComponents.month
+        && nowComponents.year == selfComponents.year
+    }
 }
 
 extension String {

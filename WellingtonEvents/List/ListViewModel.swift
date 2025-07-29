@@ -11,13 +11,13 @@ import Combine
 import SwiftUI
 import DesignLibrary
 
+struct FilterValues: Identifiable, Equatable, Hashable {
+    var id: FilterIds
+    var items: [String]
+}
+
 @CasePathable
 enum Destination {
-    struct FilterValues: Identifiable {
-        var id: FilterIds
-        var items: [String]
-    }
-    
     case calendar(event: EventInfo)
     case filters(for: FilterValues)
     case alert(ToastStyle)
@@ -45,7 +45,7 @@ struct DateModel: Equatable, Identifiable {
 }
 
 @MainActor
-class EventsViewModel: ObservableObject {
+class ListViewModel: ObservableObject {
     
     let repository: EventsRepository = DefaultEventsRepository()
     
@@ -126,11 +126,7 @@ class EventsViewModel: ObservableObject {
         }
     }    
     
-    func didTapOnEvent(with id: String) {
-        guard let event = allEvents.first(where: { $0.id == id }) else {
-            return
-        }
-        
+    func didTapOnEvent(_ event: EventInfo) {
         navigationPath.append(.eventDetails(event))
     }
     

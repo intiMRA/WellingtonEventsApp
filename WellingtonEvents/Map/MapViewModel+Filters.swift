@@ -1,13 +1,12 @@
 //
-//  EventsViewModel+Filters.swift
+//  MapViewModel+Filters.swift
 //  WellingtonEvents
 //
-//  Created by ialbuquerque on 16/04/2025.
+//  Created by Inti Albuquerque on 29/07/2025.
 //
 
 import Foundation
-
-extension EventsViewModel {
+extension MapViewModel {
     
     func expandFilter(for items: [String], filterType: FilterIds) {
         guard !items.isEmpty else {
@@ -40,15 +39,14 @@ extension EventsViewModel {
         applyFilters()
     }
     
-    private func applyFilters() {
+    func applyFilters() {
         guard !selectedFilters.isEmpty else {
             events = allEvents
             selectedFilters = []
-            self.scrollToTop = true
             return
         }
         
-        var newEvents: [EventInfo] = allEvents
+        var newEvents: [MapEventtModel] = allEvents
         for event in allEvents {
             for filter in selectedFilters {
                 // search has to be applies differently
@@ -61,7 +59,6 @@ extension EventsViewModel {
         let searchFilter = selectedFilters.first(where: { $0.id == .search }) as? SearchFilter
         searchFilter?.execute(events: &newEvents)
         self.events = newEvents
-        self.scrollToTop = true
     }
     
     func selectedFilterSource() -> [FilterIds] {
@@ -144,7 +141,7 @@ extension EventsViewModel {
     }
 }
 
-extension EventsViewModel {
+extension MapViewModel {
     func filterTitle(for type: FilterIds, isSelected: Bool) -> String {
         switch type {
         case .date:

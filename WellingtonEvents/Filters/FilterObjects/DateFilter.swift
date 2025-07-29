@@ -39,6 +39,30 @@ struct DateFilter: FilterObjectProtocol {
             events.removeAll(where: { $0.id == event.id})
         }
     }
+    
+    func execute(event: MapEventtModel, events: inout [MapEventtModel]) {
+        let withInRange = event.events.map { event in
+            event.dates.oneSatisfies(condition: { date in
+                let greaterThenCondition = startDate.checkConditionIgnoringTime(
+                    other: date
+                ) {
+                    $0 <= $1
+                }
+                
+                let lessThenCondition = endDate.checkConditionIgnoringTime(
+                    other: date
+                ) {
+                    $0 >= $1
+                }
+                
+                return greaterThenCondition && lessThenCondition
+            })
+        }
+            .contains(where: { $0 })
+        if !withInRange {
+            events.removeAll(where: { $0.id == event.id})
+        }
+    }
 }
 
 enum QuickDateType: String, CaseIterable {
@@ -108,6 +132,34 @@ struct QuickDateFilter: FilterObjectProtocol {
             
             return greaterThenCondition && lessThenCondition
         })
+        if !withInRange {
+            events.removeAll(where: { $0.id == event.id})
+        }
+    }
+    
+    func execute(event: MapEventtModel, events: inout [MapEventtModel]) {
+        let dates = Self.getDateRange(for: quickDateType)
+        let startDate = dates.startDate
+        let endDate = dates.endDate
+        
+        let withInRange = event.events.map { event in
+            event.dates.oneSatisfies(condition: { date in
+                let greaterThenCondition = startDate.checkConditionIgnoringTime(
+                    other: date
+                ) {
+                    $0 <= $1
+                }
+                
+                let lessThenCondition = endDate.checkConditionIgnoringTime(
+                    other: date
+                ) {
+                    $0 >= $1
+                }
+                
+                return greaterThenCondition && lessThenCondition
+            })
+        }
+            .contains(where: { $0 })
         if !withInRange {
             events.removeAll(where: { $0.id == event.id})
         }
