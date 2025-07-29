@@ -101,6 +101,15 @@ struct ListView: View {
             }
             .presentationDetents([ .medium, .large])
         }
+        .sheet(item: $viewModel.route.distance, id: \.self) { distance in
+            NavigationView {
+                DistanceFilterView(
+                    selectedDistance: distance,
+                    dismiss: viewModel.resetRoute,
+                    didSelectDistance: viewModel.didSelectDistance)
+            }
+            .presentationDetents([ .medium, .large])
+        }
         .sheet(item: $viewModel.route.webView, id: \.self) { url in
             if let url = URL(string: url) {
                 NavigationView {
@@ -255,6 +264,7 @@ extension ListView {
     var filtersView: some View {
         ScrollView(.horizontal) {
             HStack {
+                
                 let selectedSources = viewModel.selectedFilterSource()
                 
                 let quickDatesSelected = selectedSources.contains(where: { $0 == .quickDate })
@@ -268,17 +278,6 @@ extension ListView {
                     } clearFilters: {
                         viewModel.clearFilters(for: [.date, .quickDate])
                     }
-                
-                let sourceSelected = selectedSources.contains(where: { $0 == .source })
-                FilterView(
-                    isSelected: sourceSelected,
-                    title: viewModel.filterTitle(for: .source, isSelected: sourceSelected),
-                    hasIcon: true) {
-                        viewModel.expandFilter(for: viewModel.filters?.sources ?? [], filterType: .source)
-                    } clearFilters: {
-                        viewModel.clearFilters(for: .source)
-                    }
-                
                 let eventsSelected = selectedSources.contains(where: { $0 == .eventType })
                 FilterView(
                     isSelected: eventsSelected,
@@ -287,6 +286,30 @@ extension ListView {
                         viewModel.expandFilter(for: viewModel.filters?.eventTypes ?? [], filterType: .eventType)
                     } clearFilters: {
                         viewModel.clearFilters(for: .eventType)
+                    }
+                switch viewModel.locationManager.authorizationStatus {
+                case .authorizedAlways, .authorizedWhenInUse:
+                    let distanceSelected = selectedSources.contains(where: { $0 == .distance })
+                    FilterView(
+                        isSelected: distanceSelected,
+                        title: viewModel.filterTitle(for: .distance, isSelected: distanceSelected),
+                        hasIcon: true) {
+                            viewModel.showDistanceSelector()
+                        } clearFilters: {
+                            viewModel.clearFilters(for: .distance)
+                        }
+                default:
+                    EmptyView()
+                }
+              
+                let sourceSelected = selectedSources.contains(where: { $0 == .source })
+                FilterView(
+                    isSelected: sourceSelected,
+                    title: viewModel.filterTitle(for: .source, isSelected: sourceSelected),
+                    hasIcon: true) {
+                        viewModel.expandFilter(for: viewModel.filters?.sources ?? [], filterType: .source)
+                    } clearFilters: {
+                        viewModel.clearFilters(for: .source)
                     }
                 
                 let happeningOnceSelected = selectedSources.contains(where: { $0 == .oneOf })

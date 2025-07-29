@@ -10,6 +10,7 @@ import CasePaths
 import Combine
 import SwiftUI
 import DesignLibrary
+import CoreLocation
 
 struct FilterValues: Identifiable, Equatable, Hashable {
     var id: FilterIds
@@ -22,6 +23,7 @@ enum Destination {
     case filters(for: FilterValues)
     case alert(ToastStyle)
     case dateSelector(startDate: Date, endDate: Date, selectedQuickDate: QuickDateType?, id: String)
+    case distance(distance: Double)
     case webView(url: String)
 }
 
@@ -48,7 +50,7 @@ struct DateModel: Equatable, Identifiable {
 class ListViewModel: ObservableObject {
     
     let repository: EventsRepository = DefaultEventsRepository()
-    
+    let locationManager = CLLocationManager()
     var allEvents: [EventInfo]
     @Published var events: [EventInfo]
     @Published var isLoading: Bool = true
@@ -66,6 +68,7 @@ class ListViewModel: ObservableObject {
     @Published var navigationPath: [StackDestination] = []
     
     func setup() async {
+        locationManager.requestWhenInUseAuthorization()
         await fetchEvents()
     }
     

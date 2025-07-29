@@ -16,4 +16,5 @@ enum FilterIds: String {
     case multipleDates
     case favorited
     case search
+    case distance
 }

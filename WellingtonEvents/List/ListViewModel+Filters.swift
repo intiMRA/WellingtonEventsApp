@@ -80,6 +80,18 @@ extension ListViewModel {
         applyFilters()
     }
     
+    func didSelectDistance(_ distance: Double) {
+        clearFilters(for: [.distance])
+        selectedFilters.append(DistanceFilter(distance: distance))
+        resetRoute()
+        applyFilters()
+    }
+    
+    func showDistanceSelector() {
+        let dateFilter = selectedFilters.first(where: { $0.id == .distance }) as? DistanceFilter
+        route = .distance(distance: dateFilter?.distance ?? 0.0)
+    }
+    
     func showDateSelector() {
         let dateFilter = selectedFilters.first(where: { $0.id == .date }) as? DateFilter
         let startDate = dateFilter?.startDate ?? .now
@@ -163,6 +175,8 @@ extension ListViewModel {
             return String(localized: "Favorited")
         case .search:
             return ""
+        case .distance:
+            return isSelected ? getSelectedDistanceFilterString() : String(localized: "Distance")
         }
     }
     
@@ -176,6 +190,12 @@ extension ListViewModel {
             }
         }
         return "\(String(localized: "Date:")) \(startDate?.asString(with: .ddMMMMSpaced) ?? "")"
+    }
+    
+    private func getSelectedDistanceFilterString() -> String {
+        let filter = (selectedFilters.first(where: { $0.id == .distance }) as? DistanceFilter)
+       
+        return "\(String(localized: "Distance:")) \(Int(filter?.distance ?? 0.0)) \(String(localized: "km"))"
     }
     
     private func getSelectedQuickDatesFilterString() -> String {

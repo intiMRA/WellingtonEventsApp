@@ -17,6 +17,12 @@
         }
       }
     },
+    "1km" : {
+
+    },
+    "300km" : {
+
+    },
     "Add To Calendar" : {
 
     },
@@ -39,6 +45,12 @@
 
     },
     "Dates:" : {
+
+    },
+    "Distance" : {
+
+    },
+    "Distance:" : {
 
     },
     "Edit" : {
@@ -83,6 +95,9 @@
     "Happening soon!" : {
 
     },
+    "km" : {
+
+    },
     "Loading..." : {
 
     },
@@ -117,6 +132,12 @@
 
     },
     "Search for events in Welly" : {
+
+    },
+    "Select a distance" : {
+
+    },
+    "Select distance: %.0fkm" : {
 
     },
     "selected" : {
