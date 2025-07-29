@@ -25,11 +25,13 @@ class CalendarManager {
         let event:EKEvent = EKEvent(eventStore: eventStore)
         
         event.title = eventInfo.name
+        event.notes = eventInfo.description
         event.startDate = date
-        event.endDate = date
-        event.notes = eventInfo.venue
+        event.endDate = date.addingHours()
+        event.location = eventInfo.venue
         event.calendar = eventStore.defaultCalendarForNewEvents
         event.isAllDay = date.displayAsAllDay
+        event.url = URL(string: eventInfo.url)
         try eventStore.save(event, span: .thisEvent, commit: true)
         try await repository.didSaveToCalendar(event: eventInfo)
     }
@@ -56,4 +58,25 @@ class CalendarManager {
         }
         try await repository.didDeleteFromCalendar(event: event)
     }
+    
+    static func retrieveEvent(event: EventInfo) async throws -> EKEvent? {
+        guard (try await eventStore.requestFullAccessToEvents()) == true else {
+            throw Self.accessDeniedError
+        }
+        
+        guard let endDate = event.dates.last?.addingDay(),
+              let calendar = eventStore.defaultCalendarForNewEvents
+        else {
+            return nil
+        }
+        let startDate = Date.now
+        
+        let predicate = eventStore.predicateForEvents(withStart: startDate, end: endDate, calendars: [calendar])
+        let existingEvents = eventStore.events(matching: predicate)
+        let events = existingEvents.filter { $0.title == event.name }
+        
+        return events.first ?? existingEvents.filter { $0.notes == event.description }.first
+    }
 }
+
+extension EKEvent: @unchecked @retroactive Sendable { }

@@ -16,6 +16,11 @@ struct AlertMessages {
     static let calenderDeneid = AlertMessages(title: String(localized: "Managing Calendar"), message: String(localized: "Sorry the event could not be added to your calendar. Please allow access to your calendar in your settings."))
     
     static let addCalendarSuccess = AlertMessages(title: String(localized: "Managing Calendar"), message: String(localized: "Event succesfully added to your calendar. Some events may be displayed as a whole day. Please check the event page for more details."))
+    
+    static let editCalendarSuccess = AlertMessages(title: String(localized: "Managing Calendar"), message: String(localized: "Event succesfully edited in your calendar."))
+    
+    static let editCalendarFailed = AlertMessages(title: String(localized: "Managing Calendar"), message: String(localized: "Failed to Edit Event."))
+    
     static let deleteCalendarSuccess = AlertMessages(title: String(localized: "Managing Calendar"), message: String(localized: "Event succesfully removed from your calendar."))
     
     // Favourites

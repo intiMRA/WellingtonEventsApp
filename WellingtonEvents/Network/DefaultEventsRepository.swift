@@ -81,27 +81,27 @@ actor DefaultEventsRepository: EventsRepository {
     }
     
     func saveToFavorites(event: EventInfo) throws {
-        var favourites = try retrieveFavorites()
+        var favourites = retrieveFavorites()
         favourites.append(event)
         try save(favourites: favourites)
     }
     
-    func retrieveFavorites() throws -> [EventInfo] {
+    func retrieveFavorites() -> [EventInfo] {
         guard let data = Self.userDefaults.object(forKey: Keys.favouriteEvents.rawValue) as? Data else {
             return []
         }
-        let events = try JSONDecoder().decode([EventInfo].self, from: data)
+        let events = (try? JSONDecoder().decode([EventInfo].self, from: data)) ?? []
         return events
     }
     
     func deleteFromFavorites(event: EventInfo) throws {
-        var favourites = try retrieveFavorites()
+        var favourites = retrieveFavorites()
         favourites.removeAll(where: { $0.id == event.id })
         try save(favourites: favourites)
     }
     
     func deleteFromFavorites(eventIds: [String]) throws {
-        var favourites = try retrieveFavorites()
+        var favourites = retrieveFavorites()
         favourites.removeAll(where: { event in eventIds.contains(where: { event.id == $0 }) })
         try save(favourites: favourites)
     }

@@ -37,9 +37,22 @@
 		A1112AFF2D2B41EC00BE9D0C /* WellingtonEventsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WellingtonEventsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		8A20B9002E388B24002CB242 /* Exceptions for "WellingtonEvents" folder in "WellingtonEvents" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A1112AE42D2B41EA00BE9D0C /* WellingtonEvents */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A1112AE72D2B41EA00BE9D0C /* WellingtonEvents */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				8A20B9002E388B24002CB242 /* Exceptions for "WellingtonEvents" folder in "WellingtonEvents" target */,
+			);
 			explicitFolders = (
 				Resources/.xcassets,
 			);
@@ -437,8 +450,9 @@
 				DEVELOPMENT_TEAM = 6K524MKAFK;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WellingtonEvents/Info.plist;
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app needs access to save events to your calendar";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This is required to display events near you, we do not collet or save this data.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to show events near you. We do not store this information.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -467,8 +481,9 @@
 				DEVELOPMENT_TEAM = 6K524MKAFK;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WellingtonEvents/Info.plist;
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app needs access to save events to your calendar";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This is required to display events near you, we do not collet or save this data.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to show events near you. We do not store this information.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

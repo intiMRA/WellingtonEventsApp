@@ -41,7 +41,13 @@
     "Dates:" : {
 
     },
+    "Edit" : {
+
+    },
     "Event succesfully added to your calendar. Some events may be displayed as a whole day. Please check the event page for more details." : {
+
+    },
+    "Event succesfully edited in your calendar." : {
 
     },
     "Event succesfully removed from your calendar." : {
@@ -57,6 +63,9 @@
 
     },
     "Events" : {
+
+    },
+    "Failed to Edit Event." : {
 
     },
     "Favorited" : {

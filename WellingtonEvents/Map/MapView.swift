@@ -31,9 +31,15 @@ struct MapView: View {
                                     viewModel.didTapOnEvent(firstEvent)
                                 }
                             } label: {
-                                Circle()
-                                    .fill( model.events.count > 1 ? Color.yellow : Color.blue)
-                                    .squareFrame(size: 10)
+                                VStack {
+                                    Circle()
+                                        .fill( model.events.count > 1 ? Color.yellow : Color.blue)
+                                        .squareFrame(size: 10)
+                                }
+                                .background {
+                                    Color.clear
+                                }
+                                .squareFrame(size: 20)
                             }
                         }
                     }
