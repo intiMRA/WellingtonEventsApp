@@ -10,6 +10,7 @@ import Foundation
 import CasePaths
 import DesignLibrary
 import SwiftUI
+import EventKit
 
 @MainActor
 @Observable
@@ -19,6 +20,7 @@ class EventDetailsViewModel: ObservableObject {
         case webView(url: URL)
         case calendar(event: EventInfo)
         case alert(ToastStyle)
+        case editEvent(eventInfo: EventInfo, ekEvent: EKEvent)
     }
     
     static let snapshorSize = CGSize(width: UITraitCollection.current.horizontalSizeClass == .regular ? 800 : 400, height: UITraitCollection.current.horizontalSizeClass == .regular ? 400 : 200)

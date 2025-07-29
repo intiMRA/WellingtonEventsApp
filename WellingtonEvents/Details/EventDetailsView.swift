@@ -10,6 +10,7 @@ import SwiftUI
 import MapKit
 import DesignLibrary
 import SwiftUINavigation
+import EventKitUI
 
 struct EventDetailsView: View {
     @State var viewModel: EventDetailsViewModel
@@ -105,6 +106,9 @@ struct EventDetailsView: View {
                 .presentationBackground(.clear)
                 .presentationDetents([.fraction(1/6)])
         }
+        .sheet(item: $viewModel.route.editEvent, id: \.eventInfo) { info in
+            EkEventEditView(ekEvent: info.ekEvent, eventInfo: info.eventInfo, dismiss: didDismissEditCalanderView)
+        }
     }
     
     private func openDirectionsInAppleMaps(coordinate: CLLocationCoordinate2D, arress: String) {
@@ -198,7 +202,7 @@ extension EventDetailsView {
     var actionIconsView: some View {
         let isFavourited = actionsManager.isEventFavourited(id: viewModel.event.id)
         let isInCalendar = actionsManager.isEventInCalendar(id: viewModel.event.id)
-        HStack(spacing: .xSmall) {
+        HStack(alignment: .top, spacing: .xSmall) {
             Button {
                 Task {
                     if isFavourited {
@@ -217,18 +221,23 @@ extension EventDetailsView {
             Button {
                 Task {
                     if isInCalendar {
-                        if await actionsManager.deleteFromCalendar(event: viewModel.event, errorHandler: viewModel.showErrorAlert) {
-                            viewModel.route = .alert(.success(title: AlertMessages.deleteCalendarSuccess.title, message: AlertMessages.deleteCalendarSuccess.message))
-                        }
+                        await viewModel.presentEditCalendar()
                     }
                     else {
                         await saveTocalendar(event: viewModel.event)
                     }
                 }
             } label: {
-                (isInCalendar ? Image(.calendarTick) : Image(.calendar))
-                    .resizable()
-                    .squareFrame(size: 36)
+                VStack {
+                    (isInCalendar ? Image(.calendarTick) : Image(.calendar))
+                        .resizable()
+                        .squareFrame(size: 36)
+                    if isInCalendar {
+                        Text("Edit")
+                            .font(.caption)
+                            .foregroundStyle(.accent)
+                    }
+                }
             }
             .foregroundStyle(.text)
             
@@ -337,5 +346,29 @@ extension EventDetailsView {
         .frame(maxWidth: .infinity)
         .scaledToFill()
         .roundedShadow()
+    }
+}
+
+extension EventDetailsView {
+    func didDismissEditCalanderView(action: EKEventEditViewAction, eventInfo: EventInfo) {
+        switch action {
+        case .saved:
+            viewModel.route = .alert(.success(title: AlertMessages.editCalendarSuccess.title, message: AlertMessages.editCalendarSuccess.message))
+        case .canceled:
+            viewModel.resetRoute()
+        case .deleted:
+            Task {
+                do {
+                    try await viewModel.repository?.didDeleteFromCalendar(event: eventInfo)
+                    await actionsManager.didDeleteFromCalendar(event: eventInfo)
+                    viewModel.route = .alert(.success(title: AlertMessages.deleteCalendarSuccess.title, message: AlertMessages.deleteCalendarSuccess.message))
+                }
+                catch {
+                    viewModel.route = .alert(.success(title: AlertMessages.deleteCalendarFail.title, message: AlertMessages.deleteCalendarFail.message))
+                }
+            }
+        @unknown default:
+            fatalError("Unknown EKEventEditViewAction")
+        }
     }
 }

@@ -106,4 +106,8 @@ class ActionsManager: ObservableObject {
         self.eventsInCalendar = eventsInCalendar
         self.favourites = favourites
     }
+    
+    func didDeleteFromCalendar(event: EventInfo) async {
+        eventsInCalendar.removeAll { $0 == event }
+    }
 }

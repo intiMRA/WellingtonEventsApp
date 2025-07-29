@@ -144,6 +144,11 @@ extension Date {
         return Date.calendar.date(byAdding: DateComponents(day: 1), to: currentDate!)
     }
     
+    func addingHours(hours: Int = 1) -> Date? {
+        let currentDate = Date.calendar.date(from: Date.calendar.dateComponents([.day, .month, .year, .hour], from: self))
+        return Date.calendar.date(byAdding: DateComponents(hour: hours), to: currentDate!)
+    }
+    
     func isToday() -> Bool {
         let now = Date()
         
