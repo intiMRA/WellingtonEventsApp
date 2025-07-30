@@ -33,15 +33,17 @@ struct MapView: View {
                                     viewModel.didTapOnEvent(firstEvent)
                                 }
                             } label: {
-                                Circle()
-                                    .fill(model.isOneEvent ? Color.blue : Color.yellow)
-                                    .squareFrame(size: dotSize)
-                                    .overlay {
-                                        if !model.isOneEvent , dotSize > 10 {
-                                            Text("\(model.events.count)")
-                                                .font(.caption2)
-                                        }
+                                ZStack {
+                                    Circle()
+                                        .fill(model.isOneEvent ? Color.blue : Color.yellow)
+                                        .squareFrame(size: dotSize)
+                                    if !model.isOneEvent , dotSize > 10 {
+                                        Text("\(model.events.count)")
+                                            .font(.caption.bold())
+                                            .foregroundStyle(.accent)
+    
                                     }
+                                }
                             }
                         }
                     }
