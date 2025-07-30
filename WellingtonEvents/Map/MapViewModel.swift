@@ -15,6 +15,14 @@ struct MapEventtModel: Identifiable {
     let id: String
     var events: [EventInfo]
     let coordinate: CLLocationCoordinate2D
+    
+    var title: String {
+        events.first?.name ?? ""
+    }
+    
+    var isOneEvent: Bool {
+        events.count == 1
+    }
 }
 
 @MainActor

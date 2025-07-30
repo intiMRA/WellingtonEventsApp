@@ -17,29 +17,33 @@ struct MapView: View {
     @FocusState private var focusState: ListViewFocusState?
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @State private var width: CGFloat = .zero
+    @State var dotSize: CGFloat = 10
+    
     var body: some View {
         NavigationStack(path: $viewModel.navigationPath) {
             ZStack(alignment: .topLeading) {
                 Map(initialPosition: .userLocation(fallback: .region(MapViewModel.wellingtonRegion))) {
                     ForEach(viewModel.events) { model in
-                        Annotation("", coordinate: model.coordinate, accessoryAnchor: .bottom) {
+                        Annotation((model.isOneEvent && dotSize > 15) ? model.title : "", coordinate: model.coordinate, accessoryAnchor: .bottom) {
                             Button {
-                                if model.events.count > 1 {
+                                if !model.isOneEvent {
                                     viewModel.showCards(for: model)
                                 }
                                 else if let firstEvent = model.events.first {
                                     viewModel.didTapOnEvent(firstEvent)
                                 }
                             } label: {
-                                VStack {
+                                ZStack {
                                     Circle()
-                                        .fill( model.events.count > 1 ? Color.yellow : Color.blue)
-                                        .squareFrame(size: 10)
+                                        .fill(model.isOneEvent ? Color.blue : Color.yellow)
+                                        .squareFrame(size: dotSize)
+                                    if !model.isOneEvent , dotSize > 10 {
+                                        Text("\(model.events.count)")
+                                            .font(.caption.bold())
+                                            .foregroundStyle(.accent)
+    
+                                    }
                                 }
-                                .background {
-                                    Color.clear
-                                }
-                                .squareFrame(size: 20)
                             }
                         }
                     }
@@ -47,6 +51,19 @@ struct MapView: View {
                 .mapControls {
                     MapUserLocationButton()
                     MapPitchToggle()
+                }
+                .onMapCameraChange { context in
+                    switch context.camera.distance {
+                    case ..<500:
+                        dotSize = 25
+                    case 500..<4000:
+                        dotSize = 20
+                    case 4000..<5000:
+                        dotSize = 15
+                    default:
+                        dotSize = 10
+                        
+                    }
                 }
                 
                 filtersView
