@@ -11,7 +11,6 @@ struct SearchFilter: FilterObjectProtocol {
     let searchString: String
     
     func execute(event: EventInfo, events: inout [EventInfo]) { }
-    func execute(event: MapEventtModel, events: inout [MapEventtModel]) { }
     
     func execute(events: inout [EventInfo]) {
         let allEvents = events

@@ -11,7 +11,7 @@ import CasePaths
 import DesignLibrary
 import SwiftUI
 
-struct MapEventtModel: Identifiable {
+struct MapEventtModel: Identifiable , Equatable{
     let id: String
     var events: [EventInfo]
     let coordinate: CLLocationCoordinate2D

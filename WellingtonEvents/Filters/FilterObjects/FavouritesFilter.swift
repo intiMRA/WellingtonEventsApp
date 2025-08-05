@@ -16,13 +16,4 @@ struct FavouritesFilter: FilterObjectProtocol {
             events.removeAll(where: { $0.id == event.id })
         }
     }
-    
-    func execute(event: MapEventtModel, events: inout [MapEventtModel]) {
-        guard let event =  event.events.first else {
-            fatalError("pass only one event for this filter")
-        }
-        if !favourites.contains(where: { $0.id == event.id }) {
-            events.removeAll(where: { $0.events.oneOf(elements: [event]) })
-        }
-    }
 }
