@@ -18,11 +18,11 @@ struct MapView: View {
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @State private var width: CGFloat = .zero
     @State var dotSize: CGFloat = 10
-    
+   
     var body: some View {
         NavigationStack(path: $viewModel.navigationPath) {
             ZStack(alignment: .topLeading) {
-                Map(initialPosition: .userLocation(fallback: .region(MapViewModel.wellingtonRegion))) {
+                Map(position: $viewModel.cameraPosition) {
                     ForEach(viewModel.events) { model in
                         Annotation((model.isOneEvent && dotSize > 15) ? model.title : "", coordinate: model.coordinate, accessoryAnchor: .bottom) {
                             Button {
@@ -35,7 +35,7 @@ struct MapView: View {
                             } label: {
                                 ZStack {
                                     Circle()
-                                        .fill(model.isOneEvent ? Color.blue : Color.yellow)
+                                        .fill(model.isOneEvent ? .blue : .wellingtonYellow)
                                         .squareFrame(size: dotSize)
                                     if !model.isOneEvent , dotSize > 10 {
                                         Text("\(model.events.count)")
@@ -47,10 +47,15 @@ struct MapView: View {
                             }
                         }
                     }
-                }
-                .mapControls {
-                    MapUserLocationButton()
-                    MapPitchToggle()
+                    if let userLocation = viewModel.locationManager?.location?.coordinate {
+                        Annotation("Your Location", coordinate: userLocation) {
+                            ZStack {
+                                Image(.userLocation)
+                                    .resizable()
+                                    .frame(width: dotSize * 2, height: dotSize * 2.2)
+                            }
+                        }
+                    }
                 }
                 .onMapCameraChange { context in
                     switch context.camera.distance {
@@ -65,9 +70,25 @@ struct MapView: View {
                         
                     }
                 }
-                
-                filtersView
-                    .padding(.all, .xxSmall)
+                VStack {
+                    filtersView
+                        
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button {
+                            viewModel.centerMapOnUserLocation()
+                        } label: {
+                            Image(systemName: "location.square.fill")
+                                .renderingMode(.template)
+                                .resizable()
+                                .foregroundStyle(viewModel.isCenterOnUserLocation ? .accent : .text, .wellingtonYellow)
+                                .squareFrame(size: .small)
+                                .animation(.easeIn, value: viewModel.cameraPosition)
+                        }
+                    }
+                }
+                .padding(.all, .xxSmall)
             }
             .task {
                 viewModel.requestLocationAuthorization()

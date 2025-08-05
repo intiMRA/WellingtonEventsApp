@@ -37,9 +37,10 @@ class MapViewModel: ObservableObject {
         case dateSelector(startDate: Date, endDate: Date, selectedQuickDate: QuickDateType?, id: String)
     }
     
+    private static let defaultSpan = MKCoordinateSpan(latitudeDelta: 0.012, longitudeDelta: 0.012)
     static let wellingtonRegion = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: -41.2865, longitude: 174.7762),
-        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        span: defaultSpan
     )
 
     var locationManager: CLLocationManager?
@@ -51,6 +52,22 @@ class MapViewModel: ObservableObject {
     @Published var route: Destination?
     @Published var navigationPath: [StackDestination] = []
     @Published var selectedFilters: [any FilterObjectProtocol] = [QuickDateFilter(quickDateType: .today)]
+    @Published var cameraPosition: MapCameraPosition = .userLocation(fallback: .region(MapViewModel.wellingtonRegion))
+    
+    var userLocation: MapCameraPosition? {
+        var region: MapCameraPosition?
+        if let userLocation = locationManager?.location?.coordinate {
+            region = .region(MKCoordinateRegion(
+                center: userLocation,
+                span: Self.defaultSpan
+            ))
+        }
+        return region
+    }
+    
+    var isCenterOnUserLocation: Bool {
+        cameraPosition == userLocation
+    }
 
     init(repository: EventsRepository = DefaultEventsRepository()) {
         self.locationManager = CLLocationManager()
@@ -130,5 +147,9 @@ class MapViewModel: ObservableObject {
     
     func resetRoute() {
         route = nil
+    }
+    
+    func centerMapOnUserLocation() {
+        cameraPosition = userLocation ?? .region(Self.wellingtonRegion)
     }
 }
