@@ -10,6 +10,7 @@ import MapKit
 import CasePaths
 import DesignLibrary
 import SwiftUI
+import Combine
 
 struct MapEventtModel: Identifiable , Equatable{
     let id: String
@@ -48,6 +49,9 @@ class MapViewModel: ObservableObject {
     let repository: EventsRepository
     
     @Published var searchText: String = ""
+    var oldSearchText: String = ""
+    var cancellables = Set<AnyCancellable>()
+    
     @Published var events: [MapEventtModel] = []
     @Published var route: Destination?
     @Published var navigationPath: [StackDestination] = []
@@ -72,6 +76,20 @@ class MapViewModel: ObservableObject {
     init(repository: EventsRepository = DefaultEventsRepository()) {
         self.locationManager = CLLocationManager()
         self.repository = repository
+        
+        $searchText
+            .dropFirst()
+            .debounce(for: .seconds(0.1), scheduler: DispatchQueue.main)
+            .sink { [weak self] value in
+                guard let self else {
+                    return
+                }
+                if oldSearchText != value {
+                    didTypeSearch(string: value)
+                    oldSearchText = value
+                }
+            }
+            .store(in: &cancellables)
     }
 
     func requestLocationAuthorization() {

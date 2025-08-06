@@ -57,6 +57,10 @@ struct MapView: View {
                         }
                     }
                 }
+                .ignoresSafeArea(.keyboard, edges: .bottom)
+                .onTapGesture(perform: {
+                    focusState = nil
+                })
                 .onMapCameraChange { context in
                     switch context.camera.distance {
                     case ..<500:
@@ -67,28 +71,17 @@ struct MapView: View {
                         dotSize = 15
                     default:
                         dotSize = 10
-                        
                     }
+                    focusState = nil
                 }
                 VStack {
-                    filtersView
+                    refineView
                         
                     Spacer()
-                    HStack {
-                        Spacer()
-                        Button {
-                            viewModel.centerMapOnUserLocation()
-                        } label: {
-                            Image(systemName: "location.square.fill")
-                                .renderingMode(.template)
-                                .resizable()
-                                .foregroundStyle(viewModel.isCenterOnUserLocation ? .accent : .text, .wellingtonYellow)
-                                .squareFrame(size: .small)
-                                .animation(.easeIn, value: viewModel.cameraPosition)
-                        }
-                    }
+                    
+                    locationButton
                 }
-                .padding(.all, .xxSmall)
+                .padding(.all, .medium)
             }
             .task {
                 viewModel.requestLocationAuthorization()
@@ -153,6 +146,7 @@ struct MapView: View {
                         .environmentObject(actionsManager)
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
         }
     }
 }
@@ -241,7 +235,8 @@ extension MapView {
                 FilterView(
                     isSelected: datesSelected || quickDatesSelected,
                     title: quickDatesSelected ? viewModel.filterTitle(for: .quickDate, isSelected: true) : viewModel.filterTitle(for: .date, isSelected: datesSelected),
-                    hasIcon: true) {
+                    hasIcon: true,
+                    hasShadow: true) {
                         viewModel.showDateSelector()
                     } clearFilters: {
                         viewModel.clearFilters(for: [.date, .quickDate])
@@ -253,7 +248,8 @@ extension MapView {
                     FilterView(
                         isSelected: distanceSelected,
                         title: viewModel.filterTitle(for: .distance, isSelected: distanceSelected),
-                        hasIcon: true) {
+                        hasIcon: true,
+                        hasShadow: true) {
                             viewModel.showDistanceSelector()
                         } clearFilters: {
                             viewModel.clearFilters(for: .distance)
@@ -262,7 +258,36 @@ extension MapView {
                     EmptyView()
                 }
             }
+            .padding(.bottom, .small)
         }
-        .padding(.trailing, 45)
+    }
+}
+
+extension MapView {
+    @ViewBuilder
+    var refineView: some View {
+        VStack(alignment: .leading, spacing: .empty) {
+            SearchView(searchText: $viewModel.searchText, focusState: $focusState, hasCancelButton: false)
+            filtersView
+        }
+        .background(Color.clear)
+    }
+    
+    @ViewBuilder
+    var locationButton: some View {
+        HStack {
+            Spacer()
+            Button {
+                viewModel.centerMapOnUserLocation()
+            } label: {
+                Image(systemName: "location.app.fill")
+                    .renderingMode(.template)
+                    .resizable()
+                    .foregroundStyle(viewModel.isCenterOnUserLocation ? .accent : .text, .wellingtonYellow)
+                    .squareFrame(size: 44)
+                    .animation(.easeIn, value: viewModel.cameraPosition)
+                    .shadow(radius: 2, x: 0, y: 2)
+            }
+        }
     }
 }
