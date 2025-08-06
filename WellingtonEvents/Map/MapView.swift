@@ -58,9 +58,9 @@ struct MapView: View {
                     }
                 }
                 .ignoresSafeArea(.keyboard, edges: .bottom)
-                .onTapGesture(perform: {
+                .simultaneousGesture(TapGesture().onEnded({ _ in
                     focusState = nil
-                })
+                }))
                 .onMapCameraChange { context in
                     switch context.camera.distance {
                     case ..<500:
