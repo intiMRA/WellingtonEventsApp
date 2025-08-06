@@ -71,12 +71,6 @@ struct DistanceFilter: FilterObjectProtocol {
             events.removeAll(where: { $0.id == event.id })
         }
     }
-    
-    func execute(event: MapEventtModel, events: inout [MapEventtModel]) {
-        if !withInRange(coordinate: .init(latitude: event.coordinate.latitude, longitude: event.coordinate.longitude), radiusInKm: distance) {
-            events.removeAll(where: { $0.id == event.id })
-        }
-    }
 
     func withInRange(coordinate: CLLocation, radiusInKm: Double) -> Bool {
         guard let location = locationManager.location else {

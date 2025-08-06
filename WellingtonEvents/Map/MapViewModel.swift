@@ -10,8 +10,9 @@ import MapKit
 import CasePaths
 import DesignLibrary
 import SwiftUI
+import Combine
 
-struct MapEventtModel: Identifiable {
+struct MapEventtModel: Identifiable , Equatable{
     let id: String
     var events: [EventInfo]
     let coordinate: CLLocationCoordinate2D
@@ -37,9 +38,10 @@ class MapViewModel: ObservableObject {
         case dateSelector(startDate: Date, endDate: Date, selectedQuickDate: QuickDateType?, id: String)
     }
     
+    private static let defaultSpan = MKCoordinateSpan(latitudeDelta: 0.012, longitudeDelta: 0.012)
     static let wellingtonRegion = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: -41.2865, longitude: 174.7762),
-        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        span: defaultSpan
     )
 
     var locationManager: CLLocationManager?
@@ -47,14 +49,47 @@ class MapViewModel: ObservableObject {
     let repository: EventsRepository
     
     @Published var searchText: String = ""
+    var oldSearchText: String = ""
+    var cancellables = Set<AnyCancellable>()
+    
     @Published var events: [MapEventtModel] = []
     @Published var route: Destination?
     @Published var navigationPath: [StackDestination] = []
     @Published var selectedFilters: [any FilterObjectProtocol] = [QuickDateFilter(quickDateType: .today)]
+    @Published var cameraPosition: MapCameraPosition = .userLocation(fallback: .region(MapViewModel.wellingtonRegion))
+    
+    var userLocation: MapCameraPosition? {
+        var region: MapCameraPosition?
+        if let userLocation = locationManager?.location?.coordinate {
+            region = .region(MKCoordinateRegion(
+                center: userLocation,
+                span: Self.defaultSpan
+            ))
+        }
+        return region
+    }
+    
+    var isCenterOnUserLocation: Bool {
+        cameraPosition == userLocation
+    }
 
     init(repository: EventsRepository = DefaultEventsRepository()) {
         self.locationManager = CLLocationManager()
         self.repository = repository
+        
+        $searchText
+            .dropFirst()
+            .debounce(for: .seconds(0.1), scheduler: DispatchQueue.main)
+            .sink { [weak self] value in
+                guard let self else {
+                    return
+                }
+                if oldSearchText != value {
+                    didTypeSearch(string: value)
+                    oldSearchText = value
+                }
+            }
+            .store(in: &cancellables)
     }
 
     func requestLocationAuthorization() {
@@ -130,5 +165,9 @@ class MapViewModel: ObservableObject {
     
     func resetRoute() {
         route = nil
+    }
+    
+    func centerMapOnUserLocation() {
+        cameraPosition = userLocation ?? .region(Self.wellingtonRegion)
     }
 }

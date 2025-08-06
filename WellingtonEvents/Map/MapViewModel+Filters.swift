@@ -46,18 +46,27 @@ extension MapViewModel {
             return
         }
         
-        var newEvents: [MapEventtModel] = allEvents
+        var newEvents: [MapEventtModel] = []
+        let searchFilter = selectedFilters.first(where: { $0.id == .search }) as? SearchFilter
         for event in allEvents {
-            for filter in selectedFilters {
-                // search has to be applies differently
-                if filter.id == .search {
-                    continue
+            var event = event
+            var newEventInfos = event.events
+            for eventInfo in event.events {
+                for filter in selectedFilters {
+                    // search has to be applies differently
+                    if filter.id == .search {
+                        continue
+                    }
+                    
+                    filter.execute(event: eventInfo, events: &newEventInfos)
                 }
-                filter.execute(event: event, events: &newEvents)
+                searchFilter?.execute(events: &newEventInfos)
+            }
+            if !newEventInfos.isEmpty {
+                event.events = newEventInfos
+                newEvents.append(event)
             }
         }
-        let searchFilter = selectedFilters.first(where: { $0.id == .search }) as? SearchFilter
-        searchFilter?.execute(events: &newEvents)
         self.events = newEvents
     }
     
@@ -179,7 +188,7 @@ extension MapViewModel {
     
     private func getSelectedDistanceFilterString() -> String {
         let filter = (selectedFilters.first(where: { $0.id == .distance }) as? DistanceFilter)
-       
+        
         return "\(String(localized: "Distance:")) \(Int(filter?.distance ?? 0.0)) \(String(localized: "km"))"
     }
     

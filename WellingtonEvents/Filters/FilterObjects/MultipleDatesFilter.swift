@@ -16,8 +16,4 @@ struct MultipleDatesFilter: FilterObjectProtocol {
             events.removeAll(where: { $0.id == event.id })
         }
     }
-    
-    func execute(event: MapEventtModel, events: inout [MapEventtModel]) {
-        fatalError( "Not implemented" )
-    }
 }

@@ -11,6 +11,7 @@ import DesignLibrary
 struct SearchView: View {
     @Binding var searchText: String
     var focusState: FocusState<ListViewFocusState?>.Binding
+    var hasCancelButton: Bool = true
     
     var body: some View {
         ZStack(alignment: .trailing) {
@@ -29,6 +30,7 @@ struct SearchView: View {
                 .background {
                     RoundedRectangle(cornerRadius: 20)
                         .fill(.cardBackground)
+                        .shadow(radius: 2, x: 0, y: 2)
                 }
                 .onTapGesture {
                     focusState.wrappedValue = .search
@@ -44,9 +46,10 @@ struct SearchView: View {
                     .background {
                         RoundedRectangle(cornerRadius: 20)
                             .fill(.cardBackground)
+                            .shadow(radius: 2, x: 0, y: 2)
                     }
                 
-                if focusState.wrappedValue == .search {
+                if focusState.wrappedValue == .search, hasCancelButton {
                     HStack {
                         Button {
                             focusState.wrappedValue = nil

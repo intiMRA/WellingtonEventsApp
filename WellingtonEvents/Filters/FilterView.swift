@@ -13,16 +13,18 @@ struct FilterView: View {
     let title: String
     let hasIcon: Bool
     let minWidth: CGFloat?
+    let hasShadow: Bool
     let action: () -> Void
     let clearFilters: () -> Void
     
-    init(isSelected: Bool, title: String, hasIcon: Bool, minWidth: CGFloat? = nil, action: @escaping () -> Void, clearFilters: @escaping () -> Void = {}) {
+    init(isSelected: Bool, title: String, hasIcon: Bool, minWidth: CGFloat? = nil, hasShadow: Bool = false, action: @escaping () -> Void, clearFilters: @escaping () -> Void = {}) {
         self.isSelected = isSelected
         self.title = title
         self.hasIcon = hasIcon
         self.action = action
         self.clearFilters = clearFilters
         self.minWidth = minWidth
+        self.hasShadow = hasShadow
     }
     
     var body: some View {
@@ -62,6 +64,10 @@ struct FilterView: View {
         .background {
             RoundedRectangle(cornerRadius: 20)
                 .fill(isSelected ? .accent : .cardBackground)
+                .if(hasShadow) { view in
+                    view
+                        .shadow(radius: 2, x: 0, y: 2)
+                }
         }
     }
 }

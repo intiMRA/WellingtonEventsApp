@@ -18,11 +18,11 @@ struct MapView: View {
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @State private var width: CGFloat = .zero
     @State var dotSize: CGFloat = 10
-    
+   
     var body: some View {
         NavigationStack(path: $viewModel.navigationPath) {
             ZStack(alignment: .topLeading) {
-                Map(initialPosition: .userLocation(fallback: .region(MapViewModel.wellingtonRegion))) {
+                Map(position: $viewModel.cameraPosition) {
                     ForEach(viewModel.events) { model in
                         Annotation((model.isOneEvent && dotSize > 15) ? model.title : "", coordinate: model.coordinate, accessoryAnchor: .bottom) {
                             Button {
@@ -35,7 +35,7 @@ struct MapView: View {
                             } label: {
                                 ZStack {
                                     Circle()
-                                        .fill(model.isOneEvent ? Color.blue : Color.yellow)
+                                        .fill(model.isOneEvent ? .blue : .wellingtonYellow)
                                         .squareFrame(size: dotSize)
                                     if !model.isOneEvent , dotSize > 10 {
                                         Text("\(model.events.count)")
@@ -47,11 +47,20 @@ struct MapView: View {
                             }
                         }
                     }
+                    if let userLocation = viewModel.locationManager?.location?.coordinate {
+                        Annotation("Your Location", coordinate: userLocation) {
+                            ZStack {
+                                Image(.userLocation)
+                                    .resizable()
+                                    .frame(width: dotSize * 2, height: dotSize * 2.2)
+                            }
+                        }
+                    }
                 }
-                .mapControls {
-                    MapUserLocationButton()
-                    MapPitchToggle()
-                }
+                .ignoresSafeArea(.keyboard, edges: .bottom)
+                .simultaneousGesture(TapGesture().onEnded({ _ in
+                    focusState = nil
+                }))
                 .onMapCameraChange { context in
                     switch context.camera.distance {
                     case ..<500:
@@ -62,12 +71,17 @@ struct MapView: View {
                         dotSize = 15
                     default:
                         dotSize = 10
-                        
                     }
+                    focusState = nil
                 }
-                
-                filtersView
-                    .padding(.all, .xxSmall)
+                VStack {
+                    refineView
+                        
+                    Spacer()
+                    
+                    locationButton
+                }
+                .padding(.all, .medium)
             }
             .task {
                 viewModel.requestLocationAuthorization()
@@ -132,6 +146,7 @@ struct MapView: View {
                         .environmentObject(actionsManager)
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
         }
     }
 }
@@ -220,7 +235,8 @@ extension MapView {
                 FilterView(
                     isSelected: datesSelected || quickDatesSelected,
                     title: quickDatesSelected ? viewModel.filterTitle(for: .quickDate, isSelected: true) : viewModel.filterTitle(for: .date, isSelected: datesSelected),
-                    hasIcon: true) {
+                    hasIcon: true,
+                    hasShadow: true) {
                         viewModel.showDateSelector()
                     } clearFilters: {
                         viewModel.clearFilters(for: [.date, .quickDate])
@@ -232,7 +248,8 @@ extension MapView {
                     FilterView(
                         isSelected: distanceSelected,
                         title: viewModel.filterTitle(for: .distance, isSelected: distanceSelected),
-                        hasIcon: true) {
+                        hasIcon: true,
+                        hasShadow: true) {
                             viewModel.showDistanceSelector()
                         } clearFilters: {
                             viewModel.clearFilters(for: .distance)
@@ -241,7 +258,36 @@ extension MapView {
                     EmptyView()
                 }
             }
+            .padding(.bottom, .small)
         }
-        .padding(.trailing, 45)
+    }
+}
+
+extension MapView {
+    @ViewBuilder
+    var refineView: some View {
+        VStack(alignment: .leading, spacing: .empty) {
+            SearchView(searchText: $viewModel.searchText, focusState: $focusState, hasCancelButton: false)
+            filtersView
+        }
+        .background(Color.clear)
+    }
+    
+    @ViewBuilder
+    var locationButton: some View {
+        HStack {
+            Spacer()
+            Button {
+                viewModel.centerMapOnUserLocation()
+            } label: {
+                Image(systemName: "location.app.fill")
+                    .renderingMode(.template)
+                    .resizable()
+                    .foregroundStyle(viewModel.isCenterOnUserLocation ? .accent : .text, .wellingtonYellow)
+                    .squareFrame(size: 44)
+                    .animation(.easeIn, value: viewModel.cameraPosition)
+                    .shadow(radius: 2, x: 0, y: 2)
+            }
+        }
     }
 }
