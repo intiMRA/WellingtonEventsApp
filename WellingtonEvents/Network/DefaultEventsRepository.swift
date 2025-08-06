@@ -8,7 +8,7 @@
 import Foundation
 import NetworkLayerSPM
 
-private struct urlBuilder: NetworkLayerURLBuilder {
+private struct eventsUrlBuilder: NetworkLayerURLBuilder {
     func url() -> URL? {
         .init(string: "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/main/events.json")
     }
@@ -36,7 +36,7 @@ actor DefaultEventsRepository: EventsRepository {
                 return try JSONDecoder().decode(EventsResponse.self, from: cachedResponseData)
             }
         }
-        guard let response: EventsResponse = try? await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: urlBuilder(), httpMethod: .GET)) else {
+        guard let response: EventsResponse = try? await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: eventsUrlBuilder(), httpMethod: .GET)) else {
             if let cachedResponseData = Self.userDefaults.data(forKey: Keys.eventsResponse.rawValue) {
                 return try JSONDecoder().decode(EventsResponse.self, from: cachedResponseData)
             }
