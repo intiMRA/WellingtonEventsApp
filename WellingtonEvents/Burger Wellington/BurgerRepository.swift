@@ -6,3 +6,14 @@
 //
 
 import Foundation
+import NetworkLayerSPM
+
+protocol BurgerRepositoryProtocol: AnyObject, Actor {
+    func fetchBurgers() async throws -> BurgerResponse
+}
+
+actor BurgerRepository: BurgerRepositoryProtocol {
+    func fetchBurgers() async throws -> BurgerResponse {
+        try await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: UrlBuilder.burgers, httpMethod: .GET))
+    }
+}

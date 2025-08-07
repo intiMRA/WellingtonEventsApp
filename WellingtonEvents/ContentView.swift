@@ -8,11 +8,6 @@
 import SwiftUI
 import NetworkLayerSPM
 
-private struct festivalsUrlBuilder: NetworkLayerURLBuilder {
-    func url() -> URL? {
-        .init(string: "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/main/currentFestivals.json")
-    }
-}
 
 enum Festivals: String {
     case burgerWellington = "BurgerWellington"
@@ -24,7 +19,7 @@ class ContentViewModel {
     var currentFestivals: [Festivals] = []
     
     func fetchFestivals() async {
-        let festvalStrings: [String] = (try? await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: festivalsUrlBuilder(), httpMethod: .GET))) ?? []
+        let festvalStrings: [String] = (try? await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: UrlBuilder.festivals, httpMethod: .GET))) ?? []
         currentFestivals = festvalStrings.compactMap { Festivals(rawValue: $0) }
     }
 }
@@ -48,7 +43,7 @@ struct ContentView: View {
                 switch festival {
                 case .burgerWellington:
                     Tab("Burger Wellington", image: "burger") {
-                        Text("Bugers")
+                        BurgerListView()
                     }
                 }
             }

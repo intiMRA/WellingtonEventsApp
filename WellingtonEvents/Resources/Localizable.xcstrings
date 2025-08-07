@@ -4,6 +4,9 @@
     "" : {
 
     },
+    " + sides" : {
+
+    },
     "%@" : {
 
     },
@@ -13,6 +16,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "%@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@"
           }
         }
       }
@@ -35,7 +48,7 @@
     "Apply Filters" : {
 
     },
-    "Bugers" : {
+    "Avaliable Dietary Options:" : {
 
     },
     "Burger Wellington" : {
@@ -138,6 +151,9 @@
 
     },
     "Open In Browser" : {
+
+    },
+    "Protein:" : {
 
     },
     "Quick Dates:" : {
