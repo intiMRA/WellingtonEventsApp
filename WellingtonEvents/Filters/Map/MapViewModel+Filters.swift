@@ -1,13 +1,12 @@
 //
-//  EventsViewModel+Filters.swift
+//  MapViewModel+Filters.swift
 //  WellingtonEvents
 //
-//  Created by ialbuquerque on 16/04/2025.
+//  Created by Inti Albuquerque on 29/07/2025.
 //
 
 import Foundation
-
-extension ListViewModel {
+extension MapViewModel {
     
     func expandFilter(for items: [String], filterType: FilterIds) {
         guard !items.isEmpty else {
@@ -26,7 +25,10 @@ extension ListViewModel {
         applyFilters()
     }
     
-    func didSelectFilterValues(values: [String], type: FilterIds) {
+    func didSelectFilterValues(values: [String], type: String) {
+        guard let type = FilterIds(rawValue: type) else {
+            return
+        }
         switch type {
         case .source:
             selectedFilters.removeAll(where: { $0.id == .source })
@@ -40,28 +42,35 @@ extension ListViewModel {
         applyFilters()
     }
     
-    private func applyFilters() {
+    func applyFilters() {
         guard !selectedFilters.isEmpty else {
             events = allEvents
             selectedFilters = []
-            self.scrollToTop = true
             return
         }
         
-        var newEvents: [EventInfo] = allEvents
+        var newEvents: [MapEventtModel] = []
+        let searchFilter = selectedFilters.first(where: { $0.id == .search }) as? SearchFilter
         for event in allEvents {
-            for filter in selectedFilters {
-                // search has to be applies differently
-                if filter.id == .search {
-                    continue
+            var event = event
+            var newEventInfos = event.events
+            for eventInfo in event.events {
+                for filter in selectedFilters {
+                    // search has to be applies differently
+                    if filter.id == .search {
+                        continue
+                    }
+                    
+                    filter.execute(event: eventInfo, events: &newEventInfos)
                 }
-                filter.execute(event: event, events: &newEvents)
+                searchFilter?.execute(events: &newEventInfos)
+            }
+            if !newEventInfos.isEmpty {
+                event.events = newEventInfos
+                newEvents.append(event)
             }
         }
-        let searchFilter = selectedFilters.first(where: { $0.id == .search }) as? SearchFilter
-        searchFilter?.execute(events: &newEvents)
         self.events = newEvents
-        self.scrollToTop = true
     }
     
     func selectedFilterSource() -> [FilterIds] {
@@ -80,6 +89,14 @@ extension ListViewModel {
         applyFilters()
     }
     
+    func showDateSelector() {
+        let dateFilter = selectedFilters.first(where: { $0.id == .date }) as? DateFilter
+        let startDate = dateFilter?.startDate ?? .now
+        let endDate = dateFilter?.endDate ?? .now
+        let quickDateFilter = selectedFilters.first(where: { $0.id == .quickDate }) as? QuickDateFilter
+        route = .dateSelector(startDate: startDate, endDate: endDate, selectedQuickDate: quickDateFilter?.quickDateType, id: startDate.id + endDate.id)
+    }
+    
     func didSelectDistance(_ distance: Double) {
         clearFilters(for: [.distance])
         selectedFilters.append(DistanceFilter(distance: distance))
@@ -90,14 +107,6 @@ extension ListViewModel {
     func showDistanceSelector() {
         let dateFilter = selectedFilters.first(where: { $0.id == .distance }) as? DistanceFilter
         route = .distance(distance: dateFilter?.distance ?? 0.0)
-    }
-    
-    func showDateSelector() {
-        let dateFilter = selectedFilters.first(where: { $0.id == .date }) as? DateFilter
-        let startDate = dateFilter?.startDate ?? .now
-        let endDate = dateFilter?.endDate ?? .now
-        let quickDateFilter = selectedFilters.first(where: { $0.id == .quickDate }) as? QuickDateFilter
-        route = .dateSelector(startDate: startDate, endDate: endDate, selectedQuickDate: quickDateFilter?.quickDateType, id: startDate.id + endDate.id)
     }
     
     func didTapFavouritesFilter(favourites: [EventInfo]) {
@@ -156,7 +165,7 @@ extension ListViewModel {
     }
 }
 
-extension ListViewModel {
+extension MapViewModel {
     func filterTitle(for type: FilterIds, isSelected: Bool) -> String {
         switch type {
         case .date:
@@ -180,6 +189,12 @@ extension ListViewModel {
         }
     }
     
+    private func getSelectedDistanceFilterString() -> String {
+        let filter = (selectedFilters.first(where: { $0.id == .distance }) as? DistanceFilter)
+        
+        return "\(String(localized: "Distance:")) \(Int(filter?.distance ?? 0.0)) \(String(localized: "km"))"
+    }
+    
     private func getSelectedDatesFilterString() -> String {
         let datesFilter = (selectedFilters.first(where: { $0.id == .date }) as? DateFilter)
         let startDate = datesFilter?.startDate
@@ -190,12 +205,6 @@ extension ListViewModel {
             }
         }
         return "\(String(localized: "Date:")) \(startDate?.asString(with: .ddMMMMSpaced) ?? "")"
-    }
-    
-    private func getSelectedDistanceFilterString() -> String {
-        let filter = (selectedFilters.first(where: { $0.id == .distance }) as? DistanceFilter)
-       
-        return "\(String(localized: "Distance:")) \(Int(filter?.distance ?? 0.0)) \(String(localized: "km"))"
     }
     
     private func getSelectedQuickDatesFilterString() -> String {

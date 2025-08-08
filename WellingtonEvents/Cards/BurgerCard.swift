@@ -146,7 +146,3 @@ extension BurgerCardView {
         }
     }
 }
-//
-//#Preview {
-//    BurgerCard()
-//}

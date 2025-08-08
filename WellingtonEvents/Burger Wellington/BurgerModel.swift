@@ -9,7 +9,21 @@ import Foundation
 import SwiftUI
 
 struct BurgerResponse: Codable, Sendable {
+    
+    struct Filters: Codable {
+        struct PriceRange: Codable {
+            let min: Double
+            let max: Double
+        }
+        
+        let dietaryRequirements: [String]
+        let priceRange: PriceRange
+        let beerMatch: [String]
+        let proteins: [String]
+    }
+    
     let burgers: [BurgerModel]
+    let filters: Filters
 }
 
 enum DietryRequirement: String, Codable, Sendable {
@@ -35,7 +49,7 @@ enum DietryRequirement: String, Codable, Sendable {
     }
 }
 
-struct BurgerModel: Identifiable, Codable, Sendable {
+struct BurgerModel: Identifiable, Codable, Sendable, Equatable {
     let id: String
     let name: String
     let image: String
@@ -103,5 +117,11 @@ struct BurgerModel: Identifiable, Codable, Sendable {
         try container.encode(mainProtein, forKey: .mainProtein)
         try container.encode(dietaryRequirements, forKey: .dietaryRequirements)
         try container.encode(url, forKey: .url)
+    }
+}
+
+extension BurgerModel: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }

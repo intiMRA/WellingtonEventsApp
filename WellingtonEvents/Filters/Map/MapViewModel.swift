@@ -28,6 +28,7 @@ struct MapEventtModel: Identifiable , Equatable{
 
 @MainActor
 class MapViewModel: ObservableObject {
+    
     @CasePathable
     enum Destination: Hashable {
         case cards([EventInfo])

@@ -15,6 +15,7 @@ import EventKit
 @MainActor
 @Observable
 class EventDetailsViewModel: ObservableObject {
+    
     @CasePathable
     enum Destination: Hashable {
         case webView(url: URL)

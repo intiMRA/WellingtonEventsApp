@@ -51,6 +51,15 @@
     "Avaliable Dietary Options:" : {
 
     },
+    "Beer:" : {
+
+    },
+    "Beers" : {
+
+    },
+    "Beers:" : {
+
+    },
     "Burger Wellington" : {
 
     },
@@ -117,9 +126,6 @@
     "Happening soon!" : {
 
     },
-    "Hello, World!" : {
-
-    },
     "km" : {
 
     },
@@ -133,6 +139,9 @@
 
     },
     "Map" : {
+
+    },
+    "Max Price:" : {
 
     },
     "multiple dates" : {
@@ -153,10 +162,28 @@
     "Open In Browser" : {
 
     },
+    "Price" : {
+
+    },
     "Protein:" : {
 
     },
+    "Proteins" : {
+
+    },
+    "Proteins:" : {
+
+    },
     "Quick Dates:" : {
+
+    },
+    "Restriction:" : {
+
+    },
+    "Restrictions" : {
+
+    },
+    "Restrictions:" : {
 
     },
     "Search for events in Welly" : {
@@ -214,6 +241,9 @@
 
     },
     "View Event" : {
+
+    },
+    "With Sides" : {
 
     }
   },

@@ -10,17 +10,17 @@ import Foundation
 @MainActor
 @Observable
 class FilterOptionsViewModel {
-    let filterTye: FilterIds
+    let filterTye: String
     var selectedFilters: [String]
     let possibleFilters: [String]
-    let finishedFiltering: ([String], FilterIds) -> Void
+    let finishedFiltering: ([String], String) -> Void
     let dismiss: () -> Void
     
     init(
-        filterTye: FilterIds,
+        filterTye: String,
         possibleFilters: [String],
         selectedFilters: [String],
-        finishedFiltering: @escaping ([String], FilterIds) -> Void,
+        finishedFiltering: @escaping ([String], String) -> Void,
         dismiss: @escaping () -> Void) {
             self.selectedFilters = selectedFilters
             self.finishedFiltering = finishedFiltering

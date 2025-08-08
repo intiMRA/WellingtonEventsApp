@@ -8,6 +8,11 @@
 import Foundation
 
 struct EventsResponse: Codable {
+    struct Filters: Codable {
+        let eventTypes: [String]
+        let sources: [String]
+    }
+    
     let events: [EventInfo]
     let filters: Filters
     
@@ -27,11 +32,6 @@ struct EventsResponse: Codable {
         try container.encode(self.events, forKey: .events)
         try container.encode(self.filters, forKey: .filters)
     }
-}
-
-struct Filters: Codable {
-    let eventTypes: [String]
-    let sources: [String]
 }
 
 struct Location: Codable, Equatable {

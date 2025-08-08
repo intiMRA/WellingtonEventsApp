@@ -17,16 +17,6 @@ struct FilterValues: Identifiable, Equatable, Hashable {
     var items: [String]
 }
 
-@CasePathable
-enum Destination {
-    case calendar(event: EventInfo)
-    case filters(for: FilterValues)
-    case alert(ToastStyle)
-    case dateSelector(startDate: Date, endDate: Date, selectedQuickDate: QuickDateType?, id: String)
-    case distance(distance: Double)
-    case webView(url: String)
-}
-
 enum StackDestination: Hashable {
     case eventDetails(EventInfo)
 }
@@ -49,6 +39,16 @@ struct DateModel: Equatable, Identifiable {
 @MainActor
 class ListViewModel: ObservableObject {
     
+    @CasePathable
+    enum Destination {
+        case calendar(event: EventInfo)
+        case filters(for: FilterValues)
+        case alert(ToastStyle)
+        case dateSelector(startDate: Date, endDate: Date, selectedQuickDate: QuickDateType?, id: String)
+        case distance(distance: Double)
+        case webView(url: String)
+    }
+    
     let repository: EventsRepository = DefaultEventsRepository()
     let locationManager = CLLocationManager()
     var allEvents: [EventInfo]
@@ -59,7 +59,7 @@ class ListViewModel: ObservableObject {
     var oldSearchText: String = ""
     @Published var scrollToTop = false
     
-    var filters: Filters?
+    var filters: EventsResponse.Filters?
     @Published var selectedFilters: [any FilterObjectProtocol] = []
     
     @Published var route: Destination?

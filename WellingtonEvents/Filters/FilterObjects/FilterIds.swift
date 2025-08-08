@@ -18,3 +18,14 @@ enum FilterIds: String {
     case search
     case distance
 }
+
+enum BurgerFilterIds: String {
+    case favorited
+    case search
+    case distance
+    case dietryRestrictions
+    case beerMatches
+    case price
+    case protein
+    case sidesIncluded
+}
