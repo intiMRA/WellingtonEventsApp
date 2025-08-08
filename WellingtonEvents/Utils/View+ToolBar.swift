@@ -32,9 +32,7 @@ extension View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        withAnimation {
-                            didTapFavourites()
-                        }
+                        didTapFavourites()
                     } label: {
                         (favoritesSelected ? Image(.heartFill) : Image(.heart))
                             .resizable()
