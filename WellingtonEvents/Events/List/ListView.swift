@@ -9,7 +9,7 @@ import SwiftUI
 import DesignLibrary
 import SwiftUINavigation
 
-enum ListViewFocusState: Equatable, Hashable {
+enum ViewFocusState: Equatable, Hashable {
     case search
 }
 struct ListView: View {
@@ -18,7 +18,7 @@ struct ListView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
-    @FocusState private var focusState: ListViewFocusState?
+    @FocusState private var focusState: ViewFocusState?
     private let spaceName = "pullToRefresh"
     private let scrollViewId = "scrollView"
     @State private var safeAreaInsets = EdgeInsets()
@@ -27,34 +27,9 @@ struct ListView: View {
     var body: some View {
         NavigationStack(path: $viewModel.navigationPath) {
             contentView
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .principal) {
-                        HStack {
-                            Spacer(minLength: CommonPadding.medium.rawValue)
-                            
-                            Image(.bar)
-                                .resizable()
-                                .renderingMode(.template)
-                                .foregroundStyle(.text)
-                                .scaledToFit()
-                            
-                            Spacer(minLength: CommonPadding.medium.rawValue)
-                        }
-                    }
-                    
-                    ToolbarItem(placement: .topBarTrailing) {
-                        let selectedSources = viewModel.selectedFilterSource()
-                        let favoritesSelected = selectedSources.contains(where: { $0 == .favorited })
-                        Button {
-                            viewModel.didTapFavouritesFilter(favourites: actionsManager.favourites)
-                        } label: {
-                            (favoritesSelected ? Image(.heartFill) : Image(.heart))
-                                .resizable()
-                                .squareFrame(size: 36)
-                        }
-                    }
-                }
+                .wellingTOnToolbar(favoritesSelected: viewModel.selectedFilterSource().contains(where: { $0 == .favorited }), didTapFavourites: {
+                    viewModel.didTapFavouritesFilter(favourites: actionsManager.favourites)
+                })
         }
         .disabled(viewModel.isLoading)
         .task {
@@ -83,7 +58,7 @@ struct ListView: View {
         .sheet(item: $viewModel.route.filters, id: \.id) { value in
             NavigationView {
                 FilterOptionsView(viewModel: .init(
-                    filterTye: value.id,
+                    filterTye: value.id.rawValue,
                     possibleFilters: value.items,
                     selectedFilters: viewModel.selectedFilters(for: value.id),
                     finishedFiltering: viewModel.didSelectFilterValues,
@@ -362,7 +337,6 @@ extension ListView {
                     .opacity(colorScheme == .light ? 0.95 : 0.9)
             }
         }
-        .toolbarBackground(.hidden, for: .navigationBar)
         .background {
             GeometryReader { geometry in
                 Color.clear

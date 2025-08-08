@@ -4,6 +4,9 @@
     "" : {
 
     },
+    " + sides" : {
+
+    },
     "%@" : {
 
     },
@@ -13,6 +16,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "%@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@"
           }
         }
       }
@@ -33,6 +46,21 @@
 
     },
     "Apply Filters" : {
+
+    },
+    "Avaliable Dietary Options:" : {
+
+    },
+    "Beer:" : {
+
+    },
+    "Beers" : {
+
+    },
+    "Beers:" : {
+
+    },
+    "Burger Wellington" : {
 
     },
     "Cancel" : {
@@ -113,6 +141,9 @@
     "Map" : {
 
     },
+    "Max Price:" : {
+
+    },
     "multiple dates" : {
 
     },
@@ -131,7 +162,28 @@
     "Open In Browser" : {
 
     },
+    "Price" : {
+
+    },
+    "Protein:" : {
+
+    },
+    "Proteins" : {
+
+    },
+    "Proteins:" : {
+
+    },
     "Quick Dates:" : {
+
+    },
+    "Restriction:" : {
+
+    },
+    "Restrictions" : {
+
+    },
+    "Restrictions:" : {
 
     },
     "Search for events in Welly" : {
@@ -189,6 +241,9 @@
 
     },
     "View Event" : {
+
+    },
+    "With Sides" : {
 
     }
   },

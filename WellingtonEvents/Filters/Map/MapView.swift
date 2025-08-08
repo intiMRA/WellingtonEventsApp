@@ -14,139 +14,157 @@ import SwiftUINavigation
 struct MapView: View {
     @StateObject var viewModel: MapViewModel = .init()
     @EnvironmentObject var actionsManager: ActionsManager
-    @FocusState private var focusState: ListViewFocusState?
+    @FocusState private var focusState: ViewFocusState?
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @State private var width: CGFloat = .zero
     @State var dotSize: CGFloat = 10
    
     var body: some View {
         NavigationStack(path: $viewModel.navigationPath) {
-            ZStack(alignment: .topLeading) {
-                Map(position: $viewModel.cameraPosition) {
-                    ForEach(viewModel.events) { model in
-                        Annotation((model.isOneEvent && dotSize > 15) ? model.title : "", coordinate: model.coordinate, accessoryAnchor: .bottom) {
-                            Button {
-                                if !model.isOneEvent {
-                                    viewModel.showCards(for: model)
-                                }
-                                else if let firstEvent = model.events.first {
-                                    viewModel.didTapOnEvent(firstEvent)
-                                }
-                            } label: {
-                                ZStack {
-                                    Circle()
-                                        .fill(model.isOneEvent ? .blue : .wellingtonYellow)
-                                        .squareFrame(size: dotSize)
-                                    if !model.isOneEvent , dotSize > 10 {
-                                        Text("\(model.events.count)")
-                                            .font(.caption.bold())
-                                            .foregroundStyle(.accent)
-    
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if let userLocation = viewModel.locationManager?.location?.coordinate {
-                        Annotation("Your Location", coordinate: userLocation) {
-                            ZStack {
-                                Image(.userLocation)
-                                    .resizable()
-                                    .frame(width: dotSize * 2, height: dotSize * 2.2)
-                            }
-                        }
-                    }
-                }
-                .ignoresSafeArea(.keyboard, edges: .bottom)
-                .simultaneousGesture(TapGesture().onEnded({ _ in
-                    focusState = nil
-                }))
-                .onMapCameraChange { context in
-                    switch context.camera.distance {
-                    case ..<500:
-                        dotSize = 25
-                    case 500..<4000:
-                        dotSize = 20
-                    case 4000..<5000:
-                        dotSize = 15
-                    default:
-                        dotSize = 10
-                    }
-                    focusState = nil
-                }
-                VStack {
-                    refineView
-                        
-                    Spacer()
-                    
-                    locationButton
-                }
+            mapContainer
+                .padding(.top, .medium)
+                .wellingTOnToolbar(favoritesSelected: viewModel.selectedFilterSource().contains(where: { $0 == .favorited }), didTapFavourites: {
+                    viewModel.didTapFavouritesFilter(favourites: actionsManager.favourites)
+                })
+        }
+    }
+}
+
+extension MapView {
+    @ViewBuilder
+    var mapContainer: some View {
+        map
+        .task {
+            viewModel.requestLocationAuthorization()
+            await viewModel.fetchEvents()
+        }
+        .sheet(item: $viewModel.route.cards, id: \.self) { events in
+            cards(for: events)
                 .padding(.all, .medium)
+                .presentationDetents([.fraction(1/3), .fraction(3/6), .medium])
+        }
+        .sheet(item: $viewModel.route.alert, id: \.self) { style in
+            ToastView(model: .init(style: style, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+                .padding(.top, .medium)
+                .presentationBackground(.clear)
+                .presentationDetents([.fraction(1/6)])
+        }
+        .sheet(item: $viewModel.route.calendar) { event in
+            NavigationView {
+                DatePickerView(viewModel: .init(
+                    event: event,
+                    repository: viewModel.repository,
+                    dismiss: { [weak viewModel] style in
+                        viewModel?.dissmissCalendar(style)
+                    }))
+                .environmentObject(actionsManager)
             }
-            .task {
-                viewModel.requestLocationAuthorization()
-                await viewModel.fetchEvents()
+        }
+        .sheet(item: $viewModel.route.filters, id: \.id) { value in
+            NavigationView {
+                FilterOptionsView(viewModel: .init(
+                    filterTye: value.id.rawValue,
+                    possibleFilters: value.items,
+                    selectedFilters: viewModel.selectedFilters(for: value.id),
+                    finishedFiltering: viewModel.didSelectFilterValues,
+                    dismiss: { [weak viewModel] in viewModel?.resetRoute() }))
             }
-            .sheet(item: $viewModel.route.cards, id: \.self) { events in
-                cards(for: events)
-                    .padding(.all, .medium)
-                    .presentationDetents([.fraction(1/3), .fraction(3/6), .medium])
+            .presentationDetents([ .medium, .large])
+        }
+        .sheet(item: $viewModel.route.dateSelector, id: \.id) { dates in
+            NavigationView {
+                DatesFilterView(startDate: dates.startDate,
+                                endDate: dates.endDate,
+                                selectedQuickDate: dates.selectedQuickDate,
+                                dismiss: viewModel.resetRoute,
+                                didSelectDates: viewModel.didSelectDates)
             }
-            .sheet(item: $viewModel.route.alert, id: \.self) { style in
-                ToastView(model: .init(style: style, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
-                    .padding(.top, .medium)
-                    .presentationBackground(.clear)
-                    .presentationDetents([.fraction(1/6)])
+            .presentationDetents([ .medium, .large])
+        }
+        .sheet(item: $viewModel.route.distance, id: \.self) { distance in
+            NavigationView {
+                DistanceFilterView(
+                    selectedDistance: distance,
+                    dismiss: viewModel.resetRoute,
+                    didSelectDistance: viewModel.didSelectDistance)
             }
-            .sheet(item: $viewModel.route.calendar) { event in
-                NavigationView {
-                    DatePickerView(viewModel: .init(
-                        event: event,
-                        repository: viewModel.repository,
-                        dismiss: { [weak viewModel] style in
-                            viewModel?.dissmissCalendar(style)
-                        }))
+            .presentationDetents([ .medium, .large])
+        }
+        .navigationDestination(for: StackDestination.self) { path in
+            switch path {
+            case .eventDetails(let eventInfo):
+                EventDetailsView(viewModel: .init(event: eventInfo, repository: viewModel.repository))
                     .environmentObject(actionsManager)
+            }
+        }
+        .scrollDismissesKeyboard(.interactively)
+    }
+}
+
+extension MapView {
+    @ViewBuilder
+    var map: some View {
+        ZStack(alignment: .topLeading) {
+            Map(position: $viewModel.cameraPosition) {
+                ForEach(viewModel.events) { model in
+                    Annotation((model.isOneEvent && dotSize > 15) ? model.title : "", coordinate: model.coordinate, accessoryAnchor: .bottom) {
+                        Button {
+                            if !model.isOneEvent {
+                                viewModel.showCards(for: model)
+                            }
+                            else if let firstEvent = model.events.first {
+                                viewModel.didTapOnEvent(firstEvent)
+                            }
+                        } label: {
+                            ZStack {
+                                Circle()
+                                    .fill(model.isOneEvent ? .blue : .wellingtonYellow)
+                                    .squareFrame(size: dotSize)
+                                if !model.isOneEvent , dotSize > 10 {
+                                    Text("\(model.events.count)")
+                                        .font(.caption.bold())
+                                        .foregroundStyle(.accent)
+
+                                }
+                            }
+                        }
+                    }
+                }
+                if let userLocation = viewModel.locationManager?.location?.coordinate {
+                    Annotation("Your Location", coordinate: userLocation) {
+                        ZStack {
+                            Image(.userLocation)
+                                .resizable()
+                                .frame(width: dotSize * 2, height: dotSize * 2.2)
+                        }
+                    }
                 }
             }
-            .sheet(item: $viewModel.route.filters, id: \.id) { value in
-                NavigationView {
-                    FilterOptionsView(viewModel: .init(
-                        filterTye: value.id,
-                        possibleFilters: value.items,
-                        selectedFilters: viewModel.selectedFilters(for: value.id),
-                        finishedFiltering: viewModel.didSelectFilterValues,
-                        dismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+            .ignoresSafeArea(.keyboard, edges: .bottom)
+            .simultaneousGesture(TapGesture().onEnded({ _ in
+                focusState = nil
+            }))
+            .onMapCameraChange { context in
+                switch context.camera.distance {
+                case ..<500:
+                    dotSize = 25
+                case 500..<4000:
+                    dotSize = 20
+                case 4000..<5000:
+                    dotSize = 15
+                default:
+                    dotSize = 10
                 }
-                .presentationDetents([ .medium, .large])
+                focusState = nil
             }
-            .sheet(item: $viewModel.route.dateSelector, id: \.id) { dates in
-                NavigationView {
-                    DatesFilterView(startDate: dates.startDate,
-                                    endDate: dates.endDate,
-                                    selectedQuickDate: dates.selectedQuickDate,
-                                    dismiss: viewModel.resetRoute,
-                                    didSelectDates: viewModel.didSelectDates)
-                }
-                .presentationDetents([ .medium, .large])
+            VStack {
+                refineView
+                    
+                Spacer()
+                
+                locationButton
             }
-            .sheet(item: $viewModel.route.distance, id: \.self) { distance in
-                NavigationView {
-                    DistanceFilterView(
-                        selectedDistance: distance,
-                        dismiss: viewModel.resetRoute,
-                        didSelectDistance: viewModel.didSelectDistance)
-                }
-                .presentationDetents([ .medium, .large])
-            }
-            .navigationDestination(for: StackDestination.self) { path in
-                switch path {
-                case .eventDetails(let eventInfo):
-                    EventDetailsView(viewModel: .init(event: eventInfo, repository: viewModel.repository))
-                        .environmentObject(actionsManager)
-                }
-            }
-            .scrollDismissesKeyboard(.interactively)
+            .padding(.all, .medium)
         }
     }
 }

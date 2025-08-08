@@ -57,8 +57,9 @@ enum Distances: Equatable, CaseIterable, Hashable {
     }()
 }
 
-struct DistanceFilter: FilterObjectProtocol {
+struct DistanceFilter: FilterObjectProtocol, BurgerFilterObjectProtocol {
     var id: FilterIds = .distance
+    var burgerFilterId: BurgerFilterIds = .distance
     var distance: Double
     let locationManager = CLLocationManager()
     
@@ -69,6 +70,13 @@ struct DistanceFilter: FilterObjectProtocol {
         }
         if !withInRange(coordinate: .init(latitude: location.lat, longitude: location.long), radiusInKm: distance) {
             events.removeAll(where: { $0.id == event.id })
+        }
+    }
+    
+    func execute(burger: BurgerModel, burgers: inout [BurgerModel]) {
+        let location = burger.coordinates
+        if !withInRange(coordinate: .init(latitude: location.lat, longitude: location.long), radiusInKm: distance) {
+            burgers.removeAll(where: { $0.id == burger.id })
         }
     }
 

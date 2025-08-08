@@ -8,9 +8,12 @@
 import Foundation
 import NetworkLayerSPM
 
-private struct urlBuilder: NetworkLayerURLBuilder {
+enum UrlBuilder: String, NetworkLayerURLBuilder {
+    case events = "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/main/events.json"
+    case festivals = "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/main/currentFestivals.json"
+    case burgers = "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/main/burgers.json"
     func url() -> URL? {
-        .init(string: "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/main/events.json")
+        .init(string: rawValue)
     }
 }
 
@@ -36,7 +39,7 @@ actor DefaultEventsRepository: EventsRepository {
                 return try JSONDecoder().decode(EventsResponse.self, from: cachedResponseData)
             }
         }
-        guard let response: EventsResponse = try? await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: urlBuilder(), httpMethod: .GET)) else {
+        guard let response: EventsResponse = try? await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: UrlBuilder.events, httpMethod: .GET)) else {
             if let cachedResponseData = Self.userDefaults.data(forKey: Keys.eventsResponse.rawValue) {
                 return try JSONDecoder().decode(EventsResponse.self, from: cachedResponseData)
             }

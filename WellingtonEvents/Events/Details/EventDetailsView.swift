@@ -111,10 +111,10 @@ struct EventDetailsView: View {
         }
     }
     
-    private func openDirectionsInAppleMaps(coordinate: CLLocationCoordinate2D, arress: String) {
+    private func openDirectionsInAppleMaps(coordinate: CLLocationCoordinate2D, adrress: String) {
         let destinationPlacemark = MKPlacemark(coordinate: coordinate)
         let destinationMapItem = MKMapItem(placemark: destinationPlacemark)
-        destinationMapItem.name = arress
+        destinationMapItem.name = adrress
         
         let launchOptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
         
@@ -281,7 +281,7 @@ extension EventDetailsView {
     var mapImage: some View {
         if let image = viewModel.image, let location = viewModel.location {
             Button {
-                openDirectionsInAppleMaps(coordinate: location, arress: viewModel.event.venue)
+                openDirectionsInAppleMaps(coordinate: location, adrress: viewModel.event.venue)
             }
             label: {
                 VStack(spacing: .empty) {

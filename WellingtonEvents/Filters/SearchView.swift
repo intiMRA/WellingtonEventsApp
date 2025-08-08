@@ -10,7 +10,7 @@ import DesignLibrary
 
 struct SearchView: View {
     @Binding var searchText: String
-    var focusState: FocusState<ListViewFocusState?>.Binding
+    var focusState: FocusState<ViewFocusState?>.Binding
     var hasCancelButton: Bool = true
     
     var body: some View {
@@ -18,7 +18,7 @@ struct SearchView: View {
             if focusState.wrappedValue != .search {
                 HStack {
                     Image(.search)
-                        .padding(.trailing, .medium)
+                        .padding(.trailing, .empty)
                     
                     Text(searchText.nilIfEmpty ?? String(localized: "Search for events in Welly"))
                         .foregroundStyle(.searchText)

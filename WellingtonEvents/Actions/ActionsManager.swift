@@ -6,6 +6,7 @@
 //
 
 import Foundation
+
 @MainActor
 class ActionsManager: ObservableObject {
     @Published var favourites: [EventInfo] = []
