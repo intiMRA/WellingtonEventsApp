@@ -451,6 +451,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WellingtonEvents/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "What's on Welly";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app needs access to save events to your calendar";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to show events near you. We do not store this information.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -462,7 +463,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = LocalizationLibraryApp.WellingtonEvents;
 				PRODUCT_NAME = "What's On Welly";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -482,6 +483,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WellingtonEvents/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "What's on Welly";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app needs access to save events to your calendar";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to show events near you. We do not store this information.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -493,7 +495,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = LocalizationLibraryApp.WellingtonEvents;
 				PRODUCT_NAME = "What's On Welly";
 				SWIFT_EMIT_LOC_STRINGS = YES;

@@ -59,7 +59,9 @@ extension BurgerListViewModel {
         guard !selectedFilters.isEmpty else {
             burgers = allBurgers
             selectedFilters = []
-            self.scrollToTop = true
+            if scrollToTop {
+                self.scrollToTop = true
+            }
             return
         }
         
@@ -76,7 +78,9 @@ extension BurgerListViewModel {
         let searchFilter = selectedFilters.first(where: { $0.burgerFilterId == .search }) as? SearchFilter
         searchFilter?.execute(burgers: &newBurgers)
         burgers = newBurgers
-        self.scrollToTop = scrollToTop
+        if scrollToTop {
+            self.scrollToTop = true
+        }
     }
     
     func selectedFilterSource() -> [BurgerFilterIds] {
@@ -194,12 +198,15 @@ extension BurgerListViewModel {
     func addToFavourites(_ burger: BurgerModel) async {
         try? await repository.addFavoriteBurger(burger)
         favourites = await repository.getFavoriteBurgers()
-        applyFilters(scrollToTop: false)
     }
     
     func removeFromFavourites(_ burger: BurgerModel) async {
         try? await repository.removeFavoriteBurger(burger)
         favourites = await repository.getFavoriteBurgers()
+        if selectedFilters.contains(where: { $0.burgerFilterId == .favorited }) {
+            selectedFilters.removeAll(where: { $0.burgerFilterId == .favorited })
+            selectedFilters.append(FavouritesFilter(favourites: favourites))
+        }
         applyFilters(scrollToTop: false)
     }
     

@@ -16,8 +16,16 @@ protocol BurgerRepositoryProtocol: AnyObject, Actor {
 }
 
 actor BurgerRepository: BurgerRepositoryProtocol {
+    static let calendar = Calendar.current
+    
+    enum BurgerRepositoryError: Error {
+        case failedToFetchResponse
+    }
+    
     enum DefaultKeys: String {
-        case favoriteBurgers = "favoriteBurgers"
+        case favoriteBurgers
+        case burgersCacheDate
+        case burgersResponseCache
     }
     
     static let userDefaults = UserDefaults.standard
@@ -43,7 +51,33 @@ actor BurgerRepository: BurgerRepositoryProtocol {
     }
     
     func fetchBurgers() async throws -> BurgerResponse {
-        try await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: UrlBuilder.burgers, httpMethod: .GET))
+        if canFetchFromCache() {
+            if let cachedResponseData = Self.userDefaults.data(forKey: DefaultKeys.burgersResponseCache.rawValue) {
+                return try JSONDecoder().decode(BurgerResponse.self, from: cachedResponseData)
+            }
+        }
+        guard let response: BurgerResponse = try await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: UrlBuilder.burgers, httpMethod: .GET)) else {
+            if let cachedResponseData = Self.userDefaults.data(forKey: DefaultKeys.burgersResponseCache.rawValue) {
+                return try JSONDecoder().decode(BurgerResponse.self, from: cachedResponseData)
+            }
+            else {
+                throw BurgerRepositoryError.failedToFetchResponse
+            }
+        }
+        Self.userDefaults.set(try JSONEncoder().encode(response), forKey: DefaultKeys.burgersResponseCache.rawValue)
+        Self.userDefaults.set(Date.now.asString(with: .ddMMYyyy), forKey: DefaultKeys.burgersCacheDate.rawValue)
+        
+        return response
+    }
+    
+    func canFetchFromCache() -> Bool {
+        guard
+            let userDefaultsDateString = Self.userDefaults.object(forKey: DefaultKeys.burgersCacheDate.rawValue) as? String,
+            let userDefaultsDate = userDefaultsDateString.asDate(with: .ddMMYyyy)
+        else {
+            return false
+        }
+        return Self.calendar.isDate(.now, inSameDayAs: userDefaultsDate)
     }
         
     private func save(favourites: [BurgerModel]) throws {
