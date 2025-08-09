@@ -39,6 +39,9 @@
     "300km" : {
 
     },
+    "add beer for %@" : {
+
+    },
     "Add To Calendar" : {
 
     },
@@ -58,6 +61,9 @@
 
     },
     "Beers:" : {
+
+    },
+    "Breer Match:" : {
 
     },
     "Burger Wellington" : {
@@ -132,6 +138,9 @@
     "Loading..." : {
 
     },
+    "Main Protein:" : {
+
+    },
     "Managing Calendar" : {
 
     },
@@ -142,6 +151,9 @@
 
     },
     "Max Price:" : {
+
+    },
+    "Meals Available:" : {
 
     },
     "multiple dates" : {

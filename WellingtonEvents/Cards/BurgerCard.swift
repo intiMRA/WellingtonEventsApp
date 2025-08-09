@@ -10,6 +10,7 @@ import DesignLibrary
 
 struct BurgerCardView: View {
     let favouriteModel: FavouriteModel
+    var calendarModel: CalendarModel?
     let model: BurgerModel
     let width: CGFloat
     let didTap: (BurgerModel) -> Void
@@ -29,17 +30,7 @@ struct BurgerCardView: View {
                     }
                     HStack {
                         Text("\(model.price.formatted(.currency(code: "NZD")))\(model.sidesIncluded ? String(localized: " + sides") : "")")
-                            .multilineTextAlignment(.leading)
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.selectedChipText)
-                            .padding(.all, .xSmall)
-                            .background {
-                                RoundedRectangle(cornerRadius: 20)
-                                    .fill(.accent)
-                                    .opacity(0.8)
-                                    .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1)
-                            }
+                            .imageOverlay()
                             .padding(.all, .xSmall)
                     }
                 }
@@ -123,6 +114,23 @@ extension BurgerCardView {
                     .squareFrame(size: 36)
             }
             
+            if let calendarModel {
+                Button {
+                    calendarModel.addToCalendar()
+                } label: {
+                    VStack {
+                        (calendarModel.isInCalendar ? Image(.calendarTick) : Image(.calendar))
+                            .resizable()
+                            .squareFrame(size: 36)
+                        if calendarModel.isInCalendar {
+                            Text("Edit")
+                                .font(.caption)
+                                .foregroundStyle(.accent)
+                        }
+                    }
+                }
+                .foregroundStyle(.text)
+            }
             
             if let url = URL(string: model.url) {
                 ShareLink(item: url) {

@@ -11,28 +11,32 @@ import EventKitUI
 import EventKit
 import DesignLibrary
 
+protocol EventEditProtocol { }
+extension EventInfo: EventEditProtocol {}
+extension BurgerModel: EventEditProtocol {}
+
 struct EkEventEditView: UIViewControllerRepresentable {
-    let ekEvent: EKEvent
-    let eventInfo: EventInfo
-    let dismiss: (EKEventEditViewAction, EventInfo) -> Void
+    let ekEvent: EKEvent?
+    let eventEditModel: EventEditProtocol
+    let dismiss: (EKEventEditViewAction, EventEditProtocol) -> Void
     
     @MainActor
     class Coordinator: NSObject, @preconcurrency EKEventEditViewDelegate {
-        let eventInfo: EventInfo
-        let dismiss: (EKEventEditViewAction, EventInfo) -> Void
+        let eventEditModel: EventEditProtocol
+        let dismiss: (EKEventEditViewAction, EventEditProtocol) -> Void
         
-        init(eventInfo: EventInfo, dismiss: @escaping (EKEventEditViewAction, EventInfo) -> Void) {
-            self.eventInfo = eventInfo
+        init(eventEditModel: EventEditProtocol, dismiss: @escaping (EKEventEditViewAction, EventEditProtocol) -> Void) {
+            self.eventEditModel = eventEditModel
             self.dismiss = dismiss
         }
         
         func eventEditViewController(_ controller: EKEventEditViewController, didCompleteWith action: EKEventEditViewAction) {
-            dismiss(action, eventInfo)
+            dismiss(action, eventEditModel)
         }
     }
     
     func makeCoordinator() -> Coordinator {
-        Coordinator(eventInfo: eventInfo, dismiss: dismiss)
+        Coordinator(eventEditModel: eventEditModel, dismiss: dismiss)
     }
     
     func makeUIViewController(context: Context) -> EKEventEditViewController {

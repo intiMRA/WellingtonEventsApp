@@ -52,17 +52,36 @@ struct BurgerDetailsView: View {
                 .presentationBackground(.clear)
                 .presentationDetents([.fraction(1/6)])
         }
-//        .sheet(item: $viewModel.route.editEvent, id: \.eventInfo) { info in
-//            EkEventEditView(ekEvent: info.ekEvent, eventInfo: info.eventInfo, dismiss: didDismissEditCalanderView)
-//        }
+        .sheet(item: $viewModel.route.editEvent, id: \.burger) { info in
+            EkEventEditView(ekEvent: info.ekEvent, eventEditModel: info.burger, dismiss: viewModel.didDismissEditCalanderView)
+        }
     }
 }
 
 extension BurgerDetailsView {
     @ViewBuilder
+    var imageOverlay: some View {
+        HStack(alignment: .top) {
+            Text("\(viewModel.burgerModel.price.formatted(.currency(code: "NZD")))\(viewModel.burgerModel.sidesIncluded ? String(localized: " + sides") : "")")
+                .imageOverlay()
+            
+            Spacer()
+            if let beerPrice = viewModel.burgerModel.beerMatchPrice {
+                Text(String(localized: "Add beer for \((beerPrice - viewModel.burgerModel.price).formatted(.currency(code: "NZD")))"))
+                    .imageOverlay()
+            }
+        }
+        .padding(.all, .xSmall)
+    }
+}
+extension BurgerDetailsView {
+    @ViewBuilder
     var content: some View {
         VStack(alignment: .leading, spacing: .small) {
-            imageView(url: viewModel.burgerModel.image)
+            ZStack(alignment: .bottomLeading) {
+                imageView(url: viewModel.burgerModel.image)
+                imageOverlay
+            }
             
             actionIconsView
             
@@ -75,6 +94,11 @@ extension BurgerDetailsView {
                 .multilineTextAlignment(.leading)
             
             dietryIcons
+            
+            Divider()
+                .foregroundStyle(.text)
+            
+            infoView
             
             Divider()
                 .foregroundStyle(.text)
@@ -164,6 +188,22 @@ extension BurgerDetailsView {
                     .squareFrame(size: 36)
             }
             
+            Button {
+                viewModel.presentEditCalendar()
+            } label: {
+                VStack {
+                    (viewModel.isInCalendar ? Image(.calendarTick) : Image(.calendar))
+                        .resizable()
+                        .squareFrame(size: 36)
+                    if viewModel.isInCalendar {
+                        Text("Edit")
+                            .font(.caption)
+                            .foregroundStyle(.accent)
+                    }
+                }
+            }
+            .foregroundStyle(.text)
+            
             if let url = URL(string: viewModel.burgerModel.url) {
                 ShareLink(item: url) {
                     Image(.share)
@@ -243,6 +283,43 @@ extension BurgerDetailsView {
             Rectangle()
                 .fill(.cardBackground)
                 .roundedCorner(8, corners: [.bottomLeft, .bottomRight])
+        }
+    }
+}
+
+extension BurgerDetailsView {
+    @ViewBuilder
+    var infoView: some View {
+        HStack(spacing: .xxxSmall) {
+            Text("Main Protein:")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.textSecondary)
+            Text(viewModel.burgerModel.mainProtein)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Spacer()
+        }
+        if viewModel.burgerModel.beerMatchPrice != nil {
+            HStack(alignment: .top, spacing: .xxxSmall) {
+                Text("Breer Match:")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.textSecondary)
+                Text(viewModel.burgerModel.beerMatch)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.leading)
+                Spacer()
+            }
+        }
+        
+        HStack(spacing: .xxxSmall) {
+            Text("Meals Available:")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.textSecondary)
+            Text(viewModel.burgerModel.mealAvailable)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Spacer()
         }
     }
 }

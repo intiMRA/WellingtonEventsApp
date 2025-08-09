@@ -77,6 +77,25 @@ class CalendarManager {
         
         return events.first ?? existingEvents.filter { $0.notes == event.description }.first
     }
+    
+    static func retrieveBurger(burger: BurgerModel) async throws -> EKEvent? {
+        guard (try await eventStore.requestFullAccessToEvents()) == true else {
+            throw Self.accessDeniedError
+        }
+        
+        guard let endDate = Date.now.addingMonths(months: 2),
+              let calendar = eventStore.defaultCalendarForNewEvents
+        else {
+            return nil
+        }
+        let startDate = Date.now
+        
+        let predicate = eventStore.predicateForEvents(withStart: startDate, end: endDate, calendars: [calendar])
+        let existingEvents = eventStore.events(matching: predicate)
+        let events = existingEvents.filter { $0.title == burger.name }
+        
+        return events.first ?? existingEvents.filter { $0.notes == burger.description }.first
+    }
 }
 
 extension EKEvent: @unchecked @retroactive Sendable { }
