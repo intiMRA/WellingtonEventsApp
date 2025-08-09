@@ -25,7 +25,7 @@ struct DistanceFilterView: View {
                     Text("Select a distance")
                 }
                 else {
-                    Text("Select distance: \(selectedDistance, specifier: "%.0f")km")
+                    Text("Selected distance: \(selectedDistance, specifier: "%.0f")km")
                 }
                 Slider(value: $selectedDistance, in: 1.0...300.0) {
                                 Text("Distance") // Accessibility label

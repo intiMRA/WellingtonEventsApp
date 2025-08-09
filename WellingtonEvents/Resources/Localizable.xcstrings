@@ -39,7 +39,7 @@
     "300km" : {
 
     },
-    "add beer for %@" : {
+    "Add beer for %@" : {
 
     },
     "Add To Calendar" : {
@@ -204,10 +204,16 @@
     "Select a distance" : {
 
     },
+    "Select a price" : {
+
+    },
     "Select distance: %.0fkm" : {
 
     },
     "selected" : {
+
+    },
+    "Selected price: %@" : {
 
     },
     "Sorry the event could not be added to favourites." : {
