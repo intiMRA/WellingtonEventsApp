@@ -207,10 +207,10 @@
     "Select a price" : {
 
     },
-    "Select distance: %.0fkm" : {
+    "selected" : {
 
     },
-    "selected" : {
+    "Selected distance: %.0fkm" : {
 
     },
     "Selected price: %@" : {
