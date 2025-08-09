@@ -82,7 +82,11 @@ struct BurgerListView: View {
                                     await viewModel?.addToFavourites(model)
                                 }
                             }
-                        }))
+                        },
+                        finishedDismissEditCalanderView: { action, model in
+                            viewModel.didDismissEditCalanderViewNoAlert(action: action, eventEditModel: model)
+                        }
+                    ))
                 }
             }
         }
@@ -111,6 +115,15 @@ struct BurgerListView: View {
                     didSelectDistance: viewModel.didSelectDistance)
             }
             .presentationDetents([ .medium, .large])
+        }
+        .sheet(item: $viewModel.route.alert, id: \.self) { style in
+            ToastView(model: .init(style: style, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+                .padding(.top, .medium)
+                .presentationBackground(.clear)
+                .presentationDetents([.fraction(1/6)])
+        }
+        .sheet(item: $viewModel.route.editEvent, id: \.burger) { info in
+            EkEventEditView(ekEvent: info.ekEvent, eventEditModel: info.burger, dismiss: viewModel.didDismissEditCalanderView)
         }
     }
 }
@@ -253,6 +266,11 @@ extension BurgerListView {
                             }
                         }
                     }),
+                    calendarModel: .init(
+                        isInCalendar: viewModel.isInCalendar[model.id] ?? false,
+                        addToCalendar: {
+                            viewModel.presentEditCalendar(burgerModel: model)
+                        }),
                     model: model,
                     width: width) { model in
                         viewModel.navigationPath.append(.burgerDetails(model))

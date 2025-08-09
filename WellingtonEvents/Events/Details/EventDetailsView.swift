@@ -107,7 +107,7 @@ struct EventDetailsView: View {
                 .presentationDetents([.fraction(1/6)])
         }
         .sheet(item: $viewModel.route.editEvent, id: \.eventInfo) { info in
-            EkEventEditView(ekEvent: info.ekEvent, eventInfo: info.eventInfo, dismiss: didDismissEditCalanderView)
+            EkEventEditView(ekEvent: info.ekEvent, eventEditModel: info.eventInfo, dismiss: didDismissEditCalanderView)
         }
     }
     
@@ -178,20 +178,10 @@ extension EventDetailsView {
 extension EventDetailsView {
     @ViewBuilder
     var imageView: some View {
-        ZStack(alignment: .bottomTrailing) {
+        ZStack(alignment: .bottomLeading) {
             imageView(url: viewModel.event.imageUrl ?? "")
             Text(viewModel.event.source)
-                .multilineTextAlignment(.leading)
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(.selectedChipText)
-                .padding(.all, .xSmall)
-                .background {
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(.accent)
-                        .opacity(0.8)
-                        .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1)
-                }
+                .imageOverlay()
                 .padding(.all, .xSmall)
         }
     }
@@ -350,7 +340,9 @@ extension EventDetailsView {
 }
 
 extension EventDetailsView {
-    func didDismissEditCalanderView(action: EKEventEditViewAction, eventInfo: EventInfo) {
+    func didDismissEditCalanderView(action: EKEventEditViewAction, eventEditModel: EventEditProtocol) {
+        guard let eventInfo = eventEditModel as? EventInfo else { return }
+        
         switch action {
         case .saved:
             viewModel.route = .alert(.success(title: AlertMessages.editCalendarSuccess.title, message: AlertMessages.editCalendarSuccess.message))

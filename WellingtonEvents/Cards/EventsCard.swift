@@ -37,17 +37,7 @@ struct EventsCardView: View {
                         actionIconsView
                     }
                     Text(event.source)
-                        .multilineTextAlignment(.leading)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.selectedChipText)
-                        .padding(.all, .xSmall)
-                        .background {
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(.accent)
-                                .opacity(0.8)
-                                .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1)
-                        }
+                        .imageOverlay()
                         .padding(.all, .xSmall)
                 }
                 
