@@ -101,7 +101,17 @@ extension BurgerListViewModel {
     
     func showPriceSelector() {
         let priceFilter = selectedFilters.first(where: { $0.burgerFilterId == .price }) as? PriceFilter
-        route = .price(price: priceFilter?.maxPrice ?? filters?.priceRange.max ?? 0.0)
+        route = .price(
+            selectedPrice: priceFilter?.maxPrice ?? filters?.priceRange.max ?? 0.0,
+            min: filters?.priceRange.min ?? 0,
+            max: filters?.priceRange.max ?? 0)
+    }
+    
+    func didSelectPrice(_ price: Double) {
+        clearFilters(for: [.price])
+        selectedFilters.append(PriceFilter(maxPrice: price))
+        resetRoute()
+        applyFilters()
     }
     
     func didTapFavouritesFilter() {

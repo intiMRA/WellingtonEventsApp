@@ -29,7 +29,7 @@ class BurgerListViewModel: ObservableObject {
     enum Destination {
         case filters(for: BurgerFilterValues)
         case distance(distance: Double)
-        case price(price: Double)
+        case price(selectedPrice: Double, min: Double, max: Double)
         case alert(ToastStyle)
         case editEvent(burger: BurgerModel, ekEvent: EKEvent?)
     }

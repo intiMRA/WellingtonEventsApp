@@ -12,7 +12,7 @@ struct ProteinFilter: BurgerFilterObjectProtocol {
     let proteins: [String]
     
     func execute(burger: BurgerModel, burgers: inout [BurgerModel]) {
-        if !proteins.contains(where: { $0 == burger.mainProtein }) {
+        if !proteins.contains(where: { burger.mainProtein.contains($0) }) {
             burgers.removeAll(where: { $0 == burger })
         }
     }
