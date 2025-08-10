@@ -36,7 +36,7 @@ struct PriceFilterView: View {
                 else {
                     Text("Selected price: \(selectedPrice.formatted(.currency(code: "NZD")))")
                 }
-                Slider(value: $selectedPrice, in: min...max) {
+                Slider(value: $selectedPrice, in: min...max, step: 0.5) {
                                 Text("Price")
                             } minimumValueLabel: {
                                 Text("\(min.formatted(.currency(code: "NZD")))")
