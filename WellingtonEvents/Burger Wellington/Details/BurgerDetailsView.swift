@@ -290,7 +290,7 @@ extension BurgerDetailsView {
 extension BurgerDetailsView {
     @ViewBuilder
     var infoView: some View {
-        HStack(spacing: .xxxSmall) {
+        HStack(spacing: .xxSmall) {
             Text("Main Protein:")
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.textSecondary)
@@ -300,7 +300,7 @@ extension BurgerDetailsView {
             Spacer()
         }
         if viewModel.burgerModel.beerMatchPrice != nil {
-            HStack(alignment: .top, spacing: .xxxSmall) {
+            HStack(alignment: .top, spacing: .xxSmall) {
                 Text("Breer Match:")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.textSecondary)
@@ -312,11 +312,21 @@ extension BurgerDetailsView {
             }
         }
         
-        HStack(spacing: .xxxSmall) {
+        HStack(spacing: .xxSmall) {
             Text("Meals Available:")
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.textSecondary)
             Text(viewModel.burgerModel.mealAvailable)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Spacer()
+        }
+        
+        HStack(alignment: .top, spacing: .xxSmall) {
+            Text("Address:")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.textSecondary)
+            Text(viewModel.burgerModel.venue)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             Spacer()
