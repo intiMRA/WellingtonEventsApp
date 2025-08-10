@@ -291,7 +291,7 @@ extension EventDetailsView {
                     .fill(Color.cardBackground)
                     .frame(maxWidth: .infinity, maxHeight: EventDetailsViewModel.snapshorSize.height)
                     .aspectRatio(EventDetailsViewModel.ratio, contentMode: .fit)
-                    .roundedShadow()
+                    .roundedCorner(8, corners: [.topLeft, .topRight])
                     .if(viewModel.loadingImage) { view in
                         view
                             .overlay {
