@@ -127,6 +127,7 @@ extension EventsCardView {
             case .success(let image):
                 image
                     .resizable()
+                    .aspectRatio(contentMode: .fill)
             case .failure(let error):
                 Image(.noImageAtTime)
                     .resizable()

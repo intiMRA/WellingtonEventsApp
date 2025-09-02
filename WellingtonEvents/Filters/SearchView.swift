@@ -36,34 +36,46 @@ struct SearchView: View {
                     focusState.wrappedValue = .search
                 }
             }
-            
-            HStack(alignment: .center) {
-                TextField("", text: $searchText)
-                    .frame(height: 44)
-                    .frame(maxWidth: .infinity)
-                    .focused(focusState, equals: .search)
-                    .padding(.horizontal, .medium)
-                    .background {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(.cardBackground)
-                            .shadow(radius: 2, x: 0, y: 2)
-                    }
-                
-                if focusState.wrappedValue == .search, hasCancelButton {
-                    HStack {
-                        Button {
-                            focusState.wrappedValue = nil
-                        } label: {
-                            Text("Cancel")
+            ZStack(alignment: .trailing) {
+                HStack(alignment: .center) {
+                    TextField("", text: $searchText)
+                        .frame(height: 44)
+                        .frame(maxWidth: .infinity)
+                        .focused(focusState, equals: .search)
+                        .padding(.horizontal, .medium)
+                        .background {
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(.cardBackground)
+                                .shadow(radius: 2, x: 0, y: 2)
                         }
+                    
+                    if searchText.isEmpty, focusState.wrappedValue == .search, hasCancelButton {
+                        HStack {
+                            Button {
+                                focusState.wrappedValue = nil
+                            } label: {
+                                Text("Cancel")
+                            }
+                        }
+                        .padding(.trailing, .medium)
                     }
-                    .padding(.trailing, .medium)
+                }
+                if !searchText.isEmpty {
+                    Button {
+                        searchText = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .renderingMode(.template)
+                            .foregroundStyle(.accent)
+                    }
+                    .padding(.trailing, .xSmall)
                 }
             }
             .opacity(focusState.wrappedValue == .search ? 1 : 0)
             
         }
         .animation(.default, value: focusState.wrappedValue)
+        .animation(.default, value: searchText)
         .interactiveDismissDisabled(true)
         .task {
             focusState.wrappedValue = nil

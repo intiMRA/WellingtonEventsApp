@@ -11,7 +11,11 @@ import Foundation
 class ActionsManager: ObservableObject {
     @Published var favourites: [EventInfo] = []
     @Published  var eventsInCalendar: [EventInfo] = []
-    private var repository: EventsRepository = DefaultEventsRepository()
+    private var repository: EventsRepository?
+    
+    init(repository: EventsRepository?) {
+        self.repository = repository
+    }
     
     func isEventFavourited(id: String) -> Bool {
         favourites.contains(where: { id == $0.id })
@@ -21,10 +25,14 @@ class ActionsManager: ObservableObject {
         eventsInCalendar.contains(where: { id == $0.id })
     }
     
+    func injectRepository(_ repository: EventsRepository) {
+        self.repository = repository
+    }
+    
     @discardableResult
     func saveToFavorites(event: EventInfo, errorHandler: (String?, String) -> Void) async -> Bool {
         do {
-            try await repository.saveToFavorites(event: event)
+            try await repository?.saveToFavorites(event: event)
             favourites.append(event)
             return true
         }
@@ -37,7 +45,7 @@ class ActionsManager: ObservableObject {
     @discardableResult
     func deleteFromFavorites(event: EventInfo, errorHandler: (String?, String) -> Void) async -> Bool  {
         do {
-            try await repository.deleteFromFavorites(event: event)
+            try await repository?.deleteFromFavorites(event: event)
             favourites.removeAll(where: { event.id == $0.id })
             return true
         }
@@ -48,6 +56,9 @@ class ActionsManager: ObservableObject {
     }
     
     func addToCalendar(event: EventInfo, date: Date?, errorHandler: (String?, String) -> Void) async -> Bool {
+        guard let repository else {
+            return false
+        }
         do {
             try await CalendarManager.saveEventToCalendar(eventInfo: event, date: date, repository: repository)
             try await refreshCalendarEvents()
@@ -65,6 +76,9 @@ class ActionsManager: ObservableObject {
     }
     
     func deleteFromCalendar(event: EventInfo, errorHandler: (String?, String) -> Void) async -> Bool {
+        guard let repository else {
+            return false
+        }
         do {
             try await CalendarManager.removeFromCalendar(event: event, repository: repository)
             try await refreshCalendarEvents()
@@ -82,23 +96,23 @@ class ActionsManager: ObservableObject {
     }
     
     func refreshCalendarEvents() async throws {
-        eventsInCalendar = try await repository.retrieveSavedToCalendar()
+        eventsInCalendar = try await repository?.retrieveSavedToCalendar() ?? []
     }
     
     func setUp(events: [EventInfo]) async {
-        let favourites: [EventInfo] = (try? await repository.retrieveFavorites()) ?? []
-        let eventsInCalendar: [EventInfo] = (try? await repository.retrieveSavedToCalendar()) ?? []
+        let favourites: [EventInfo] = (try? await repository?.retrieveFavorites()) ?? []
+        let eventsInCalendar: [EventInfo] = (try? await repository?.retrieveSavedToCalendar()) ?? []
         guard !events.isEmpty else {
             return
         }
-        try? await repository.deleteFromFavorites(eventIds: favourites.compactMap { event in
+        try? await repository?.deleteFromFavorites(eventIds: favourites.compactMap { event in
             if !events.contains(where: { $0.id == event.id }) {
                 return event.id
             }
             return nil
         })
         
-        try? await repository.didDeleteFromCalendar(eventIds: eventsInCalendar.compactMap { event in
+        try? await repository?.didDeleteFromCalendar(eventIds: eventsInCalendar.compactMap { event in
             if !events.contains(where: { $0.id == event.id }) {
                 return event.id
             }

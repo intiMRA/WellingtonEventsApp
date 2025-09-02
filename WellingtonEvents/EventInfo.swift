@@ -14,7 +14,7 @@ struct EventsResponse: Codable {
     }
     
     let events: [EventInfo]
-    let filters: Filters
+    let filters: Filters?
     
     enum CodingKeys: CodingKey {
         case events
@@ -24,7 +24,7 @@ struct EventsResponse: Codable {
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.events = try container.decode([EventInfo].self, forKey: .events)
-        self.filters = try container.decode(Filters.self, forKey: .filters)
+        self.filters = try container.decodeIfPresent(Filters.self, forKey: .filters)
     }
     
     func encode(to encoder: any Encoder) throws {

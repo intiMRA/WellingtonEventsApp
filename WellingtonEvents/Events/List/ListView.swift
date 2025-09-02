@@ -253,15 +253,19 @@ extension ListView {
                     } clearFilters: {
                         viewModel.clearFilters(for: [.date, .quickDate])
                     }
-                let eventsSelected = selectedSources.contains(where: { $0 == .eventType })
-                FilterView(
-                    isSelected: eventsSelected,
-                    title: viewModel.filterTitle(for: .eventType, isSelected: eventsSelected),
-                    hasIcon: true) {
-                        viewModel.expandFilter(for: viewModel.filters?.eventTypes ?? [], filterType: .eventType)
-                    } clearFilters: {
-                        viewModel.clearFilters(for: .eventType)
-                    }
+                
+                if let eventTypes = viewModel.filters?.eventTypes, eventTypes.isEmpty {
+                    let eventsSelected = selectedSources.contains(where: { $0 == .eventType })
+                    FilterView(
+                        isSelected: eventsSelected,
+                        title: viewModel.filterTitle(for: .eventType, isSelected: eventsSelected),
+                        hasIcon: true) {
+                            viewModel.expandFilter(for: eventTypes, filterType: .eventType)
+                        } clearFilters: {
+                            viewModel.clearFilters(for: .eventType)
+                        }
+                }
+                
                 switch viewModel.locationManager.authorizationStatus {
                 case .authorizedAlways, .authorizedWhenInUse:
                     let distanceSelected = selectedSources.contains(where: { $0 == .distance })
@@ -276,17 +280,17 @@ extension ListView {
                 default:
                     EmptyView()
                 }
-              
-                let sourceSelected = selectedSources.contains(where: { $0 == .source })
-                FilterView(
-                    isSelected: sourceSelected,
-                    title: viewModel.filterTitle(for: .source, isSelected: sourceSelected),
-                    hasIcon: true) {
-                        viewModel.expandFilter(for: viewModel.filters?.sources ?? [], filterType: .source)
-                    } clearFilters: {
-                        viewModel.clearFilters(for: .source)
-                    }
-                
+                if let eventSources = viewModel.filters?.sources, eventSources.isEmpty {
+                    let sourceSelected = selectedSources.contains(where: { $0 == .source })
+                    FilterView(
+                        isSelected: sourceSelected,
+                        title: viewModel.filterTitle(for: .source, isSelected: sourceSelected),
+                        hasIcon: true) {
+                            viewModel.expandFilter(for: eventSources, filterType: .source)
+                        } clearFilters: {
+                            viewModel.clearFilters(for: .source)
+                        }
+                }
                 let happeningOnceSelected = selectedSources.contains(where: { $0 == .oneOf })
                 FilterView(
                     isSelected: happeningOnceSelected,
