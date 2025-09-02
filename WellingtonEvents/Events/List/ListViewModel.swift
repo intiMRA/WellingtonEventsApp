@@ -49,7 +49,7 @@ class ListViewModel: ObservableObject {
         case webView(url: String)
     }
     
-    let repository: EventsRepository = DefaultEventsRepository()
+    let repository: EventsRepository
     let locationManager = CLLocationManager()
     var allEvents: [EventInfo]
     @Published var events: [EventInfo]
@@ -76,9 +76,11 @@ class ListViewModel: ObservableObject {
         favourites: [EventInfo] = [],
         eventsInCalendar: [EventInfo] = [],
         allEvents: [EventInfo] = [],
-        events: [EventInfo] = []) {
+        events: [EventInfo] = [],
+        repository: EventsRepository = DefaultEventsRepository()) {
             self.allEvents = allEvents
             self.events = events
+            self.repository = repository
             $searchText
                 .dropFirst()
                 .debounce(for: .seconds(0.1), scheduler: DispatchQueue.main)
