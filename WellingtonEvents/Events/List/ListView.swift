@@ -254,13 +254,13 @@ extension ListView {
                         viewModel.clearFilters(for: [.date, .quickDate])
                     }
                 
-                if let eventTypes = viewModel.filters?.eventTypes, eventTypes.isEmpty {
+                if viewModel.displayFilters.contains(where: { $0 == .eventType }) {
                     let eventsSelected = selectedSources.contains(where: { $0 == .eventType })
                     FilterView(
                         isSelected: eventsSelected,
                         title: viewModel.filterTitle(for: .eventType, isSelected: eventsSelected),
                         hasIcon: true) {
-                            viewModel.expandFilter(for: eventTypes, filterType: .eventType)
+                            viewModel.expandFilter(for: viewModel.filters?.eventTypes ?? [], filterType: .eventType)
                         } clearFilters: {
                             viewModel.clearFilters(for: .eventType)
                         }
@@ -280,13 +280,13 @@ extension ListView {
                 default:
                     EmptyView()
                 }
-                if let eventSources = viewModel.filters?.sources, eventSources.isEmpty {
+                if viewModel.displayFilters.contains(where: { $0 == .source}) {
                     let sourceSelected = selectedSources.contains(where: { $0 == .source })
                     FilterView(
                         isSelected: sourceSelected,
                         title: viewModel.filterTitle(for: .source, isSelected: sourceSelected),
                         hasIcon: true) {
-                            viewModel.expandFilter(for: eventSources, filterType: .source)
+                            viewModel.expandFilter(for: viewModel.filters?.sources ?? [], filterType: .source)
                         } clearFilters: {
                             viewModel.clearFilters(for: .source)
                         }

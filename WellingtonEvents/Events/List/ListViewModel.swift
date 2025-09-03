@@ -62,6 +62,16 @@ class ListViewModel: ObservableObject {
     var filters: EventsResponse.Filters?
     @Published var selectedFilters: [any FilterObjectProtocol] = []
     
+    @Published var displayFilters: [FilterIds] = [
+        .date,
+        .distance,
+        .favorited,
+        .oneOf,
+        .quickDate,
+        .search,
+        .multipleDates
+    ]
+    
     @Published var route: Destination?
     var cancellables = Set<AnyCancellable>()
     
@@ -115,7 +125,12 @@ class ListViewModel: ObservableObject {
                 })
             
             filters = response?.filters
-            
+            if response?.filters?.eventTypes != nil {
+                displayFilters.append(.eventType)
+            }
+            if response?.filters?.sources != nil {
+                displayFilters.append(.source)
+            }
             allEvents = events
         }
         catch {

@@ -8,7 +8,7 @@
 import Foundation
 
 struct EventsResponse: Codable {
-    struct Filters: Codable {
+    struct Filters: Codable, Equatable {
         let eventTypes: [String]
         let sources: [String]
     }
