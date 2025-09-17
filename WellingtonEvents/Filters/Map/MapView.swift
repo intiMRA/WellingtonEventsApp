@@ -167,6 +167,20 @@ extension MapView {
             }
             .padding(.all, .medium)
         }
+        .background {
+            GeometryReader { geometry in
+                Color.clear
+                    .padding(.horizontal, .medium)
+                    .onChange(of: geometry.size) { _, newValue in
+                        switch horizontalSizeClass {
+                        case .regular:
+                            width =  (newValue.width / 2) - 32
+                        default:
+                            width =  newValue.width
+                        }
+                    }
+            }
+        }
     }
 }
 
@@ -206,25 +220,12 @@ extension MapView {
                                     }
                                 }
                             }),
-                        width: width
+                        hasDivider: false,
+                        width: $width
                     ) {
                         viewModel.didTapOnEvent($0)
                     }
                 }
-            }
-        }
-        .background {
-            GeometryReader { geometry in
-                Color.clear
-                    .padding(.horizontal, .medium)
-                    .onChange(of: geometry.size) { _, newValue in
-                        switch horizontalSizeClass {
-                        case .regular:
-                            width =  (newValue.width / 2) - 32
-                        default:
-                            width =  newValue.width
-                        }
-                    }
             }
         }
     }

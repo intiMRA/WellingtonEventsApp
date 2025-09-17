@@ -23,7 +23,8 @@ struct EventsCardView: View {
     let event: EventInfo
     let favouriteModel: FavouriteModel
     var calendarModel: CalendarModel?
-    let width: CGFloat
+    var hasDivider: Bool = true
+    @Binding var width: CGFloat
     var didTapOnCard: (EventInfo) -> Void
     
     var body: some View {
@@ -49,8 +50,9 @@ struct EventsCardView: View {
                 dateAndTypeView
                 
                 infoView
-                
-                Divider()
+                if hasDivider {
+                    Divider()
+                }
             }
         }
         .frame(width: width)

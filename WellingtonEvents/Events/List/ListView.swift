@@ -187,7 +187,7 @@ extension ListView {
                             }
                         }
                     }),
-                width: width
+                width: $width
             ) {
                 viewModel.didTapOnEvent($0)
             }
@@ -239,7 +239,6 @@ extension ListView {
     var filtersView: some View {
         ScrollView(.horizontal) {
             HStack {
-                
                 let selectedSources = viewModel.selectedFilterSource()
                 
                 let quickDatesSelected = selectedSources.contains(where: { $0 == .quickDate })
