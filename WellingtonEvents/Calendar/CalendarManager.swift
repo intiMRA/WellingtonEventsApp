@@ -10,7 +10,7 @@ import Foundation
 
 class CalendarManager {
     static let accessDeniedError : NSError = NSError(domain: "CalendarAccessDenied", code: 1, userInfo: nil)
-    static let eventStore : EKEventStore = EKEventStore()
+    nonisolated(unsafe) static let eventStore : EKEventStore = EKEventStore()
     
     static func saveEventToCalendar(eventInfo: EventInfo, date: Date?, repository: EventsRepository) async throws {
         guard (try await eventStore.requestFullAccessToEvents()) == true else {

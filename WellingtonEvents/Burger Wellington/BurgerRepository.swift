@@ -28,10 +28,8 @@ actor BurgerRepository: BurgerRepositoryProtocol {
         case burgersResponseCache
     }
     
-    static let userDefaults = UserDefaults.standard
-    
     func getFavoriteBurgers() async -> [BurgerModel] {
-        guard let data = Self.userDefaults.object(forKey: DefaultKeys.favoriteBurgers.rawValue) as? Data else {
+        guard let data = UserDefaults.standard.object(forKey: DefaultKeys.favoriteBurgers.rawValue) as? Data else {
             return []
         }
         let events = (try? JSONDecoder().decode([BurgerModel].self, from: data)) ?? []
@@ -52,27 +50,27 @@ actor BurgerRepository: BurgerRepositoryProtocol {
     
     func fetchBurgers() async throws -> BurgerResponse {
         if canFetchFromCache() {
-            if let cachedResponseData = Self.userDefaults.data(forKey: DefaultKeys.burgersResponseCache.rawValue) {
+            if let cachedResponseData = UserDefaults.standard.data(forKey: DefaultKeys.burgersResponseCache.rawValue) {
                 return try JSONDecoder().decode(BurgerResponse.self, from: cachedResponseData)
             }
         }
         guard let response: BurgerResponse = try await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: UrlBuilder.burgers, httpMethod: .GET)) else {
-            if let cachedResponseData = Self.userDefaults.data(forKey: DefaultKeys.burgersResponseCache.rawValue) {
+            if let cachedResponseData = UserDefaults.standard.data(forKey: DefaultKeys.burgersResponseCache.rawValue) {
                 return try JSONDecoder().decode(BurgerResponse.self, from: cachedResponseData)
             }
             else {
                 throw BurgerRepositoryError.failedToFetchResponse
             }
         }
-        Self.userDefaults.set(try JSONEncoder().encode(response), forKey: DefaultKeys.burgersResponseCache.rawValue)
-        Self.userDefaults.set(Date.now.asString(with: .ddMMYyyy), forKey: DefaultKeys.burgersCacheDate.rawValue)
+        UserDefaults.standard.set(try JSONEncoder().encode(response), forKey: DefaultKeys.burgersResponseCache.rawValue)
+        UserDefaults.standard.set(Date.now.asString(with: .ddMMYyyy), forKey: DefaultKeys.burgersCacheDate.rawValue)
         
         return response
     }
     
     func canFetchFromCache() -> Bool {
         guard
-            let userDefaultsDateString = Self.userDefaults.object(forKey: DefaultKeys.burgersCacheDate.rawValue) as? String,
+            let userDefaultsDateString = UserDefaults.standard.object(forKey: DefaultKeys.burgersCacheDate.rawValue) as? String,
             let userDefaultsDate = userDefaultsDateString.asDate(with: .ddMMYyyy)
         else {
             return false
@@ -81,6 +79,6 @@ actor BurgerRepository: BurgerRepositoryProtocol {
     }
         
     private func save(favourites: [BurgerModel]) throws {
-        Self.userDefaults.set(try JSONEncoder().encode(favourites), forKey: DefaultKeys.favoriteBurgers.rawValue)
+        UserDefaults.standard.set(try JSONEncoder().encode(favourites), forKey: DefaultKeys.favoriteBurgers.rawValue)
     }
 }

@@ -24,7 +24,6 @@ actor FestivalEventsRepository: EventsRepository {
         case failedToFetchResponse
     }
     
-    static let userDefaults = UserDefaults.standard
     static let calendar = Calendar.current
     
     enum Keys: String {
@@ -42,27 +41,27 @@ actor FestivalEventsRepository: EventsRepository {
     
     func fetchEvents() async throws -> EventsResponse? {
         if canFetchFromCache() {
-            if let cachedResponseData = Self.userDefaults.data(forKey: Keys.festivalEventsResponse.rawValue) {
+            if let cachedResponseData = UserDefaults.standard.data(forKey: Keys.festivalEventsResponse.rawValue) {
                 return try JSONDecoder().decode(EventsResponse.self, from: cachedResponseData)
             }
         }
         guard let response: EventsResponse = try? await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: fetchUrl, httpMethod: .GET)) else {
-            if let cachedResponseData = Self.userDefaults.data(forKey: Keys.festivalEventsResponse.rawValue) {
+            if let cachedResponseData = UserDefaults.standard.data(forKey: Keys.festivalEventsResponse.rawValue) {
                 return try JSONDecoder().decode(EventsResponse.self, from: cachedResponseData)
             }
             else {
                 throw DefaultEventsRepositoryError.failedToFetchResponse
             }
         }
-        Self.userDefaults.set(try JSONEncoder().encode(response), forKey: Keys.festivalEventsResponse.rawValue)
-        Self.userDefaults.set(Date.now.asString(with: .ddMMYyyy), forKey: Keys.festivalDate.rawValue)
+        UserDefaults.standard.set(try JSONEncoder().encode(response), forKey: Keys.festivalEventsResponse.rawValue)
+        UserDefaults.standard.set(Date.now.asString(with: .ddMMYyyy), forKey: Keys.festivalDate.rawValue)
         
         return response
     }
     
     func canFetchFromCache() -> Bool {
         guard
-            let userDefaultsDateString = Self.userDefaults.object(forKey: Keys.festivalDate.rawValue) as? String,
+            let userDefaultsDateString = UserDefaults.standard.object(forKey: Keys.festivalDate.rawValue) as? String,
             let userDefaultsDate = userDefaultsDateString.asDate(with: .ddMMYyyy)
         else {
             return false
@@ -77,7 +76,7 @@ actor FestivalEventsRepository: EventsRepository {
     }
     
     func retrieveSavedToCalendar() throws -> [EventInfo] {
-        guard let data = Self.userDefaults.object(forKey: Keys.felstivalCalendar.rawValue) as? Data else {
+        guard let data = UserDefaults.standard.object(forKey: Keys.felstivalCalendar.rawValue) as? Data else {
             return []
         }
         let events = try JSONDecoder().decode([EventInfo].self, from: data)
@@ -97,7 +96,7 @@ actor FestivalEventsRepository: EventsRepository {
     }
     
     func retrieveFavorites() -> [EventInfo] {
-        guard let data = Self.userDefaults.object(forKey: Keys.favouriteFestivalEvents.rawValue) as? Data else {
+        guard let data = UserDefaults.standard.object(forKey: Keys.favouriteFestivalEvents.rawValue) as? Data else {
             return []
         }
         let events = (try? JSONDecoder().decode([EventInfo].self, from: data)) ?? []
@@ -123,11 +122,11 @@ actor FestivalEventsRepository: EventsRepository {
     }
     
     private func save(favourites: [EventInfo]) throws {
-        Self.userDefaults.set(try JSONEncoder().encode(favourites), forKey: Keys.favouriteFestivalEvents.rawValue)
+        UserDefaults.standard.set(try JSONEncoder().encode(favourites), forKey: Keys.favouriteFestivalEvents.rawValue)
     }
     
     private func save(toCalendar events: [EventInfo]) throws {
-        Self.userDefaults.set(try JSONEncoder().encode(events), forKey: Keys.felstivalCalendar.rawValue)
+        UserDefaults.standard.set(try JSONEncoder().encode(events), forKey: Keys.felstivalCalendar.rawValue)
     }
 }
 
