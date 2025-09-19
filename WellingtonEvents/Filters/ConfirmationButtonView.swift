@@ -32,8 +32,9 @@ struct StyledButtonView: View {
             Text(type.title)
                 .frame(maxWidth: .infinity, idealHeight: 44)
                 .background {
-                    RoundedRectangle(cornerRadius: 8)
+                    RoundedRectangle(cornerRadius: .greatestFiniteMagnitude)
                         .fill(.accent)
+                        .conditionalGlass(tint: .accent)
                 }
                 .foregroundStyle(.selectedChipText)
                 .bold()

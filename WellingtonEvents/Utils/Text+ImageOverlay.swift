@@ -23,6 +23,7 @@ extension Text {
                     .fill(.accent)
                     .opacity(0.8)
                     .shadow(color: .shadow.opacity(0.25), radius: 2, x: 1, y: 1)
+                    .conditionalGlass()
             }
     }
 }

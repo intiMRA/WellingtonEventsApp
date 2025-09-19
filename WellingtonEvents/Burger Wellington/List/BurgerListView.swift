@@ -19,27 +19,35 @@ struct BurgerListView: View {
     private let spaceName = "pullToRefresh"
     var body: some View {
         NavigationStack(path: $viewModel.navigationPath) {
-            ZStack(alignment: .topLeading) {
-                if viewModel.isLoading {
-                    loadingView
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ZStack(alignment: .bottom) {
+                ZStack(alignment: .topLeading) {
+                    if viewModel.isLoading {
+                        loadingView
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                    else {
+                        burgerList
+                            .simultaneousGesture(TapGesture().onEnded({ _ in
+                                focusState = nil
+                            }))
+                    }
+                    VStack(spacing: .empty) {
+                        SearchView(searchText: $viewModel.searchText, focusState: $focusState)
+                        
+                        filtersView
+                    }
+                    .padding(.horizontal, .medium)
+                    .padding(.top, .medium)
+                    .background {
+                        Color(uiColor: .systemBackground)
+                            .opacity(colorScheme == .light ? 0.95 : 0.9)
+                    }
                 }
-                else {
-                    burgerList
-                        .simultaneousGesture(TapGesture().onEnded({ _ in
-                            focusState = nil
-                        }))
-                }
-                VStack(spacing: .empty) {
-                    SearchView(searchText: $viewModel.searchText, focusState: $focusState)
-                    
-                    filtersView
-                }
-                .padding(.horizontal, .medium)
-                .padding(.top, .medium)
-                .background {
-                    Color(uiColor: .systemBackground)
-                        .opacity(colorScheme == .light ? 0.95 : 0.9)
+                switch viewModel.route {
+                case .alert(let toastStyle):
+                    ToastView(model: .init(style: toastStyle, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+                default:
+                    EmptyView()
                 }
             }
             .background {
@@ -126,12 +134,6 @@ struct BurgerListView: View {
                     didSelectPrice: viewModel.didSelectPrice)
             }
             .presentationDetents([ .medium, .large])
-        }
-        .sheet(item: $viewModel.route.alert, id: \.self) { style in
-            ToastView(model: .init(style: style, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
-                .padding(.top, .medium)
-                .presentationBackground(.clear)
-                .presentationDetents([.fraction(1/6)])
         }
         .sheet(item: $viewModel.route.editEvent, id: \.burger) { info in
             EkEventEditView(ekEvent: info.ekEvent, eventEditModel: info.burger, dismiss: viewModel.didDismissEditCalanderView)

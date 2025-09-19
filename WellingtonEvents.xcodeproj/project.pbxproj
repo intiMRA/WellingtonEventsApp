@@ -213,7 +213,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1600;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					A1112AE42D2B41EA00BE9D0C = {
 						CreatedOnToolsVersion = 16.0;
@@ -376,6 +376,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "What's on Welly";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -434,6 +435,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "What's on Welly";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				VALIDATE_PRODUCT = YES;
@@ -452,6 +454,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WellingtonEvents/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "What's on Welly";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app needs access to save events to your calendar";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to show events near you. We do not store this information.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -463,9 +466,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.1;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = LocalizationLibraryApp.WellingtonEvents;
 				PRODUCT_NAME = "What's On Welly";
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -484,6 +488,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WellingtonEvents/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "What's on Welly";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app needs access to save events to your calendar";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to show events near you. We do not store this information.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -495,9 +500,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.1;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = LocalizationLibraryApp.WellingtonEvents;
 				PRODUCT_NAME = "What's On Welly";
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

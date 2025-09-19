@@ -41,7 +41,7 @@ struct DatePickerView: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .background {
-                                    RoundedRectangle(cornerRadius: 4)
+                                    RoundedRectangle(cornerRadius: 8)
                                         .stroke(Color.accentColor, lineWidth: 1)
                                         .fill(viewModel.isDateSelected(date) ? .accentColor.opacity(0.7) : Color.clear)
                                         .squareFrame(size: 44)

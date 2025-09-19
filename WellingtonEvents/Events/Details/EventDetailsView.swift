@@ -21,37 +21,15 @@ struct EventDetailsView: View {
     }
     
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: .small) {
-                imageView
-                actionIconsView
-                Divider()
-                    .foregroundStyle(.text)
-                
-                infoView
-                
-                Divider()
-                    .foregroundStyle(.text)
-                ForEach(viewModel.event.description.replacingOccurrences(of: "!\n", with: ".\n").split(separator: ".\n"), id: \.self) { line in
-                    Text(line.description.contains(".") || line.description.contains("!") ? line : "\(line).")
-                        .foregroundStyle(.text)
-                        .multilineTextAlignment(.leading)
-                }
-                
-                Divider()
-                    .foregroundStyle(.text)
-                
-                mapImage
-                
-                Divider()
-                    .foregroundStyle(.text)
-                
-                StyledButtonView(type: .openWebView) {
-                    viewModel.showWebView()
-                }
+        ZStack(alignment: .bottom) {
+            contentView
+            switch viewModel.route {
+            case .alert(let toastStyle):
+                ToastView(model: .init(style: toastStyle, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+            default:
+                EmptyView()
             }
         }
-        .padding(.horizontal, .medium)
         .task {
             await viewModel.generateSnapshot()
         }
@@ -100,15 +78,49 @@ struct EventDetailsView: View {
                 .environmentObject(actionsManager)
             }
         }
-        .sheet(item: $viewModel.route.alert, id: \.self) { style in
-            ToastView(model: .init(style: style, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
-                .padding(.top, .medium)
-                .presentationBackground(.clear)
-                .presentationDetents([.fraction(1/6)])
-        }
         .sheet(item: $viewModel.route.editEvent, id: \.eventInfo) { info in
             EkEventEditView(ekEvent: info.ekEvent, eventEditModel: info.eventInfo, dismiss: didDismissEditCalanderView)
         }
+    }
+    
+    @ViewBuilder
+    var contentView: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: .small) {
+                imageView
+                if #available(iOS 26.0, *) {
+                    actionIconsView26
+                } else {
+                    actionIconsView
+                }
+                Divider()
+                    .foregroundStyle(.text)
+                
+                infoView
+                
+                Divider()
+                    .foregroundStyle(.text)
+                ForEach(viewModel.event.description.replacingOccurrences(of: "!\n", with: ".\n").split(separator: ".\n"), id: \.self) { line in
+                    Text(line.description.contains(".") || line.description.contains("!") ? line : "\(line).")
+                        .foregroundStyle(.text)
+                        .multilineTextAlignment(.leading)
+                }
+                
+                Divider()
+                    .foregroundStyle(.text)
+                
+                mapImage
+                
+                Divider()
+                    .foregroundStyle(.text)
+                
+                StyledButtonView(type: .openWebView) {
+                    viewModel.showWebView()
+                }
+                .padding(.bottom, .medium)
+            }
+        }
+        .padding(.horizontal, .medium)
     }
     
     private func openDirectionsInAppleMaps(coordinate: CLLocationCoordinate2D, adrress: String) {
@@ -236,6 +248,63 @@ extension EventDetailsView {
                 ShareLink(item: url) {
                     Image(.share)
                         .squareFrame(size: 36)
+                }
+            }
+        }
+        .padding(.all, .medium)
+    }
+    
+    @available(iOS 26.0, *)
+    @ViewBuilder
+    var actionIconsView26: some View {
+        let isFavourited = actionsManager.isEventFavourited(id: viewModel.event.id)
+        let isInCalendar = actionsManager.isEventInCalendar(id: viewModel.event.id)
+        HStack(alignment: .top, spacing: .xSmall) {
+            Button {
+                Task {
+                    if isFavourited {
+                        await actionsManager.deleteFromFavorites(event: viewModel.event, errorHandler: viewModel.showErrorAlert)
+                    }
+                    else {
+                        await actionsManager.saveToFavorites(event: viewModel.event, errorHandler: viewModel.showErrorAlert)
+                    }
+                }
+            } label: {
+                (isFavourited ? Image(.heartFillClear) : Image(.heartClear))
+                    .resizable()
+                    .squareFrame(size: 36)
+                    .glassEffect()
+            }
+            
+            Button {
+                Task {
+                    if isInCalendar {
+                        await viewModel.presentEditCalendar()
+                    }
+                    else {
+                        await saveTocalendar(event: viewModel.event)
+                    }
+                }
+            } label: {
+                VStack {
+                    (isInCalendar ? Image(.calendarTickClear) : Image(.calendarClear))
+                        .resizable()
+                        .squareFrame(size: 36)
+                        .glassEffect()
+                    if isInCalendar {
+                        Text("Edit")
+                            .font(.caption)
+                            .foregroundStyle(.accent)
+                    }
+                }
+            }
+            
+            
+            if let url = URL(string: viewModel.event.url) {
+                ShareLink(item: url) {
+                    Image(.shareClear)
+                        .squareFrame(size: 36)
+                        .glassEffect()
                 }
             }
         }

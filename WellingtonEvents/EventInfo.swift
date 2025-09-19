@@ -95,7 +95,13 @@ struct EventInfo: Codable, Identifiable, Equatable {
             }
             return date > .now ? date : nil
         } ?? []
-        self.dates = Array(Set(self.dates))
+        var dates: [Date] = []
+        for date in self.dates {
+            if !dates.contains(date) {
+                dates.append(date)
+            }
+        }
+        self.dates = dates
         let displayDate = try container.decode(String.self, forKey: .displayDate)
         
         if self.dates.count == 1, displayDate.contains(" + more") {

@@ -62,12 +62,23 @@ struct FilterView: View {
         .padding(.vertical, .xSmall)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .background {
-            RoundedRectangle(cornerRadius: 20)
-                .fill(isSelected ? .accent : .cardBackground)
-                .if(hasShadow) { view in
-                    view
-                        .shadow(radius: 2, x: 0, y: 2)
-                }
+            if #available(iOS 26.0, *) {
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(isSelected ? .accent : .clear)
+                    .glassEffect()
+                    .if(hasShadow) { view in
+                        view
+                            .shadow(radius: 2, x: 0, y: 2)
+                    }
+            }
+            else {
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(isSelected ? .accent : .cardBackground)
+                    .if(hasShadow) { view in
+                        view
+                            .shadow(radius: 2, x: 0, y: 2)
+                    }
+            }
         }
     }
 }
