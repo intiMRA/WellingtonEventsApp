@@ -34,9 +34,15 @@ extension View {
                     Button {
                         didTapFavourites()
                     } label: {
-                        (favoritesSelected ? Image(.heartFill) : Image(.heart))
-                            .resizable()
-                            .squareFrame(size: 36)
+                        if #available(iOS 26.0, *) {
+                            (favoritesSelected ? Image(.heartFillClear) : Image(.heartClear))
+                                .resizable()
+                                .squareFrame(size: 36)
+                        } else {
+                            (favoritesSelected ? Image(.heartFill) : Image(.heart))
+                                .resizable()
+                                .squareFrame(size: 36)
+                        }
                     }
                 }
             }

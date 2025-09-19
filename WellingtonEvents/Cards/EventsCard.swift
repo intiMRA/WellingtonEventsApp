@@ -35,7 +35,12 @@ struct EventsCardView: View {
                 ZStack(alignment: .bottomLeading) {
                     ZStack(alignment: .topTrailing) {
                         imageView
-                        actionIconsView
+                        
+                        if #available(iOS 26.0, *) {
+                            actionIconsView26
+                        } else {
+                            actionIconsView
+                        }
                     }
                     Text(event.source)
                         .imageOverlay()
@@ -103,7 +108,7 @@ extension EventsCardView {
                         .resizable()
                         .squareFrame(size: 36)
                 }
-                .foregroundStyle(.text)
+                .foregroundStyle(.clear)
             }
             
             
@@ -111,6 +116,42 @@ extension EventsCardView {
                 ShareLink(item: url) {
                     Image(.share)
                         .squareFrame(size: 36)
+                }
+            }
+        }
+        .padding(.all, .medium)
+    }
+    
+    @available(iOS 26.0, *)
+    @ViewBuilder
+    var actionIconsView26: some View {
+        HStack(spacing: .xSmall) {
+            Button {
+                favouriteModel.didTapFavorites()
+            } label: {
+                (favouriteModel.isFavourited ? Image(.heartFillClear) : Image(.heartClear))
+                    .resizable()
+                    .squareFrame(size: 36)
+                    .glassEffect()
+            }
+            
+            if let calendarModel {
+                Button {
+                    calendarModel.addToCalendar()
+                } label: {
+                    (calendarModel.isInCalendar ? Image(.calendarTickClear) : Image(.calendarClear))
+                        .resizable()
+                        .squareFrame(size: 36)
+                        .glassEffect()
+                }
+            }
+            
+            
+            if let url = URL(string: event.url) {
+                ShareLink(item: url) {
+                    Image(.shareClear)
+                        .squareFrame(size: 36)
+                        .glassEffect()
                 }
             }
         }

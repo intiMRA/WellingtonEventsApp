@@ -18,7 +18,15 @@ struct BurgerDetailsView: View {
     
     var body: some View {
         ScrollView {
-            content
+            ZStack(alignment: .bottom) {
+                content
+                switch viewModel.route {
+                case .alert(let toastStyle):
+                    ToastView(model: .init(style: toastStyle, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+                default:
+                    EmptyView()
+                }
+            }
         }
         .task {
             await viewModel.generateSnapshot()
@@ -45,12 +53,6 @@ struct BurgerDetailsView: View {
                         }
                     }
             }
-        }
-        .sheet(item: $viewModel.route.alert, id: \.self) { style in
-            ToastView(model: .init(style: style, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
-                .padding(.top, .medium)
-                .presentationBackground(.clear)
-                .presentationDetents([.fraction(1/6)])
         }
         .sheet(item: $viewModel.route.editEvent, id: \.burger) { info in
             EkEventEditView(ekEvent: info.ekEvent, eventEditModel: info.burger, dismiss: viewModel.didDismissEditCalanderView)

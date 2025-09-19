@@ -40,7 +40,7 @@ struct DateModel: Equatable, Identifiable {
 class ListViewModel: ObservableObject {
     
     @CasePathable
-    enum Destination {
+    enum Destination: Equatable {
         case calendar(event: EventInfo)
         case filters(for: FilterValues)
         case alert(ToastStyle)

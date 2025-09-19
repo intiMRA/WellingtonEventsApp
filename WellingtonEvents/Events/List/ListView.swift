@@ -26,10 +26,18 @@ struct ListView: View {
     
     var body: some View {
         NavigationStack(path: $viewModel.navigationPath) {
-            contentView
-                .wellingTOnToolbar(favoritesSelected: viewModel.selectedFilterSource().contains(where: { $0 == .favorited }), didTapFavourites: {
-                    viewModel.didTapFavouritesFilter(favourites: actionsManager.favourites)
-                })
+            ZStack(alignment: .bottom) {
+                contentView
+                    .wellingTOnToolbar(favoritesSelected: viewModel.selectedFilterSource().contains(where: { $0 == .favorited }), didTapFavourites: {
+                        viewModel.didTapFavouritesFilter(favourites: actionsManager.favourites)
+                    })
+                switch viewModel.route {
+                case .alert(let toastStyle):
+                    ToastView(model: .init(style: toastStyle, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+                default:
+                    EmptyView()
+                }
+            }
         }
         .disabled(viewModel.isLoading)
         .task {
@@ -48,12 +56,7 @@ struct ListView: View {
                     }))
                 .environmentObject(actionsManager)
             }
-        }
-        .sheet(item: $viewModel.route.alert, id: \.self) { style in
-            ToastView(model: .init(style: style, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
-                .padding(.top, .medium)
-                .presentationBackground(.clear)
-                .presentationDetents([.fraction(1/6)])
+            .presentationDetents([.medium, .large])
         }
         .sheet(item: $viewModel.route.filters, id: \.id) { value in
             NavigationView {

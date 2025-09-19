@@ -33,72 +33,74 @@ struct MapView: View {
 extension MapView {
     @ViewBuilder
     var mapContainer: some View {
-        map
-            .task {
-                viewModel.requestLocationAuthorization()
-                await viewModel.fetchEvents()
+        ZStack(alignment: .bottom) {
+            map
+            switch viewModel.route {
+            case .alert(let toastStyle):
+                ToastView(model: .init(style: toastStyle, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+            default:
+                EmptyView()
             }
-            .sheet(item: $viewModel.route.cards, id: \.self) { events in
-                cards(for: events)
-                    .padding(.horizontal, .medium)
-                    .padding(.top, .xLarge)
-                    .presentationDetents([.fraction(3/6), .medium])
+        }
+        .task {
+            viewModel.requestLocationAuthorization()
+            await viewModel.fetchEvents()
+        }
+        .sheet(item: $viewModel.route.cards, id: \.self) { events in
+            cards(for: events)
+                .padding(.horizontal, .medium)
+                .padding(.top, .xLarge)
+                .presentationDetents([.fraction(3/6), .medium])
+        }
+        .sheet(item: $viewModel.route.calendar) { event in
+            NavigationView {
+                DatePickerView(viewModel: .init(
+                    event: event,
+                    repository: viewModel.repository,
+                    dismiss: { [weak viewModel] style in
+                        viewModel?.dissmissCalendar(style)
+                    }))
+                .environmentObject(actionsManager)
             }
-            .sheet(item: $viewModel.route.alert, id: \.self) { style in
-                ToastView(model: .init(style: style, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
-                    .padding(.top, .medium)
-                    .presentationBackground(.clear)
-                    .presentationDetents([.fraction(1/6)])
+        }
+        .sheet(item: $viewModel.route.filters, id: \.id) { value in
+            NavigationView {
+                FilterOptionsView(viewModel: .init(
+                    filterTye: value.id.rawValue,
+                    possibleFilters: value.items,
+                    selectedFilters: viewModel.selectedFilters(for: value.id),
+                    finishedFiltering: viewModel.didSelectFilterValues,
+                    dismiss: { [weak viewModel] in viewModel?.resetRoute() }))
             }
-            .sheet(item: $viewModel.route.calendar) { event in
-                NavigationView {
-                    DatePickerView(viewModel: .init(
-                        event: event,
-                        repository: viewModel.repository,
-                        dismiss: { [weak viewModel] style in
-                            viewModel?.dissmissCalendar(style)
-                        }))
+            .presentationDetents([ .medium, .large])
+        }
+        .sheet(item: $viewModel.route.dateSelector, id: \.id) { dates in
+            NavigationView {
+                DatesFilterView(startDate: dates.startDate,
+                                endDate: dates.endDate,
+                                selectedQuickDate: dates.selectedQuickDate,
+                                dismiss: viewModel.resetRoute,
+                                didSelectDates: viewModel.didSelectDates)
+            }
+            .presentationDetents([ .medium, .large])
+        }
+        .sheet(item: $viewModel.route.distance, id: \.self) { distance in
+            NavigationView {
+                DistanceFilterView(
+                    selectedDistance: distance,
+                    dismiss: viewModel.resetRoute,
+                    didSelectDistance: viewModel.didSelectDistance)
+            }
+            .presentationDetents([ .medium, .large])
+        }
+        .navigationDestination(for: StackDestination.self) { path in
+            switch path {
+            case .eventDetails(let eventInfo):
+                EventDetailsView(viewModel: .init(event: eventInfo, repository: viewModel.repository))
                     .environmentObject(actionsManager)
-                }
             }
-            .sheet(item: $viewModel.route.filters, id: \.id) { value in
-                NavigationView {
-                    FilterOptionsView(viewModel: .init(
-                        filterTye: value.id.rawValue,
-                        possibleFilters: value.items,
-                        selectedFilters: viewModel.selectedFilters(for: value.id),
-                        finishedFiltering: viewModel.didSelectFilterValues,
-                        dismiss: { [weak viewModel] in viewModel?.resetRoute() }))
-                }
-                .presentationDetents([ .medium, .large])
-            }
-            .sheet(item: $viewModel.route.dateSelector, id: \.id) { dates in
-                NavigationView {
-                    DatesFilterView(startDate: dates.startDate,
-                                    endDate: dates.endDate,
-                                    selectedQuickDate: dates.selectedQuickDate,
-                                    dismiss: viewModel.resetRoute,
-                                    didSelectDates: viewModel.didSelectDates)
-                }
-                .presentationDetents([ .medium, .large])
-            }
-            .sheet(item: $viewModel.route.distance, id: \.self) { distance in
-                NavigationView {
-                    DistanceFilterView(
-                        selectedDistance: distance,
-                        dismiss: viewModel.resetRoute,
-                        didSelectDistance: viewModel.didSelectDistance)
-                }
-                .presentationDetents([ .medium, .large])
-            }
-            .navigationDestination(for: StackDestination.self) { path in
-                switch path {
-                case .eventDetails(let eventInfo):
-                    EventDetailsView(viewModel: .init(event: eventInfo, repository: viewModel.repository))
-                        .environmentObject(actionsManager)
-                }
-            }
-            .scrollDismissesKeyboard(.interactively)
+        }
+        .scrollDismissesKeyboard(.interactively)
     }
 }
 
@@ -176,7 +178,7 @@ extension MapView {
                         case .regular:
                             width =  (newValue.width / 2) - 32
                         default:
-                            width =  newValue.width
+                            width =  newValue.width - 32
                         }
                     }
             }
