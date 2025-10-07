@@ -15,6 +15,7 @@ enum ViewFocusState: Equatable, Hashable {
 struct ListView: View {
     @StateObject var viewModel: ListViewModel = .init()
     @EnvironmentObject var actionsManager: ActionsManager
+    @EnvironmentObject var router: Navigator
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
@@ -25,22 +26,24 @@ struct ListView: View {
     @State private var width: CGFloat = .zero
     
     var body: some View {
-        NavigationStack(path: $viewModel.navigationPath) {
-            ZStack(alignment: .bottom) {
-                contentView
-                    .wellingTOnToolbar(favoritesSelected: viewModel.selectedFilterSource().contains(where: { $0 == .favorited }), didTapFavourites: {
-                        viewModel.didTapFavouritesFilter(favourites: actionsManager.favourites)
-                    })
-                switch viewModel.route {
-                case .alert(let toastStyle):
-                    ToastView(model: .init(style: toastStyle, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
-                default:
-                    EmptyView()
-                }
+        ZStack(alignment: .bottom) {
+            contentView
+                .wellingTOnToolbar(favoritesSelected: viewModel.selectedFilterSource().contains(where: { $0 == .favorited }), didTapFavourites: {
+                    viewModel.didTapFavouritesFilter(favourites: actionsManager.favourites)
+                })
+            switch viewModel.route {
+            case .alert(let toastStyle):
+                ToastView(model: .init(style: toastStyle, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+            default:
+                EmptyView()
             }
         }
         .disabled(viewModel.isLoading)
         .task {
+            guard !viewModel.isBackTap else {
+                viewModel.isBackTap = false
+                return
+            }
             await viewModel.setup()
             await actionsManager.setUp(events: viewModel.events)
         }
@@ -192,7 +195,8 @@ extension ListView {
                     }),
                 width: $width
             ) {
-                viewModel.didTapOnEvent($0)
+                viewModel.isBackTap = true
+                router.navigate(to: .eventDetails($0, viewModel.repository))
             }
         }
     }
@@ -366,13 +370,6 @@ extension ListView {
                 .frame(height: safeAreaInsets.top)
                 .frame(maxWidth: .infinity)
                 .ignoresSafeArea()
-        }
-        .navigationDestination(for: StackDestination.self) { path in
-            switch path {
-            case .eventDetails(let eventInfo):
-                EventDetailsView(viewModel: .init(event: eventInfo, repository: viewModel.repository))
-                    .environmentObject(actionsManager)
-            }
         }
     }
 }

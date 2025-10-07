@@ -55,7 +55,6 @@ class MapViewModel: ObservableObject {
     
     @Published var events: [MapEventtModel] = []
     @Published var route: Destination?
-    @Published var navigationPath: [StackDestination] = []
     @Published var selectedFilters: [any FilterObjectProtocol] = [QuickDateFilter(quickDateType: .today)]
     @Published var cameraPosition: MapCameraPosition = .userLocation(fallback: .region(MapViewModel.wellingtonRegion))
     
@@ -157,11 +156,6 @@ class MapViewModel: ObservableObject {
     
     func showErrorAlert(_ title: String? = nil, _ message: String) {
         route = .alert(.error(title: title, message: message))
-    }
-    
-    func didTapOnEvent(_ event: EventInfo) {
-        resetRoute()
-        navigationPath.append(.eventDetails(event))
     }
     
     func resetRoute() {

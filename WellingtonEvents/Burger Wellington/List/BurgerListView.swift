@@ -11,6 +11,7 @@ import DesignLibrary
 struct BurgerListView: View {
     @StateObject var viewModel: BurgerListViewModel = .init()
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    @EnvironmentObject var router: Navigator
     @State private var width: CGFloat = .zero
     @FocusState var focusState: ViewFocusState?
     @State private var safeAreaInsets = EdgeInsets()
@@ -18,87 +19,69 @@ struct BurgerListView: View {
     private let scrollViewId = "scrollViewId"
     private let spaceName = "pullToRefresh"
     var body: some View {
-        NavigationStack(path: $viewModel.navigationPath) {
-            ZStack(alignment: .bottom) {
-                ZStack(alignment: .topLeading) {
-                    if viewModel.isLoading {
-                        loadingView
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    }
-                    else {
-                        burgerList
-                            .simultaneousGesture(TapGesture().onEnded({ _ in
-                                focusState = nil
-                            }))
-                    }
-                    VStack(spacing: .empty) {
-                        SearchView(searchText: $viewModel.searchText, focusState: $focusState)
-                        
-                        filtersView
-                    }
-                    .padding(.horizontal, .medium)
-                    .padding(.top, .medium)
-                    .background {
-                        Color(uiColor: .systemBackground)
-                            .opacity(colorScheme == .light ? 0.95 : 0.9)
-                    }
+        ZStack(alignment: .bottom) {
+            ZStack(alignment: .topLeading) {
+                if viewModel.isLoading {
+                    loadingView
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                switch viewModel.route {
-                case .alert(let toastStyle):
-                    ToastView(model: .init(style: toastStyle, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
-                default:
-                    EmptyView()
+                else {
+                    burgerList
+                        .simultaneousGesture(TapGesture().onEnded({ _ in
+                            focusState = nil
+                        }))
+                }
+                VStack(spacing: .empty) {
+                    SearchView(searchText: $viewModel.searchText, focusState: $focusState)
+                    
+                    filtersView
+                }
+                .padding(.horizontal, .medium)
+                .padding(.top, .medium)
+                .background {
+                    Color(uiColor: .systemBackground)
+                        .opacity(colorScheme == .light ? 0.95 : 0.9)
                 }
             }
-            .background {
-                GeometryReader { geometry in
-                    Color.clear
-                        .padding(.horizontal, .medium)
-                        .onChange(of: geometry.safeAreaInsets, { _, newValue in
-                            safeAreaInsets = newValue
-                        })
-                        .onChange(of: geometry.size) { _, newValue in
-                            switch horizontalSizeClass {
-                            case .regular:
-                                width =  (newValue.width / 2) - 32
-                            default:
-                                width =  newValue.width - 32
-                            }
-                        }
-                }
-            }
-            .wellingTOnToolbar(favoritesSelected: viewModel.selectedFilterSource().contains(where: { $0 == .favorited }), didTapFavourites: {
-                viewModel.didTapFavouritesFilter()
-            })
-            .overlay(alignment: .top) {
-                Color(uiColor: .systemBackground)
-                    .opacity(colorScheme == .light ? 0.95 : 0.9)
-                    .frame(height: safeAreaInsets.top)
-                    .frame(maxWidth: .infinity)
-                    .ignoresSafeArea()
-            }
-            .navigationDestination(for: BurgerListViewStackDestinations.self) { path in
-                switch path {
-                case .burgerDetails(let model):
-                    BurgerDetailsView(viewModel: .init(
-                        burgerModel: model, isFavorite: viewModel.isFavourite, didTapFavorite: { [weak viewModel] model in
-                            Task {
-                                let favourited = viewModel?.isFavourite(model) ?? false
-                                if favourited {
-                                    await viewModel?.removeFromFavourites(model)
-                                } else {
-                                    await viewModel?.addToFavourites(model)
-                                }
-                            }
-                        },
-                        finishedDismissEditCalanderView: { action, model in
-                            viewModel.didDismissEditCalanderViewNoAlert(action: action, eventEditModel: model)
-                        }
-                    ))
-                }
+            switch viewModel.route {
+            case .alert(let toastStyle):
+                ToastView(model: .init(style: toastStyle, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+            default:
+                EmptyView()
             }
         }
+        .background {
+            GeometryReader { geometry in
+                Color.clear
+                    .padding(.horizontal, .medium)
+                    .onChange(of: geometry.safeAreaInsets, { _, newValue in
+                        safeAreaInsets = newValue
+                    })
+                    .onChange(of: geometry.size) { _, newValue in
+                        switch horizontalSizeClass {
+                        case .regular:
+                            width =  (newValue.width / 2) - 32
+                        default:
+                            width =  newValue.width - 32
+                        }
+                    }
+            }
+        }
+        .wellingTOnToolbar(favoritesSelected: viewModel.selectedFilterSource().contains(where: { $0 == .favorited }), didTapFavourites: {
+            viewModel.didTapFavouritesFilter()
+        })
+        .overlay(alignment: .top) {
+            Color(uiColor: .systemBackground)
+                .opacity(colorScheme == .light ? 0.95 : 0.9)
+                .frame(height: safeAreaInsets.top)
+                .frame(maxWidth: .infinity)
+                .ignoresSafeArea()
+        }
         .task {
+            guard !viewModel.isBackTap else {
+                viewModel.isBackTap = false
+                return
+            }
             await viewModel.fetchBurgers()
             await viewModel.loadFavourites()
         }
@@ -286,7 +269,26 @@ extension BurgerListView {
                         }),
                     model: model,
                     width: width) { model in
-                        viewModel.navigationPath.append(.burgerDetails(model))
+                        viewModel.isBackTap = true
+                        router.navigate(
+                            to: .burgerDetails(
+                                model: model,
+                                isFavorite: viewModel.isFavourite,
+                                didTapFavorite: { [weak viewModel] model in
+                                    Task {
+                                        let favourited = viewModel?.isFavourite(model) ?? false
+                                        if favourited {
+                                            await viewModel?.removeFromFavourites(model)
+                                        } else {
+                                            await viewModel?.addToFavourites(model)
+                                        }
+                                    }
+                                },
+                                finishedDismissEditCalanderView: { action, model in
+                                    viewModel.didDismissEditCalanderViewNoAlert(action: action, eventEditModel: model)
+                                }
+                            )
+                        )
                     }
             }
         }

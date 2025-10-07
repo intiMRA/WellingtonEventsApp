@@ -26,42 +26,52 @@ actor FestivalEventsRepository: EventsRepository {
     
     static let calendar = Calendar.current
     
-    enum Keys: String {
-        case favouriteFestivalEvents
-        case felstivalCalendar
-        case festivalDate
-        case festivalEventsResponse
+    let fetchUrl: FestivalUrlBuilder
+    let festivalId: String
+    var festivalEventsResponse: String {
+        "\(festivalId)Response"
     }
     
-    let fetchUrl: FestivalUrlBuilder
+    var festivalDate: String {
+        "\(festivalId)Date"
+    }
     
-    init(fetchUrl: FestivalUrlBuilder) {
+    var felstivalCalendar: String {
+        "\(festivalId)Calendar"
+    }
+    
+    var favouriteFestivalEvents: String {
+        "\(festivalId)FavoriteEvents"
+    }
+    
+    init(fetchUrl: FestivalUrlBuilder, festivalId: String) {
         self.fetchUrl = fetchUrl
+        self.festivalId = festivalId
     }
     
     func fetchEvents() async throws -> EventsResponse? {
         if canFetchFromCache() {
-            if let cachedResponseData = UserDefaults.standard.data(forKey: Keys.festivalEventsResponse.rawValue) {
+            if let cachedResponseData = UserDefaults.standard.data(forKey: festivalEventsResponse) {
                 return try JSONDecoder().decode(EventsResponse.self, from: cachedResponseData)
             }
         }
         guard let response: EventsResponse = try? await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: fetchUrl, httpMethod: .GET)) else {
-            if let cachedResponseData = UserDefaults.standard.data(forKey: Keys.festivalEventsResponse.rawValue) {
+            if let cachedResponseData = UserDefaults.standard.data(forKey: festivalEventsResponse) {
                 return try JSONDecoder().decode(EventsResponse.self, from: cachedResponseData)
             }
             else {
                 throw DefaultEventsRepositoryError.failedToFetchResponse
             }
         }
-        UserDefaults.standard.set(try JSONEncoder().encode(response), forKey: Keys.festivalEventsResponse.rawValue)
-        UserDefaults.standard.set(Date.now.asString(with: .ddMMYyyy), forKey: Keys.festivalDate.rawValue)
+        UserDefaults.standard.set(try JSONEncoder().encode(response), forKey: festivalEventsResponse)
+        UserDefaults.standard.set(Date.now.asString(with: .ddMMYyyy), forKey: festivalDate)
         
         return response
     }
     
     func canFetchFromCache() -> Bool {
         guard
-            let userDefaultsDateString = UserDefaults.standard.object(forKey: Keys.festivalDate.rawValue) as? String,
+            let userDefaultsDateString = UserDefaults.standard.object(forKey: festivalDate) as? String,
             let userDefaultsDate = userDefaultsDateString.asDate(with: .ddMMYyyy)
         else {
             return false
@@ -76,7 +86,7 @@ actor FestivalEventsRepository: EventsRepository {
     }
     
     func retrieveSavedToCalendar() throws -> [EventInfo] {
-        guard let data = UserDefaults.standard.object(forKey: Keys.felstivalCalendar.rawValue) as? Data else {
+        guard let data = UserDefaults.standard.object(forKey: felstivalCalendar) as? Data else {
             return []
         }
         let events = try JSONDecoder().decode([EventInfo].self, from: data)
@@ -96,7 +106,7 @@ actor FestivalEventsRepository: EventsRepository {
     }
     
     func retrieveFavorites() -> [EventInfo] {
-        guard let data = UserDefaults.standard.object(forKey: Keys.favouriteFestivalEvents.rawValue) as? Data else {
+        guard let data = UserDefaults.standard.object(forKey: favouriteFestivalEvents) as? Data else {
             return []
         }
         let events = (try? JSONDecoder().decode([EventInfo].self, from: data)) ?? []
@@ -122,11 +132,11 @@ actor FestivalEventsRepository: EventsRepository {
     }
     
     private func save(favourites: [EventInfo]) throws {
-        UserDefaults.standard.set(try JSONEncoder().encode(favourites), forKey: Keys.favouriteFestivalEvents.rawValue)
+        UserDefaults.standard.set(try JSONEncoder().encode(favourites), forKey: favouriteFestivalEvents)
     }
     
     private func save(toCalendar events: [EventInfo]) throws {
-        UserDefaults.standard.set(try JSONEncoder().encode(events), forKey: Keys.felstivalCalendar.rawValue)
+        UserDefaults.standard.set(try JSONEncoder().encode(events), forKey: felstivalCalendar)
     }
 }
 
