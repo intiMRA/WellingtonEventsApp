@@ -73,14 +73,16 @@ class Navigator: ObservableObject {
 struct ContentView: View {
     @StateObject var actionsManager: ActionsManager = .init(repository: DefaultEventsRepository())
     @State var viewModel: ContentViewModel = .init()
-    @StateObject var router: Navigator = .init()
+    @StateObject var eventsRouter: Navigator = .init()
+    @StateObject var mapRouter: Navigator = .init()
+    @StateObject var festivalsRouter: Navigator = .init()
     var body: some View {
         TabView {
             Tab("Events", image: "events") {
-                NavigationStack(path: $router.navigationPaths) {
+                NavigationStack(path: $eventsRouter.navigationPaths) {
                     ListView()
                         .environmentObject(actionsManager)
-                        .environmentObject(router)
+                        .environmentObject(eventsRouter)
                         .navigationDestination(for: Navigator.StackDestination.self) { path in
                             switch path {
                             case .eventDetails(let eventInfo, let repo):
@@ -93,10 +95,10 @@ struct ContentView: View {
                 }
             }
             Tab("Map", image: "map") {
-                NavigationStack(path: $router.navigationPaths) {
+                NavigationStack(path: $mapRouter.navigationPaths) {
                     MapView()
                         .environmentObject(actionsManager)
-                        .environmentObject(router)
+                        .environmentObject(mapRouter)
                         .navigationDestination(for: Navigator.StackDestination.self) { path in
                             switch path {
                             case .eventDetails(let eventInfo, let repo):
@@ -109,10 +111,10 @@ struct ContentView: View {
                 }
             }
             if !viewModel.currentFestivals.isEmpty {
-                Tab("Festivals", image: "events-tab") {
-                    NavigationStack(path: $router.navigationPaths) {
+                Tab("Festivals", image: "festivals") {
+                    NavigationStack(path: $festivalsRouter.navigationPaths) {
                         FestivalsView()
-                            .environmentObject(router)
+                            .environmentObject(festivalsRouter)
                     }
                 }
             }
