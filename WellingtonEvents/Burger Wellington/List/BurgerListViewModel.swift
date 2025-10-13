@@ -69,8 +69,8 @@ class BurgerListViewModel: ObservableObject {
         selectedFilters = []
         isLoading = true
         defer {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [unowned self] in
-                self.isLoading = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+                self?.isLoading = false
             }
         }
         let response: BurgerResponse? = try? await repository.fetchBurgers()
