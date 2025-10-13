@@ -7,74 +7,120 @@
 
 import SwiftUI
 import NetworkLayerSPM
-
-
-enum Festivals: String {
-    case burgerWellington = "BurgerWellington"
-    case roxy = "RoxyFestival"
-}
-
-struct FestivalDetails: Codable {
-    let id: String
-    let name: String
-    let url: String
-    let icon: String
-}
+import EventKitUI
 
 @Observable
 @MainActor
 class ContentViewModel {
     var currentFestivals: [Festivals] = []
-    var currentFestivalDetails: [FestivalDetails] = []
     
     func fetchFestivals() async {
         let festvalStrings: [String] = (try? await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: UrlBuilder.festivals, httpMethod: .GET))) ?? []
         
         currentFestivals = festvalStrings.compactMap { Festivals(rawValue: $0) }
-        currentFestivalDetails = (try? await NetworkLayer.defaultNetworkLayer.request(.init(urlBuilder: UrlBuilder.festivalDetails, httpMethod: .GET))) ?? []
+    }
+}
+
+class Navigator: ObservableObject {
+    enum StackDestination: Hashable {
+        case eventDetails(EventInfo, EventsRepository)
+        case burgerDetails(
+            model: BurgerModel,
+            isFavorite: (BurgerModel) -> Bool,
+            didTapFavorite: (BurgerModel) -> Void,
+            finishedDismissEditCalanderView: (EKEventEditViewAction, EventEditProtocol) -> Void
+        )
+        case burgers
+        case festivalListing(festivalUrl: String, festivalId: String)
+        
+        static func == (lhs: Navigator.StackDestination, rhs: Navigator.StackDestination) -> Bool {
+            switch (lhs, rhs) {
+            case let (.eventDetails(lhsEvent, _), .eventDetails(rhsEvent, _)):
+                return lhsEvent == rhsEvent
+            case let (.burgerDetails(lhsBurger, _, _, _), .burgerDetails(rhsBurger, _, _, _)):
+                return lhsBurger == rhsBurger
+            case (.burgers, .burgers):
+                return true
+            case let (.festivalListing(lhsFestivalUrl, lhsFestivalId), .festivalListing(rhsFestivalUrl, rhsFestivalId)):
+                return lhsFestivalUrl == rhsFestivalUrl && lhsFestivalId == rhsFestivalId
+            default:
+                return false
+            }
+        }
+        
+        func hash(into hasher: inout Hasher) {
+            switch self {
+            case let .eventDetails(event, _):
+                hasher.combine("\(type(of: self)):\(event)")
+            case let .burgerDetails(burger, _, _, _):
+                hasher.combine("\(type(of: self)):\(burger)")
+            case .burgers:
+                hasher.combine("\(type(of: self)):")
+            case let .festivalListing(url, id):
+                hasher.combine("\(type(of: self)):\(url),\(id)")
+                
+            }
+        }
     }
     
-    func details(for festival: Festivals) -> FestivalDetails? {
-        currentFestivalDetails.first(where: { $0.id == festival.rawValue })
+    @Published var navigationPaths: [StackDestination] = []
+    
+    func navigate(to destination: StackDestination) {
+        navigationPaths.append(destination)
     }
 }
 
 struct ContentView: View {
     @StateObject var actionsManager: ActionsManager = .init(repository: DefaultEventsRepository())
-    @StateObject var festivalsActionsManager: ActionsManager = .init(repository: nil)
     @State var viewModel: ContentViewModel = .init()
-    
+    @StateObject var eventsRouter: Navigator = .init()
+    @StateObject var mapRouter: Navigator = .init()
+    @StateObject var festivalsRouter: Navigator = .init()
     var body: some View {
         TabView {
             Tab("Events", image: "events") {
-                ListView()
-                    .environmentObject(actionsManager)
+                NavigationStack(path: $eventsRouter.navigationPaths) {
+                    ListView()
+                        .environmentObject(actionsManager)
+                        .environmentObject(eventsRouter)
+                        .navigationDestination(for: Navigator.StackDestination.self) { path in
+                            switch path {
+                            case .eventDetails(let eventInfo, let repo):
+                                EventDetailsView(viewModel: .init(event: eventInfo, repository: repo))
+                                    .environmentObject(actionsManager)
+                            default:
+                                EmptyView()
+                            }
+                        }
+                }
             }
             Tab("Map", image: "map") {
-                MapView()
-                    .environmentObject(actionsManager)
-            }
-            
-            ForEach(viewModel.currentFestivals, id: \.self) { festival in
-                switch festival {
-                case .burgerWellington:
-                    Tab("Burger Wellington", image: "burger") {
-                        BurgerListView()
-                    }
-                default:
-                    if let details = viewModel.details(for: festival) {
-                        Tab(details.name, image: details.icon) {
-                            ListView(viewModel: .init(repository: FestivalEventsRepository(fetchUrl: .cutom(details.url))))
-                                .environmentObject(festivalsActionsManager)
+                NavigationStack(path: $mapRouter.navigationPaths) {
+                    MapView()
+                        .environmentObject(actionsManager)
+                        .environmentObject(mapRouter)
+                        .navigationDestination(for: Navigator.StackDestination.self) { path in
+                            switch path {
+                            case .eventDetails(let eventInfo, let repo):
+                                EventDetailsView(viewModel: .init(event: eventInfo, repository: repo))
+                                    .environmentObject(actionsManager)
+                            default:
+                                EmptyView()
+                            }
                         }
+                }
+            }
+            if !viewModel.currentFestivals.isEmpty {
+                Tab("Festivals", image: "festivals") {
+                    NavigationStack(path: $festivalsRouter.navigationPaths) {
+                        FestivalsView()
+                            .environmentObject(festivalsRouter)
                     }
                 }
             }
         }
         .task {
             await viewModel.fetchFestivals()
-            guard let currentFestival = viewModel.currentFestivals.first, let festivalUrl = viewModel.details(for: currentFestival)?.url else { return }
-            festivalsActionsManager.injectRepository(FestivalEventsRepository(fetchUrl: .cutom(festivalUrl)))
         }
     }
 }

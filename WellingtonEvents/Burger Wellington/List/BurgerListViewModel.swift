@@ -13,10 +13,6 @@ import EventKit
 import EventKitUI
 import DesignLibrary
 
-enum BurgerListViewStackDestinations: Hashable {
-    case burgerDetails(BurgerModel)
-}
-
 struct BurgerFilterValues: Identifiable, Equatable, Hashable {
     var id: BurgerFilterIds
     var items: [String]
@@ -42,8 +38,8 @@ class BurgerListViewModel: ObservableObject {
     @Published var burgers: [BurgerModel] = []
     @Published var allBurgers: [BurgerModel] = []
     @Published var isLoading: Bool = true
+    @Published var isBackTap = false
     let repository: BurgerRepositoryProtocol = BurgerRepository()
-    @Published var navigationPath: [BurgerListViewStackDestinations] = []
     @Published var favourites: [BurgerModel] = []
     
     var filters: BurgerResponse.Filters?

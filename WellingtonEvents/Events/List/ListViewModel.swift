@@ -17,10 +17,6 @@ struct FilterValues: Identifiable, Equatable, Hashable {
     var items: [String]
 }
 
-enum StackDestination: Hashable {
-    case eventDetails(EventInfo)
-}
-
 struct DateModel: Equatable, Identifiable {
     let id: String
     let month: String
@@ -54,6 +50,7 @@ class ListViewModel: ObservableObject {
     var allEvents: [EventInfo]
     @Published var events: [EventInfo]
     @Published var isLoading: Bool = true
+    @Published var isBackTap = false
     
     @Published var searchText = ""
     var oldSearchText: String = ""
@@ -74,8 +71,6 @@ class ListViewModel: ObservableObject {
     
     @Published var route: Destination?
     var cancellables = Set<AnyCancellable>()
-    
-    @Published var navigationPath: [StackDestination] = []
     
     func setup() async {
         locationManager.requestWhenInUseAuthorization()
@@ -145,10 +140,6 @@ class ListViewModel: ObservableObject {
             }
         }
     }    
-    
-    func didTapOnEvent(_ event: EventInfo) {
-        navigationPath.append(.eventDetails(event))
-    }
     
     func resetRoute() {
         route = nil

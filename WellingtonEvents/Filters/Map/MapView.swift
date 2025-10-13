@@ -14,19 +14,18 @@ import SwiftUINavigation
 struct MapView: View {
     @StateObject var viewModel: MapViewModel = .init()
     @EnvironmentObject var actionsManager: ActionsManager
+    @EnvironmentObject var router: Navigator
     @FocusState private var focusState: ViewFocusState?
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @State private var width: CGFloat = .zero
     @State var dotSize: CGFloat = 10
     
     var body: some View {
-        NavigationStack(path: $viewModel.navigationPath) {
-            mapContainer
-                .padding(.top, .medium)
-                .wellingTOnToolbar(favoritesSelected: viewModel.selectedFilterSource().contains(where: { $0 == .favorited }), didTapFavourites: {
-                    viewModel.didTapFavouritesFilter(favourites: actionsManager.favourites)
-                })
-        }
+        mapContainer
+            .padding(.top, .medium)
+            .wellingTOnToolbar(favoritesSelected: viewModel.selectedFilterSource().contains(where: { $0 == .favorited }), didTapFavourites: {
+                viewModel.didTapFavouritesFilter(favourites: actionsManager.favourites)
+            })
     }
 }
 
@@ -93,13 +92,6 @@ extension MapView {
             }
             .presentationDetents([ .medium, .large])
         }
-        .navigationDestination(for: StackDestination.self) { path in
-            switch path {
-            case .eventDetails(let eventInfo):
-                EventDetailsView(viewModel: .init(event: eventInfo, repository: viewModel.repository))
-                    .environmentObject(actionsManager)
-            }
-        }
         .scrollDismissesKeyboard(.interactively)
     }
 }
@@ -116,7 +108,8 @@ extension MapView {
                                 viewModel.showCards(for: model)
                             }
                             else if let firstEvent = model.events.first {
-                                viewModel.didTapOnEvent(firstEvent)
+                                viewModel.resetRoute()
+                                router.navigate(to: .eventDetails(firstEvent, viewModel.repository))
                             }
                         } label: {
                             ZStack {
@@ -225,7 +218,8 @@ extension MapView {
                         hasDivider: false,
                         width: $width
                     ) {
-                        viewModel.didTapOnEvent($0)
+                        viewModel.resetRoute()
+                        router.navigate(to: .eventDetails($0, viewModel.repository))
                     }
                 }
             }
