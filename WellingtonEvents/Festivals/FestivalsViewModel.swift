@@ -11,6 +11,7 @@ import NetworkLayerSPM
 enum Festivals: String {
     case burgerWellington = "BurgerWellington"
     case roxy = "RoxyFestival"
+    case heritage = "HeritageFestival"
 }
 
 struct FestivalDetails: Codable {
