@@ -30,6 +30,7 @@ struct SearchView: View {
                 .background {
                     if #available(iOS 26.0, *) {
                         RoundedRectangle(cornerRadius: 20)
+                            .fill(.cardBackground)
                             .shadow(radius: 2, x: 0, y: 2)
                             .glassEffect()
                     }
