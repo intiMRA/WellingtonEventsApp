@@ -12,7 +12,10 @@ struct EventTypesFilter: FilterObjectProtocol {
     let eventTypes: [String]
     
     func execute(event: EventInfo, events: inout [EventInfo]) {
-        if !eventTypes.contains(where: { $0 == event.eventType }) {
+        for l in event.labels {
+            print(l)
+        }
+        if !eventTypes.contains(where: { event.labels.contains($0) }) {
             events.removeAll { $0.id == event.id }
         }
     }

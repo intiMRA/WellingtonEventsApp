@@ -81,7 +81,7 @@ extension EventsCardView {
                 .padding(.top, .xxSmall)
                 .padding(.trailing, .xxSmall)
             
-            Text(event.eventType)
+            Text(event.labels.first ?? "")
                 .font(.subheadline)
                 .foregroundStyle(.textSecondary)
         }

@@ -9,7 +9,7 @@ import Foundation
 import NetworkLayerSPM
 
 enum UrlBuilder: String, NetworkLayerURLBuilder {
-    case events = "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/main/events.json"
+    case events = "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/text-classification/events-labeled.json"
     case festivals = "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/main/currentFestivals.json"
     case festivalDetails = "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/main/currentFestivalDetails.json"
     case burgers = "https://raw.githubusercontent.com/intiMRA/Wellington-Events-Scrapper/refs/heads/main/burgers.json"

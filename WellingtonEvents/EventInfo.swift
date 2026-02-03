@@ -49,7 +49,7 @@ struct EventInfo: Codable, Identifiable, Equatable {
     let displayDate: String
     let url: String
     let source: String
-    let eventType: String
+    let labels: [String]
     let location: Location?
     
     enum CodingKeys: String, CodingKey {
@@ -62,7 +62,7 @@ struct EventInfo: Codable, Identifiable, Equatable {
         case displayDate
         case url
         case source
-        case eventType
+        case labels
         case coordinates
     }
     
@@ -77,7 +77,7 @@ struct EventInfo: Codable, Identifiable, Equatable {
         try container.encodeIfPresent(self.displayDate, forKey: .displayDate)
         try container.encode(self.url, forKey: .url)
         try container.encode(self.source, forKey: .source)
-        try container.encode(self.eventType, forKey: .eventType)
+        try container.encode(self.labels, forKey: .labels)
         try container.encodeIfPresent(self.location, forKey: .coordinates)
     }
     
@@ -114,10 +114,10 @@ struct EventInfo: Codable, Identifiable, Equatable {
         self.url = try container.decode(String.self, forKey: .url)
         self.source = try container.decode(String.self, forKey: .source)
         do {
-            self.eventType = try container.decode(String.self, forKey: .eventType)
+            self.labels = try container.decode([String].self, forKey: .labels)
         }
         catch {
-            self.eventType = "Other"
+            self.labels = []
         }
         self.location = try container.decodeIfPresent(Location.self, forKey: .coordinates)
     }
