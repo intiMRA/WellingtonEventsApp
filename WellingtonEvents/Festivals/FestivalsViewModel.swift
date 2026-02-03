@@ -12,6 +12,7 @@ enum Festivals: String {
     case burgerWellington = "BurgerWellington"
     case roxy = "RoxyFestival"
     case heritage = "HeritageFestival"
+    case fringe = "WellingtonFringe"
 }
 
 struct FestivalDetails: Codable {
