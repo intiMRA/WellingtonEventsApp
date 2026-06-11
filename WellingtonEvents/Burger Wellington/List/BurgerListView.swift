@@ -12,6 +12,7 @@ struct BurgerListView: View {
     @StateObject var viewModel: BurgerListViewModel = .init()
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @EnvironmentObject var router: Navigator
+    @EnvironmentObject var burgerActionsManager: BurgerActionsManager
     @State private var width: CGFloat = .zero
     @FocusState var focusState: ViewFocusState?
     @State private var safeAreaInsets = EdgeInsets()
@@ -68,7 +69,7 @@ struct BurgerListView: View {
             }
         }
         .wellingTOnToolbar(favoritesSelected: viewModel.selectedFilterSource().contains(where: { $0 == .favorited }), didTapFavourites: {
-            viewModel.didTapFavouritesFilter()
+            viewModel.didTapFavouritesFilter(favourites: burgerActionsManager.favourites)
         })
         .overlay(alignment: .top) {
             Color(uiColor: .systemBackground)
@@ -80,10 +81,11 @@ struct BurgerListView: View {
         .task {
             guard !viewModel.isBackTap else {
                 viewModel.isBackTap = false
+                viewModel.refreshCalendarState()
                 return
             }
             await viewModel.fetchBurgers()
-            await viewModel.loadFavourites()
+            await burgerActionsManager.loadFavourites()
         }
         .disabled(viewModel.isLoading)
         .animation(.easeIn, value: viewModel.isLoading)
@@ -251,15 +253,16 @@ extension BurgerListView {
     var burgerStackView: some View {
         LazyVStack {
             ForEach(viewModel.burgers) { model in
-                let isFavorited = viewModel.isFavourite(model)
+                let isFavorited = burgerActionsManager.isBurgerFavourited(id: model.id)
                 BurgerCardView(
                     favouriteModel: .init(isFavourited: isFavorited, didTapFavorites: {
                         Task {
                             if isFavorited {
-                                await viewModel.removeFromFavourites(model)
+                                await burgerActionsManager.deleteFromFavorites(burger: model, errorHandler: viewModel.showErrorAlert)
                             } else {
-                                await viewModel.addToFavourites(model)
+                                await burgerActionsManager.saveToFavorites(burger: model, errorHandler: viewModel.showErrorAlert)
                             }
+                            viewModel.didFavoriteBurger(favourites: burgerActionsManager.favourites)
                         }
                     }),
                     calendarModel: .init(
@@ -270,25 +273,7 @@ extension BurgerListView {
                     model: model,
                     width: width) { model in
                         viewModel.isBackTap = true
-                        router.navigate(
-                            to: .burgerDetails(
-                                model: model,
-                                isFavorite: viewModel.isFavourite,
-                                didTapFavorite: { [weak viewModel] model in
-                                    Task {
-                                        let favourited = viewModel?.isFavourite(model) ?? false
-                                        if favourited {
-                                            await viewModel?.removeFromFavourites(model)
-                                        } else {
-                                            await viewModel?.addToFavourites(model)
-                                        }
-                                    }
-                                },
-                                finishedDismissEditCalanderView: { action, model in
-                                    viewModel.didDismissEditCalanderViewNoAlert(action: action, eventEditModel: model)
-                                }
-                            )
-                        )
+                        router.navigate(to: .burgerDetails(model: model))
                     }
             }
         }

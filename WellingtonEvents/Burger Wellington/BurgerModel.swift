@@ -120,8 +120,46 @@ struct BurgerModel: Identifiable, Codable, Sendable, Equatable {
     }
 }
 
+extension BurgerModel {
+    init(
+        id: String,
+        name: String,
+        image: String,
+        description: String,
+        price: Double,
+        beerMatchPrice: Double?,
+        mealAvailable: String,
+        beerMatch: String,
+        venue: String,
+        coordinates: Location,
+        sidesIncluded: Bool,
+        mainProtein: String,
+        dietaryRequirements: [DietryRequirement],
+        url: String
+    ) {
+        self.id = id
+        self.name = name
+        self.image = image
+        self.description = description
+        self.price = price
+        self.beerMatchPrice = beerMatchPrice
+        self.mealAvailable = mealAvailable
+        self.beerMatch = beerMatch
+        self.venue = venue
+        self.coordinates = coordinates
+        self.sidesIncluded = sidesIncluded
+        self.mainProtein = mainProtein
+        self.dietaryRequirements = dietaryRequirements
+        self.url = url
+    }
+}
+
 extension BurgerModel: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
+}
+
+extension BurgerModel: Filterable {
+    var filterLocation: Location? { coordinates }
 }

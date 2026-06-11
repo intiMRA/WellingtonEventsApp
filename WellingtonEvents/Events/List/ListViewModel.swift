@@ -105,7 +105,8 @@ class ListViewModel: ObservableObject {
         selectedFilters = []
         isLoading = true
         defer {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+            Task { [weak self] in
+                try? await Task.sleep(for: .seconds(2))
                 self?.isLoading = false
             }
         }
@@ -134,7 +135,8 @@ class ListViewModel: ObservableObject {
     }
     
     func appBecameActive() {
-        Task {
+        Task { [weak self] in
+            guard let self else { return }
             if await !repository.canFetchFromCache() {
                 await setup()
             }

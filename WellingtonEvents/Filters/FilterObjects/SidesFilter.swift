@@ -9,9 +9,7 @@ import Foundation
 
 struct SidesFilter: BurgerFilterObjectProtocol {
     let burgerFilterId: BurgerFilterIds = .sidesIncluded
-    func execute(burger: BurgerModel, burgers: inout [BurgerModel]) {
-        if !burger.sidesIncluded {
-            burgers.removeAll { $0 == burger }
-        }
+    func matches(_ burger: BurgerModel) -> Bool {
+        burger.sidesIncluded
     }
 }

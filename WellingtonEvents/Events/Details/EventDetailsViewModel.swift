@@ -6,7 +6,7 @@
 //
 
 import Foundation
-@preconcurrency import MapKit
+import CoreLocation
 import CasePaths
 import DesignLibrary
 import SwiftUI
@@ -24,17 +24,13 @@ class EventDetailsViewModel: ObservableObject {
         case editEvent(eventInfo: EventInfo, ekEvent: EKEvent)
     }
     
-    static let snapshorSize = CGSize(width: UITraitCollection.current.horizontalSizeClass == .regular ? 800 : 400, height: UITraitCollection.current.horizontalSizeClass == .regular ? 400 : 200)
-    static let ratio = snapshorSize.width / snapshorSize.height
     let event: EventInfo
     var image: UIImage?
     var location: CLLocationCoordinate2D?
     var loadingImage: Bool = false
     var route: Destination?
     weak var repository: EventsRepository?
-    
-    private let options: MKMapSnapshotter.Options = .init()
-    
+
     var happeningSoon: Bool {
         event.dates.firstValidDate?.happeningSoon ?? false
     }
@@ -70,57 +66,23 @@ class EventDetailsViewModel: ObservableObject {
             loadingImage = false
         }
         var location: CLLocationCoordinate2D?
-        let geocoder = CLGeocoder()
         if let lat = event.location?.lat, let long = event.location?.long {
             location = .init(latitude: lat, longitude: long)
-        }
-        else {
+        } else {
+            let geocoder = CLGeocoder()
             do {
                 let locationFromAddress = try await geocoder.geocodeAddressString(event.venue)
                 location = locationFromAddress.first?.location?.coordinate
-            }
-            catch {
+            } catch {
                 print("Error geocoding address: \(error)")
             }
         }
-        
+
         guard let location else {
             return
         }
         self.location = location
-        let mapOptions = MKMapSnapshotter.Options()
-        mapOptions.region = MKCoordinateRegion(center: location, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
-        mapOptions.size = EventDetailsViewModel.snapshorSize
-        mapOptions.showsBuildings = true
-        mapOptions.pointOfInterestFilter = .includingAll
-        let snapshotter = MKMapSnapshotter(options: mapOptions)
-        do {
-            let snapshot = try await snapshotter.start()
-            
-            let pinImage = UIImage(resource: .location) // Your pin image
-            var finalImage: UIImage?
-            let mapImage = snapshot.image
-            
-            UIGraphicsBeginImageContextWithOptions(mapImage.size, true, mapImage.scale)
-            mapImage.draw(at: .zero)
-            
-            let pointOnImage = snapshot.point(for: location)
-            let pinRect = CGRect(
-                x: pointOnImage.x - 20,
-                y: pointOnImage.y - 43,
-                width: 40,
-                height: 43
-            )
-            pinImage.draw(in: pinRect)
-            
-            finalImage = UIGraphicsGetImageFromCurrentImageContext()
-            UIGraphicsEndImageContext()
-            
-            self.image = finalImage ?? mapImage
-        }
-        catch {
-            print("Error creating snapshot: \(error.localizedDescription)")
-        }
+        self.image = await MapSnapshotGenerator.generateSnapshot(for: location)
     }
     
     func showWebView() {

@@ -29,7 +29,7 @@ struct BurgerCardView: View {
                         .padding(.all, .medium)
                     }
                     HStack {
-                        Text("\(model.price.formatted(.currency(code: "NZD")))\(model.sidesIncluded ? String(localized: " + sides") : "")")
+                        Text("\(model.price.formatted(.currency(code: "NZD")))\(model.sidesIncluded ? String(localized: " with sides") : "")")
                             .imageOverlay()
                             .padding(.all, .xSmall)
                     }
@@ -82,6 +82,7 @@ extension BurgerCardView {
             case .success(let image):
                 image
                     .resizable()
+                    .aspectRatio(contentMode: .fill)
             case .failure(let error):
                 Image(.noImageAtTime)
                     .resizable()

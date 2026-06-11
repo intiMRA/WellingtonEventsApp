@@ -127,8 +127,40 @@ struct EventInfo: Codable, Identifiable, Equatable {
     }
 }
 
+extension EventInfo {
+    init(
+        id: String,
+        name: String,
+        description: String,
+        imageUrl: String?,
+        venue: String,
+        dates: [Date],
+        displayDate: String,
+        url: String,
+        source: String,
+        eventType: String,
+        location: Location?
+    ) {
+        self.id = id
+        self.name = name
+        self.description = description
+        self.imageUrl = imageUrl
+        self.venue = venue
+        self.dates = dates
+        self.displayDate = displayDate
+        self.url = url
+        self.source = source
+        self.eventType = eventType
+        self.location = location
+    }
+}
+
 extension EventInfo: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
+}
+
+extension EventInfo: Filterable {
+    var filterLocation: Location? { location }
 }

@@ -7,25 +7,23 @@
 
 import SwiftUI
 import DesignLibrary
-import MapKit
 
 struct BurgerDetailsView: View {
     @State var viewModel: BurgerDetailsViewModel
-    
+    @EnvironmentObject var burgerActionsManager: BurgerActionsManager
+
     init(viewModel: BurgerDetailsViewModel) {
         self._viewModel = State(wrappedValue: viewModel)
     }
     
     var body: some View {
-        ScrollView {
-            ZStack(alignment: .bottom) {
-                content
-                switch viewModel.route {
-                case .alert(let toastStyle):
-                    ToastView(model: .init(style: toastStyle, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
-                default:
-                    EmptyView()
-                }
+        ZStack(alignment: .bottom) {
+            content
+            switch viewModel.route {
+            case .alert(let toastStyle):
+                ToastView(model: .init(style: toastStyle, shouldDismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+            default:
+                EmptyView()
             }
         }
         .task {
@@ -64,7 +62,7 @@ extension BurgerDetailsView {
     @ViewBuilder
     var imageOverlay: some View {
         HStack(alignment: .top) {
-            Text("\(viewModel.burgerModel.price.formatted(.currency(code: "NZD")))\(viewModel.burgerModel.sidesIncluded ? String(localized: " + sides") : "")")
+            Text("\(viewModel.burgerModel.price.formatted(.currency(code: "NZD")))\(viewModel.burgerModel.sidesIncluded ? String(localized: " with sides") : "")")
                 .imageOverlay()
             
             Spacer()
@@ -79,88 +77,61 @@ extension BurgerDetailsView {
 extension BurgerDetailsView {
     @ViewBuilder
     var content: some View {
-        VStack(alignment: .leading, spacing: .small) {
-            ZStack(alignment: .bottomLeading) {
-                imageView(url: viewModel.burgerModel.image)
-                imageOverlay
-            }
-            
-            actionIconsView
-            
-            Divider()
-                .foregroundStyle(.text)
-            
-            Text(viewModel.burgerModel.name)
-                .font(.title)
-                .foregroundStyle(.text)
-                .multilineTextAlignment(.leading)
-            
-            dietryIcons
-            
-            Divider()
-                .foregroundStyle(.text)
-            
-            infoView
-            
-            Divider()
-                .foregroundStyle(.text)
-            
-            Text(viewModel.burgerModel.description)
-                .font(.body)
-                .foregroundStyle(.text)
-                .multilineTextAlignment(.leading)
-            
-            Divider()
-                .foregroundStyle(.text)
-            
-            mapImage
-            
-            Divider()
-                .foregroundStyle(.text)
-            
-            StyledButtonView(type: .openWebView) {
-                viewModel.showWebView()
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: .small) {
+                ZStack(alignment: .bottomLeading) {
+                    DetailImageView(url: viewModel.burgerModel.image)
+                    imageOverlay
+                }
+
+                actionIconsView
+
+                Divider()
+                    .foregroundStyle(.text)
+
+                Text(viewModel.burgerModel.name)
+                    .font(.title)
+                    .foregroundStyle(.text)
+                    .multilineTextAlignment(.leading)
+
+                dietryIcons
+
+                Divider()
+                    .foregroundStyle(.text)
+
+                infoView
+
+                Divider()
+                    .foregroundStyle(.text)
+
+                Text(viewModel.burgerModel.description)
+                    .font(.body)
+                    .foregroundStyle(.text)
+                    .multilineTextAlignment(.leading)
+
+                Divider()
+                    .foregroundStyle(.text)
+
+                MapSnapshotView(
+                    image: viewModel.mapImage,
+                    location: viewModel.location,
+                    venue: viewModel.burgerModel.venue,
+                    loadingImage: viewModel.loadingImage
+                )
+
+                Divider()
+                    .foregroundStyle(.text)
+
+                StyledButtonView(type: .openWebView) {
+                    viewModel.showWebView()
+                }
+                .padding(.bottom, .medium)
             }
         }
         .padding(.horizontal, .medium)
-        .padding(.bottom, .medium)
     }
 }
 
-extension BurgerDetailsView {
-    @ViewBuilder
-    func imageView(url: String) -> some View {
-        AsyncImage(url: URL(string: url)) { phase in
-            switch phase {
-            case .empty:
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(.gray)
-                    .overlay {
-                        ProgressView()
-                            .foregroundStyle(.text)
-                    }
-                    .frame(height: 250)
-            case .success(let image):
-                image
-                    .resizable()
-            case .failure(let error):
-                Image(.noImageAtTime)
-                    .resizable()
-                    .foregroundStyle(.textSecondary)
-                    .onAppear {
-                        print(error)
-                    }
-            @unknown default:
-                Rectangle()
-                    .fill(.gray)
-                    .frame(height: 250)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .scaledToFill()
-        .roundedShadow()
-    }
-}
 
 extension BurgerDetailsView {
     @ViewBuilder
@@ -178,18 +149,22 @@ extension BurgerDetailsView {
 extension BurgerDetailsView {
     @ViewBuilder
     var actionIconsView: some View {
-        let isFavourited = viewModel.isFavorite(viewModel.burgerModel)
+        let isFavourited = burgerActionsManager.isBurgerFavourited(id: viewModel.burgerModel.id)
         HStack(alignment: .top, spacing: .xSmall) {
             Button {
-                withAnimation {
-                    viewModel.didTapFavorite(viewModel.burgerModel)
+                Task {
+                    if isFavourited {
+                        await burgerActionsManager.deleteFromFavorites(burger: viewModel.burgerModel, errorHandler: viewModel.showErrorAlert)
+                    } else {
+                        await burgerActionsManager.saveToFavorites(burger: viewModel.burgerModel, errorHandler: viewModel.showErrorAlert)
+                    }
                 }
             } label: {
                 (isFavourited ? Image(.heartFill) : Image(.heart))
                     .resizable()
                     .squareFrame(size: 36)
             }
-            
+
             Button {
                 viewModel.presentEditCalendar()
             } label: {
@@ -205,7 +180,7 @@ extension BurgerDetailsView {
                 }
             }
             .foregroundStyle(.text)
-            
+
             if let url = URL(string: viewModel.burgerModel.url) {
                 ShareLink(item: url) {
                     Image(.share)
@@ -213,81 +188,10 @@ extension BurgerDetailsView {
                 }
             }
         }
+        .padding(.all, .medium)
     }
 }
 
-extension BurgerDetailsView {
-    @ViewBuilder
-    var mapImage: some View {
-        if let image = viewModel.mapImage, let location = viewModel.location {
-            Button {
-                openDirectionsInAppleMaps(coordinate: location, adrress: viewModel.burgerModel.venue)
-            }
-            label: {
-                VStack(spacing: .empty) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .frame(maxWidth: .infinity, maxHeight: EventDetailsViewModel.snapshorSize.height)
-                        .aspectRatio(EventDetailsViewModel.ratio, contentMode: .fit)
-                        .roundedCorner(8, corners: [.topLeft, .topRight])
-                    
-                    addressView
-                }
-            }
-        }
-        else {
-            VStack(spacing: .empty) {
-                Rectangle()
-                    .fill(Color.cardBackground)
-                    .frame(maxWidth: .infinity, maxHeight: EventDetailsViewModel.snapshorSize.height)
-                    .aspectRatio(EventDetailsViewModel.ratio, contentMode: .fit)
-                    .roundedCorner(8, corners: [.topLeft, .topRight])
-                    .if(viewModel.loadingImage) { view in
-                        view
-                            .overlay {
-                                ProgressView()
-                                    .foregroundStyle(.text)
-                            }
-                    }
-                addressView
-            }
-            .frame(maxWidth: .infinity)
-        }
-    }
-    
-    private func openDirectionsInAppleMaps(coordinate: CLLocationCoordinate2D, adrress: String) {
-        let destinationPlacemark = MKPlacemark(coordinate: coordinate)
-        let destinationMapItem = MKMapItem(placemark: destinationPlacemark)
-        destinationMapItem.name = adrress
-        
-        let launchOptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
-        
-        MKMapItem.openMaps(with: [destinationMapItem], launchOptions: launchOptions)
-    }
-}
-
-extension BurgerDetailsView {
-    @ViewBuilder
-    var addressView: some View {
-        HStack(alignment: .top) {
-            Text("Address:")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.textSecondary)
-            Text(viewModel.burgerModel.venue)
-                .font(.subheadline)
-                .foregroundStyle(.textSecondary)
-                .multilineTextAlignment(.leading)
-            Spacer()
-        }
-        .padding(.all, .small)
-        .frame(maxWidth: .infinity)
-        .background {
-            Rectangle()
-                .fill(.cardBackground)
-                .roundedCorner(8, corners: [.bottomLeft, .bottomRight])
-        }
-    }
-}
 
 extension BurgerDetailsView {
     @ViewBuilder

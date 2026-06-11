@@ -11,10 +11,8 @@ struct PriceFilter: BurgerFilterObjectProtocol {
     var burgerFilterId: BurgerFilterIds = .price
     let maxPrice: Double
     
-    func execute(burger: BurgerModel, burgers: inout [BurgerModel]) {
-        if burger.price > maxPrice {
-            burgers.removeAll(where: { $0 == burger })
-        }
+    func matches(_ burger: BurgerModel) -> Bool {
+        burger.price <= maxPrice
     }
 }
 

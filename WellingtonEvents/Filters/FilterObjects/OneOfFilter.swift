@@ -10,9 +10,7 @@ import Foundation
 struct OneOfFilter: FilterObjectProtocol {
     let id: FilterIds = .oneOf
     
-    func execute(event: EventInfo, events: inout [EventInfo]) {
-        if event.dates.count > 1 {
-            events.removeAll(where: { $0.id == event.id })
-        }
+    func matches(_ event: EventInfo) -> Bool {
+        event.dates.count <= 1
     }
 }

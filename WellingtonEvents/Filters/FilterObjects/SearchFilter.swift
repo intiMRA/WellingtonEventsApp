@@ -9,39 +9,18 @@ struct SearchFilter: FilterObjectProtocol, BurgerFilterObjectProtocol {
     let burgerFilterId: BurgerFilterIds = .search
     let id: FilterIds = .search
     let searchString: String
-    
-    func execute(event: EventInfo, events: inout [EventInfo]) { }
-    func execute(burger: BurgerModel, burgers: inout [BurgerModel]) { }
-    
-    func execute(events: inout [EventInfo]) {
-        let allEvents = events
-        events.removeAll(where: { !$0.name.lowercased().starts(with: searchString.lowercased()) })
-        events.append(contentsOf: allEvents.filter({
-            event in event.name.lowercased().contains(searchString.lowercased()) && !events.contains(where: {
-                $0.id == event.id
-            })
-        }))
-        
-        events.append(contentsOf: allEvents.filter({
-            event in event.venue.lowercased().contains(searchString.lowercased()) && !events.contains(where: {
-                $0.id == event.id
-            })
-        }))
-    }
-    
-    func execute(burgers: inout [BurgerModel]) {
-        let allBurgers = burgers
-        burgers.removeAll(where: { !$0.name.lowercased().starts(with: searchString.lowercased()) })
-        burgers.append(contentsOf: allBurgers.filter({
-            burger in burger.name.lowercased().contains(searchString.lowercased()) && !burgers.contains(where: {
-                $0.id == burger.id
-            })
-        }))
-        
-        burgers.append(contentsOf: allBurgers.filter({
-            burger in burger.venue.lowercased().contains(searchString.lowercased()) && !burgers.contains(where: {
-                $0.id == burger.id
-            })
-        }))
+
+    func matches(_ event: EventInfo) -> Bool { true }
+    func matches(_ burger: BurgerModel) -> Bool { true }
+
+    func execute<T: Filterable>(items: inout [T]) {
+        let all = items
+        items.removeAll(where: { !$0.name.lowercased().starts(with: searchString.lowercased()) })
+        items.append(contentsOf: all.filter { item in
+            item.name.lowercased().contains(searchString.lowercased()) && !items.contains(where: { $0.id == item.id })
+        })
+        items.append(contentsOf: all.filter { item in
+            item.venue.lowercased().contains(searchString.lowercased()) && !items.contains(where: { $0.id == item.id })
+        })
     }
 }

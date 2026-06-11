@@ -11,9 +11,7 @@ struct ProteinFilter: BurgerFilterObjectProtocol {
     var burgerFilterId: BurgerFilterIds = .protein
     let proteins: [String]
     
-    func execute(burger: BurgerModel, burgers: inout [BurgerModel]) {
-        if !proteins.contains(where: { burger.mainProtein.contains($0) }) {
-            burgers.removeAll(where: { $0 == burger })
-        }
+    func matches(_ burger: BurgerModel) -> Bool {
+        proteins.contains(where: { burger.mainProtein.contains($0) })
     }
 }

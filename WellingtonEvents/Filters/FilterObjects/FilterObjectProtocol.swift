@@ -9,12 +9,12 @@ import Foundation
 
 protocol FilterObjectProtocol {
     var id: FilterIds { get }
-    
-    func execute(event: EventInfo, events: inout [EventInfo])
+
+    func matches(_ event: EventInfo) -> Bool
 }
 
 protocol BurgerFilterObjectProtocol {
     var burgerFilterId: BurgerFilterIds { get }
-    
-    func execute(burger: BurgerModel, burgers: inout [BurgerModel])
+
+    func matches(_ burger: BurgerModel) -> Bool
 }

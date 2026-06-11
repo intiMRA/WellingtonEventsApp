@@ -64,19 +64,15 @@ extension BurgerListViewModel {
             }
             return
         }
-        
-        var newBurgers = allBurgers
-        for burger in allBurgers {
-            for filter in selectedFilters {
-                // search has to be applies differently
-                if filter.burgerFilterId == .search {
-                    continue
-                }
-                filter.execute(burger: burger, burgers: &newBurgers)
+
+        var newBurgers = allBurgers.filter { burger in
+            selectedFilters.allSatisfy { filter in
+                filter.burgerFilterId == .search || filter.matches(burger)
             }
         }
-        let searchFilter = selectedFilters.first(where: { $0.burgerFilterId == .search }) as? SearchFilter
-        searchFilter?.execute(burgers: &newBurgers)
+        if let searchFilter = selectedFilters.first(where: { $0.burgerFilterId == .search }) as? SearchFilter {
+            searchFilter.execute(items: &newBurgers)
+        }
         burgers = newBurgers
         if scrollToTop {
             self.scrollToTop = true
@@ -114,7 +110,7 @@ extension BurgerListViewModel {
         applyFilters()
     }
     
-    func didTapFavouritesFilter() {
+    func didTapFavouritesFilter(favourites: [BurgerModel]) {
         if selectedFilters.contains(where: { $0.burgerFilterId == .favorited }) {
             selectedFilters.removeAll(where: { $0.burgerFilterId == .favorited })
         }
@@ -205,22 +201,9 @@ extension BurgerListViewModel {
     }
     
     
-    func addToFavourites(_ burger: BurgerModel) async {
-        try? await repository.addFavoriteBurger(burger)
-        favourites = await repository.getFavoriteBurgers()
-    }
-    
-    func removeFromFavourites(_ burger: BurgerModel) async {
-        try? await repository.removeFavoriteBurger(burger)
-        favourites = await repository.getFavoriteBurgers()
+    func didFavoriteBurger(favourites: [BurgerModel]) {
         if selectedFilters.contains(where: { $0.burgerFilterId == .favorited }) {
-            selectedFilters.removeAll(where: { $0.burgerFilterId == .favorited })
-            selectedFilters.append(FavouritesFilter(favourites: favourites))
+            burgers.removeAll(where: { burger in !favourites.contains(where: { $0.id == burger.id }) })
         }
-        applyFilters(scrollToTop: false)
-    }
-    
-    func isFavourite(_ burger: BurgerModel) -> Bool {
-        favourites.contains(where: { $0.id == burger.id })
     }
 }
