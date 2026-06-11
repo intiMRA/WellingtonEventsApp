@@ -63,22 +63,13 @@ struct DistanceFilter: FilterObjectProtocol, BurgerFilterObjectProtocol {
     var distance: Double
     let locationManager = CLLocationManager()
     
-    func execute(event: EventInfo, events: inout [EventInfo]) {
-        guard let location = event.location else {
-            events.removeAll(where: { $0.id == event.id })
-            return
-        }
-        if !withInRange(coordinate: .init(latitude: location.lat, longitude: location.long), radiusInKm: distance) {
-            events.removeAll(where: { $0.id == event.id })
-        }
+    private func matchesFilterable(_ item: some Filterable) -> Bool {
+        guard let location = item.filterLocation else { return false }
+        return withInRange(coordinate: .init(latitude: location.lat, longitude: location.long), radiusInKm: distance)
     }
-    
-    func execute(burger: BurgerModel, burgers: inout [BurgerModel]) {
-        let location = burger.coordinates
-        if !withInRange(coordinate: .init(latitude: location.lat, longitude: location.long), radiusInKm: distance) {
-            burgers.removeAll(where: { $0.id == burger.id })
-        }
-    }
+
+    func matches(_ event: EventInfo) -> Bool { matchesFilterable(event) }
+    func matches(_ burger: BurgerModel) -> Bool { matchesFilterable(burger) }
 
     func withInRange(coordinate: CLLocation, radiusInKm: Double) -> Bool {
         guard let location = locationManager.location else {

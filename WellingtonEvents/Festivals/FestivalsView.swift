@@ -26,6 +26,7 @@ struct FestivalCellView: View {
 
 struct FestivalsView: View {
     @StateObject var festivalsActionsManagers: ActionsManager = .init(repository: nil)
+    @StateObject var burgerActionsManager: BurgerActionsManager = .init()
     @State private var viewModel: FestivalsViewModel = .init()
     @EnvironmentObject var router: Navigator
     var body: some View {
@@ -58,18 +59,13 @@ struct FestivalsView: View {
                 case .eventDetails(let eventInfo, let repo):
                     EventDetailsView(viewModel: .init(event: eventInfo, repository: repo))
                         .environmentObject(festivalsActionsManagers)
-                case .burgerDetails(let burgerModel, let isFavorite, let didTapFavorite, let finishedDismissEditCalanderView):
-                    BurgerDetailsView(
-                        viewModel: .init(
-                            burgerModel: burgerModel,
-                            isFavorite: isFavorite,
-                            didTapFavorite: didTapFavorite,
-                            finishedDismissEditCalanderView: finishedDismissEditCalanderView
-                        )
-                    )
+                case .burgerDetails(let burgerModel):
+                    BurgerDetailsView(viewModel: .init(burgerModel: burgerModel))
+                        .environmentObject(burgerActionsManager)
                 case .burgers:
                     BurgerListView()
                         .environmentObject(router)
+                        .environmentObject(burgerActionsManager)
                 case let .festivalListing(festivalUrl, festivalId):
                     ListView(viewModel: .init(repository: FestivalEventsRepository(fetchUrl: .cutom(festivalUrl), festivalId: festivalId)))
                         .environmentObject(festivalsActionsManagers)

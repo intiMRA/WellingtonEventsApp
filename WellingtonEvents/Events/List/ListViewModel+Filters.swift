@@ -50,19 +50,15 @@ extension ListViewModel {
             self.scrollToTop = true
             return
         }
-        
-        var newEvents: [EventInfo] = allEvents
-        for event in allEvents {
-            for filter in selectedFilters {
-                // search has to be applies differently
-                if filter.id == .search {
-                    continue
-                }
-                filter.execute(event: event, events: &newEvents)
+
+        var newEvents = allEvents.filter { event in
+            selectedFilters.allSatisfy { filter in
+                filter.id == .search || filter.matches(event)
             }
         }
-        let searchFilter = selectedFilters.first(where: { $0.id == .search }) as? SearchFilter
-        searchFilter?.execute(events: &(newEvents))
+        if let searchFilter = selectedFilters.first(where: { $0.id == .search }) as? SearchFilter {
+            searchFilter.execute(items: &newEvents)
+        }
         self.events = newEvents
         self.scrollToTop = true
     }

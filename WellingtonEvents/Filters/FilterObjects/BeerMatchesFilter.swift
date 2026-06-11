@@ -10,9 +10,7 @@ import Foundation
 struct BeerMatchesFilter: BurgerFilterObjectProtocol {
     var burgerFilterId: BurgerFilterIds = .beerMatches
     let beerMatches: [String]
-    func execute(burger: BurgerModel, burgers: inout [BurgerModel]) {
-        if !beerMatches.contains(where: { $0 == burger.beerMatch }) {
-            burgers.removeAll(where: { $0 == burger })
-        }
+    func matches(_ burger: BurgerModel) -> Bool {
+        beerMatches.contains(where: { $0 == burger.beerMatch })
     }
 }

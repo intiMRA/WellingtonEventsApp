@@ -19,25 +19,22 @@ struct DateFilter: FilterObjectProtocol {
         self.endDate = endDate
     }
     
-    func execute(event: EventInfo, events: inout [EventInfo]) {
-        let withInRange = event.dates.oneSatisfies(condition: { date in
+    func matches(_ event: EventInfo) -> Bool {
+        event.dates.oneSatisfies(condition: { date in
             let greaterThenCondition = startDate.checkConditionIgnoringTime(
                 other: date
             ) {
                 $0 <= $1
             }
-            
+
             let lessThenCondition = endDate.checkConditionIgnoringTime(
                 other: date
             ) {
                 $0 >= $1
             }
-            
+
             return greaterThenCondition && lessThenCondition
         })
-        if !withInRange {
-            events.removeAll(where: { $0.id == event.id})
-        }
     }
 }
 
@@ -88,29 +85,26 @@ struct QuickDateFilter: FilterObjectProtocol {
         self.quickDateType = quickDateType
     }
     
-    func execute(event: EventInfo, events: inout [EventInfo]) {
+    func matches(_ event: EventInfo) -> Bool {
         let dates = Self.getDateRange(for: quickDateType)
         let startDate = dates.startDate
         let endDate = dates.endDate
-        
-        let withInRange = event.dates.oneSatisfies(condition: { date in
+
+        return event.dates.oneSatisfies(condition: { date in
             let greaterThenCondition = startDate.checkConditionIgnoringTime(
                 other: date
             ) {
                 $0 <= $1
             }
-            
+
             let lessThenCondition = endDate.checkConditionIgnoringTime(
                 other: date
             ) {
                 $0 >= $1
             }
-            
+
             return greaterThenCondition && lessThenCondition
         })
-        if !withInRange {
-            events.removeAll(where: { $0.id == event.id})
-        }
     }
     
     static func getDateRange(for type: QuickDateType) -> (startDate: Date, endDate: Date) {

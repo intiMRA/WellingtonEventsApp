@@ -6,7 +6,7 @@
 //
 
 import Foundation
-@preconcurrency import MapKit
+import CoreLocation
 import CasePaths
 import DesignLibrary
 import EventKit
@@ -23,32 +23,21 @@ class BurgerDetailsViewModel {
         case editEvent(burger: BurgerModel, ekEvent: EKEvent?)
     }
     
-    static let snapshorSize = CGSize(width: UITraitCollection.current.horizontalSizeClass == .regular ? 800 : 400, height: UITraitCollection.current.horizontalSizeClass == .regular ? 400 : 200)
-    static let ratio = snapshorSize.width / snapshorSize.height
     var mapImage: UIImage?
     var location: CLLocationCoordinate2D?
     var loadingImage: Bool = false
     
     var route: Destination?
-    
+
     let burgerModel: BurgerModel
     let repository: BurgerRepositoryProtocol = BurgerRepository()
-    let isFavorite: (BurgerModel) -> Bool
-    let didTapFavorite: (BurgerModel) -> Void
-    let finishedDismissEditCalanderView: (EKEventEditViewAction, EventEditProtocol) -> Void
-    
+
     var isInCalendar: Bool = false
-    
-    init(
-        burgerModel: BurgerModel, isFavorite: @escaping (BurgerModel) -> Bool,
-         didTapFavorite: @escaping (BurgerModel) -> Void,
-        finishedDismissEditCalanderView: @escaping (EKEventEditViewAction, EventEditProtocol) -> Void
-    ) {
+
+    init(burgerModel: BurgerModel) {
         self.burgerModel = burgerModel
-        self.isFavorite = isFavorite
-        self.didTapFavorite = didTapFavorite
-        self.finishedDismissEditCalanderView = finishedDismissEditCalanderView
-        Task {
+        Task { [weak self] in
+            guard let self else { return }
             isInCalendar = (try? await CalendarManager.retrieveBurger(burger: burgerModel)) != nil
         }
     }
@@ -58,44 +47,12 @@ class BurgerDetailsViewModel {
         defer {
             loadingImage = false
         }
-        let lat = burgerModel.coordinates.lat
-        let long = burgerModel.coordinates.long
-        let location = CLLocationCoordinate2D(latitude: lat, longitude: long)
-        
+        let location = CLLocationCoordinate2D(
+            latitude: burgerModel.coordinates.lat,
+            longitude: burgerModel.coordinates.long
+        )
         self.location = location
-        let mapOptions = MKMapSnapshotter.Options()
-        mapOptions.region = MKCoordinateRegion(center: location, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
-        mapOptions.size = EventDetailsViewModel.snapshorSize
-        mapOptions.showsBuildings = true
-        mapOptions.pointOfInterestFilter = .includingAll
-        let snapshotter = MKMapSnapshotter(options: mapOptions)
-        do {
-            let snapshot = try await snapshotter.start()
-            
-            let pinImage = UIImage(resource: .location) // Your pin image
-            var finalImage: UIImage?
-            let mapImage = snapshot.image
-            
-            UIGraphicsBeginImageContextWithOptions(mapImage.size, true, mapImage.scale)
-            mapImage.draw(at: .zero)
-            
-            let pointOnImage = snapshot.point(for: location)
-            let pinRect = CGRect(
-                x: pointOnImage.x - 20,
-                y: pointOnImage.y - 43,
-                width: 40,
-                height: 43
-            )
-            pinImage.draw(in: pinRect)
-            
-            finalImage = UIGraphicsGetImageFromCurrentImageContext()
-            UIGraphicsEndImageContext()
-            
-            self.mapImage = finalImage ?? mapImage
-        }
-        catch {
-            print("Error creating snapshot: \(error.localizedDescription)")
-        }
+        self.mapImage = await MapSnapshotGenerator.generateSnapshot(for: location)
     }
     
     func showWebView() {
@@ -114,16 +71,9 @@ class BurgerDetailsViewModel {
 
 extension BurgerDetailsViewModel {
     func presentEditCalendar() {
-        Task {
-            var ekEvent = try? await CalendarManager.retrieveBurger(burger: burgerModel)
-            if ekEvent == nil {
-                ekEvent = EKEvent(eventStore: CalendarManager.eventStore)
-                ekEvent?.title = burgerModel.name
-                ekEvent?.notes = burgerModel.description
-                ekEvent?.location = burgerModel.venue
-                ekEvent?.calendar = CalendarManager.eventStore.defaultCalendarForNewEvents
-                ekEvent?.url = URL(string: burgerModel.url)
-            }
+        Task { [weak self] in
+            guard let self else { return }
+            let ekEvent = await CalendarManager.ekEvent(for: burgerModel)
             route = .editEvent(burger: burgerModel, ekEvent: ekEvent)
         }
     }
@@ -141,6 +91,5 @@ extension BurgerDetailsViewModel {
         @unknown default:
             fatalError("Unknown EKEventEditViewAction")
         }
-        finishedDismissEditCalanderView(action, eventEditModel)
     }
 }

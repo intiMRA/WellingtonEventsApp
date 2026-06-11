@@ -78,6 +78,19 @@ class CalendarManager {
         return events.first ?? existingEvents.filter { $0.notes == event.description }.first
     }
     
+    static func ekEvent(for burger: BurgerModel) async -> EKEvent {
+        if let existing = try? await retrieveBurger(burger: burger) {
+            return existing
+        }
+        let event = EKEvent(eventStore: eventStore)
+        event.title = burger.name
+        event.notes = burger.description
+        event.location = burger.venue
+        event.calendar = eventStore.defaultCalendarForNewEvents
+        event.url = URL(string: burger.url)
+        return event
+    }
+
     static func retrieveBurger(burger: BurgerModel) async throws -> EKEvent? {
         guard (try await eventStore.requestFullAccessToEvents()) == true else {
             throw Self.accessDeniedError

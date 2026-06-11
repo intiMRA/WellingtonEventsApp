@@ -48,25 +48,19 @@ extension MapViewModel {
             selectedFilters = []
             return
         }
-        
-        var newEvents: [MapEventtModel] = []
+
         let searchFilter = selectedFilters.first(where: { $0.id == .search }) as? SearchFilter
+        var newEvents: [MapEventtModel] = []
         for event in allEvents {
             var event = event
-            var newEventInfos = event.events
-            for eventInfo in event.events {
-                for filter in selectedFilters {
-                    // search has to be applies differently
-                    if filter.id == .search {
-                        continue
-                    }
-                    
-                    filter.execute(event: eventInfo, events: &newEventInfos)
+            var filteredInfos = event.events.filter { eventInfo in
+                selectedFilters.allSatisfy { filter in
+                    filter.id == .search || filter.matches(eventInfo)
                 }
-                searchFilter?.execute(events: &newEventInfos)
             }
-            if !newEventInfos.isEmpty {
-                event.events = newEventInfos
+            searchFilter?.execute(items: &filteredInfos)
+            if !filteredInfos.isEmpty {
+                event.events = filteredInfos
                 newEvents.append(event)
             }
         }

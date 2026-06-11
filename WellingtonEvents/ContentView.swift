@@ -7,7 +7,6 @@
 
 import SwiftUI
 import NetworkLayerSPM
-import EventKitUI
 
 @Observable
 @MainActor
@@ -24,12 +23,7 @@ class ContentViewModel {
 class Navigator: ObservableObject {
     enum StackDestination: Hashable {
         case eventDetails(EventInfo, EventsRepository)
-        case burgerDetails(
-            model: BurgerModel,
-            isFavorite: (BurgerModel) -> Bool,
-            didTapFavorite: (BurgerModel) -> Void,
-            finishedDismissEditCalanderView: (EKEventEditViewAction, EventEditProtocol) -> Void
-        )
+        case burgerDetails(model: BurgerModel)
         case burgers
         case festivalListing(festivalUrl: String, festivalId: String)
         
@@ -37,7 +31,7 @@ class Navigator: ObservableObject {
             switch (lhs, rhs) {
             case let (.eventDetails(lhsEvent, _), .eventDetails(rhsEvent, _)):
                 return lhsEvent == rhsEvent
-            case let (.burgerDetails(lhsBurger, _, _, _), .burgerDetails(rhsBurger, _, _, _)):
+            case let (.burgerDetails(lhsBurger), .burgerDetails(rhsBurger)):
                 return lhsBurger == rhsBurger
             case (.burgers, .burgers):
                 return true
@@ -52,7 +46,7 @@ class Navigator: ObservableObject {
             switch self {
             case let .eventDetails(event, _):
                 hasher.combine("\(type(of: self)):\(event)")
-            case let .burgerDetails(burger, _, _, _):
+            case let .burgerDetails(burger):
                 hasher.combine("\(type(of: self)):\(burger)")
             case .burgers:
                 hasher.combine("\(type(of: self)):")

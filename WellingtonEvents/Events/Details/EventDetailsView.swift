@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftUI
-import MapKit
 import DesignLibrary
 import SwiftUINavigation
 import EventKitUI
@@ -123,16 +122,6 @@ struct EventDetailsView: View {
         .padding(.horizontal, .medium)
     }
     
-    private func openDirectionsInAppleMaps(coordinate: CLLocationCoordinate2D, adrress: String) {
-        let destinationPlacemark = MKPlacemark(coordinate: coordinate)
-        let destinationMapItem = MKMapItem(placemark: destinationPlacemark)
-        destinationMapItem.name = adrress
-        
-        let launchOptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
-        
-        MKMapItem.openMaps(with: [destinationMapItem], launchOptions: launchOptions)
-    }
-    
     func saveTocalendar(event: EventInfo) async {
         if event.dates.count > 1 {
             viewModel.route = .calendar(event: event)
@@ -191,7 +180,7 @@ extension EventDetailsView {
     @ViewBuilder
     var imageView: some View {
         ZStack(alignment: .bottomLeading) {
-            imageView(url: viewModel.event.imageUrl ?? "")
+            DetailImageView(url: viewModel.event.imageUrl ?? "")
             Text(viewModel.event.source)
                 .imageOverlay()
                 .padding(.all, .xSmall)
@@ -314,99 +303,16 @@ extension EventDetailsView {
 
 extension EventDetailsView {
     @ViewBuilder
-    var addressView: some View {
-        HStack(alignment: .top) {
-            Text("Address:")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.textSecondary)
-            Text(viewModel.event.venue)
-                .font(.subheadline)
-                .foregroundStyle(.textSecondary)
-                .multilineTextAlignment(.leading)
-            Spacer()
-        }
-        .padding(.all, .small)
-        .frame(maxWidth: .infinity)
-        .background {
-            Rectangle()
-                .fill(.cardBackground)
-                .roundedCorner(8, corners: [.bottomLeft, .bottomRight])
-        }
-    }
-}
-
-extension EventDetailsView {
-    @ViewBuilder
     var mapImage: some View {
-        if let image = viewModel.image, let location = viewModel.location {
-            Button {
-                openDirectionsInAppleMaps(coordinate: location, adrress: viewModel.event.venue)
-            }
-            label: {
-                VStack(spacing: .empty) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .frame(maxWidth: .infinity, maxHeight: EventDetailsViewModel.snapshorSize.height)
-                        .aspectRatio(EventDetailsViewModel.ratio, contentMode: .fit)
-                        .roundedCorner(8, corners: [.topLeft, .topRight])
-                    
-                    addressView
-                }
-            }
-        }
-        else {
-            VStack(spacing: .empty) {
-                Rectangle()
-                    .fill(Color.cardBackground)
-                    .frame(maxWidth: .infinity, maxHeight: EventDetailsViewModel.snapshorSize.height)
-                    .aspectRatio(EventDetailsViewModel.ratio, contentMode: .fit)
-                    .roundedCorner(8, corners: [.topLeft, .topRight])
-                    .if(viewModel.loadingImage) { view in
-                        view
-                            .overlay {
-                                ProgressView()
-                                    .foregroundStyle(.text)
-                            }
-                    }
-                addressView
-            }
-            .frame(maxWidth: .infinity)
-        }
+        MapSnapshotView(
+            image: viewModel.image,
+            location: viewModel.location,
+            venue: viewModel.event.venue,
+            loadingImage: viewModel.loadingImage
+        )
     }
 }
 
-extension EventDetailsView {
-    @ViewBuilder
-    func imageView(url: String) -> some View {
-        AsyncImage(url: URL(string: url)) { phase in
-            switch phase {
-            case .empty:
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(.gray)
-                    .overlay {
-                        ProgressView()
-                            .foregroundStyle(.text)
-                    }
-            case .success(let image):
-                image
-                    .resizable()
-            case .failure(let error):
-                Image(.noImageAtTime)
-                    .resizable()
-                    .foregroundStyle(.textSecondary)
-                    .onAppear {
-                        print(error)
-                    }
-            @unknown default:
-                Rectangle()
-                    .fill(.gray)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .scaledToFill()
-        .roundedShadow()
-    }
-}
 
 extension EventDetailsView {
     func didDismissEditCalanderView(action: EKEventEditViewAction, eventEditModel: EventEditProtocol) {

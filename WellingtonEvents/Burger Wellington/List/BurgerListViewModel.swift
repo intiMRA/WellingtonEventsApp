@@ -40,7 +40,6 @@ class BurgerListViewModel: ObservableObject {
     @Published var isLoading: Bool = true
     @Published var isBackTap = false
     let repository: BurgerRepositoryProtocol = BurgerRepository()
-    @Published var favourites: [BurgerModel] = []
     
     var filters: BurgerResponse.Filters?
     @Published var selectedFilters: [any BurgerFilterObjectProtocol] = []
@@ -69,24 +68,22 @@ class BurgerListViewModel: ObservableObject {
         selectedFilters = []
         isLoading = true
         defer {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+            Task { [weak self] in
+                try? await Task.sleep(for: .seconds(2))
                 self?.isLoading = false
             }
         }
         let response: BurgerResponse? = try? await repository.fetchBurgers()
-        
+
         burgers = response?.burgers ?? []
         filters = response?.filters
         allBurgers = burgers
-        Task {
+        Task { [weak self] in
+            guard let self else { return }
             for burger in allBurgers {
                 isInCalendar[burger.id] = (try? await CalendarManager.retrieveBurger(burger: burger) != nil) ?? false
             }
         }
-    }
-    
-    func loadFavourites() async {
-        favourites = await repository.getFavoriteBurgers()
     }
     
     func resetRoute() {
@@ -96,20 +93,17 @@ class BurgerListViewModel: ObservableObject {
 
 extension BurgerListViewModel {
     func presentEditCalendar(burgerModel: BurgerModel) {
-        Task {
-            var ekEvent = try? await CalendarManager.retrieveBurger(burger: burgerModel)
-            if ekEvent == nil {
-                ekEvent = EKEvent(eventStore: CalendarManager.eventStore)
-                ekEvent?.title = burgerModel.name
-                ekEvent?.notes = burgerModel.description
-                ekEvent?.location = burgerModel.venue
-                ekEvent?.calendar = CalendarManager.eventStore.defaultCalendarForNewEvents
-                ekEvent?.url = URL(string: burgerModel.url)
-            }
+        Task { [weak self] in
+            guard let self else { return }
+            let ekEvent = await CalendarManager.ekEvent(for: burgerModel)
             route = .editEvent(burger: burgerModel, ekEvent: ekEvent)
         }
     }
     
+    func showErrorAlert(_ title: String? = nil, _ message: String) {
+        route = .alert(.error(title: title, message: message))
+    }
+
     func didDismissEditCalanderView(action: EKEventEditViewAction, eventEditModel: EventEditProtocol) {
         guard let burgerModel = eventEditModel as? BurgerModel else {
             return
@@ -121,7 +115,8 @@ extension BurgerListViewModel {
         case .canceled:
             resetRoute()
         case .deleted:
-            Task {
+            Task { [weak self] in
+                guard let self else { return }
                 route = .alert(.success(title: AlertMessages.deleteCalendarSuccess.title, message: AlertMessages.deleteCalendarSuccess.message))
                 isInCalendar[burgerModel.id] = false
             }
@@ -130,19 +125,12 @@ extension BurgerListViewModel {
         }
     }
     
-    func didDismissEditCalanderViewNoAlert(action: EKEventEditViewAction, eventEditModel: EventEditProtocol) {
-        guard let burgerModel = eventEditModel as? BurgerModel else {
-            return
-        }
-        switch action {
-        case .saved:
-            isInCalendar[burgerModel.id] = true
-        case .canceled:
-            break
-        case .deleted:
-                isInCalendar[burgerModel.id] = false
-        @unknown default:
-            fatalError("Unknown EKEventEditViewAction")
+    func refreshCalendarState() {
+        Task { [weak self] in
+            guard let self else { return }
+            for burger in allBurgers {
+                isInCalendar[burger.id] = (try? await CalendarManager.retrieveBurger(burger: burger) != nil) ?? false
+            }
         }
     }
 }
