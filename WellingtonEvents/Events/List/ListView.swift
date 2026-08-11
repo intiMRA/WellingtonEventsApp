@@ -98,6 +98,15 @@ struct ListView: View {
                 }
             }
         }
+        .sheet(item: $viewModel.route.reportCategory) { event in
+            NavigationView {
+                ReportCategoryView(viewModel: .init(
+                    event: event,
+                    eventTypes: viewModel.filters?.eventTypes ?? [],
+                    dismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+            }
+            .presentationDetents([.medium, .large])
+        }
         .onChange(of: scenePhase) { _, newValue in
             switch newValue {
             case .active:
@@ -193,6 +202,9 @@ extension ListView {
                             }
                         }
                     }),
+                reportCategoryModel: .init(didTapReport: {
+                    viewModel.route = .reportCategory(event: event)
+                }),
                 width: $width
             ) {
                 viewModel.isBackTap = true

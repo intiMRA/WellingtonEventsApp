@@ -43,6 +43,7 @@ class ListViewModel: ObservableObject {
         case dateSelector(startDate: Date, endDate: Date, selectedQuickDate: QuickDateType?, id: String)
         case distance(distance: Double)
         case webView(url: String)
+        case reportCategory(event: EventInfo)
     }
     
     let repository: EventsRepository

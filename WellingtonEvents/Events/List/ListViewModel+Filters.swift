@@ -36,7 +36,7 @@ extension ListViewModel {
             selectedFilters.append(SourcesFilter(sources: values))
         case .eventType:
             selectedFilters.removeAll(where: { $0.id == .eventType })
-            selectedFilters.append(EventTypesFilter(eventTypes: values))
+            selectedFilters.append(EventTypesFilter(labels: values))
         default:
             break
         }
@@ -140,7 +140,7 @@ extension ListViewModel {
         case .source:
             return (selectedFilters.first(where: { $0.id == .source }) as? SourcesFilter)?.sources ?? []
         case .eventType:
-            return (selectedFilters.first(where: { $0.id == .eventType }) as? EventTypesFilter)?.eventTypes ?? []
+            return (selectedFilters.first(where: { $0.id == .eventType }) as? EventTypesFilter)?.labels ?? []
         default:
             return []
         }

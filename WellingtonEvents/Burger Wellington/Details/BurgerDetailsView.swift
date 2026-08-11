@@ -66,6 +66,7 @@ extension BurgerDetailsView {
                 .imageOverlay()
             
             Spacer()
+            
             if let beerPrice = viewModel.burgerModel.beerMatchPrice {
                 Text(String(localized: "Add beer for \((beerPrice - viewModel.burgerModel.price).formatted(.currency(code: "NZD")))"))
                     .imageOverlay()

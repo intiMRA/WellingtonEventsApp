@@ -9,9 +9,9 @@ import Foundation
 
 struct EventTypesFilter: FilterObjectProtocol {
     let id: FilterIds = .eventType
-    let eventTypes: [String]
+    let labels: [String]
     
     func matches(_ event: EventInfo) -> Bool {
-        eventTypes.contains(where: { $0 == event.eventType })
+        labels.oneOf(elements: event.labels)
     }
 }

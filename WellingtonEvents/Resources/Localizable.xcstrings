@@ -39,6 +39,9 @@
     "300km" : {
 
     },
+    "Add a note (optional)" : {
+
+    },
     "Add beer for %@" : {
 
     },
@@ -66,10 +69,19 @@
     "Breer Match:" : {
 
     },
+    "Can’t send email" : {
+
+    },
     "Cancel" : {
 
     },
     "Close" : {
+
+    },
+    "Current categories: %@" : {
+
+    },
+    "Currently categorised as" : {
 
     },
     "Date:" : {
@@ -90,6 +102,9 @@
     "Edit" : {
 
     },
+    "Event ID: %@" : {
+
+    },
     "Event succesfully added to your calendar. Some events may be displayed as a whole day. Please check the event page for more details." : {
 
     },
@@ -106,6 +121,9 @@
 
     },
     "Event types:" : {
+
+    },
+    "Event: %@" : {
 
     },
     "Events" : {
@@ -169,7 +187,22 @@
     "Next week" : {
 
     },
+    "No category" : {
+
+    },
+    "No email account is set up on this device. Add one in Settings and try again." : {
+
+    },
     "No events found" : {
+
+    },
+    "Note" : {
+
+    },
+    "Note: %@" : {
+
+    },
+    "OK" : {
 
     },
     "Open In Browser" : {
@@ -188,6 +221,9 @@
 
     },
     "Quick Dates:" : {
+
+    },
+    "Report category" : {
 
     },
     "Restriction:" : {
@@ -217,6 +253,9 @@
     "Selected price: %@" : {
 
     },
+    "Send" : {
+
+    },
     "Sorry the event could not be added to favourites." : {
 
     },
@@ -241,6 +280,9 @@
     "Sources:" : {
 
     },
+    "Suggested categories: %@" : {
+
+    },
     "This month" : {
 
     },
@@ -259,10 +301,19 @@
     "Tomorrow" : {
 
     },
+    "URL: %@" : {
+
+    },
     "View Event" : {
 
     },
+    "What should it be?" : {
+
+    },
     "With Sides" : {
+
+    },
+    "Wrong category report: %@" : {
 
     }
   },
