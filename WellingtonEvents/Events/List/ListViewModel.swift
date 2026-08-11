@@ -144,6 +144,12 @@ class ListViewModel: ObservableObject {
         }
     }    
     
+    var allCategories: [String] {
+        let fromEvents = allEvents.flatMap { $0.labels }
+        let fromFilters = filters?.eventTypes ?? []
+        return Array(Set(fromEvents + fromFilters)).sorted()
+    }
+
     func resetRoute() {
         route = nil
     }

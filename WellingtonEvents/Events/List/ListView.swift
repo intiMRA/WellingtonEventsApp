@@ -102,7 +102,8 @@ struct ListView: View {
             NavigationView {
                 ReportCategoryView(viewModel: .init(
                     event: event,
-                    eventTypes: viewModel.filters?.eventTypes ?? [],
+                    eventTypes: viewModel.allCategories,
+                    repository: viewModel.repository,
                     dismiss: { [weak viewModel] in viewModel?.resetRoute() }))
             }
             .presentationDetents([.medium, .large])
