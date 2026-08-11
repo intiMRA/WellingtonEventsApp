@@ -19,10 +19,15 @@ struct CalendarModel {
     var addToCalendar: () -> Void
 }
 
+struct ReportCategoryModel {
+    let didTapReport: () -> Void
+}
+
 struct EventsCardView: View {
     let event: EventInfo
     let favouriteModel: FavouriteModel
     var calendarModel: CalendarModel?
+    var reportCategoryModel: ReportCategoryModel?
     var hasDivider: Bool = true
     @Binding var width: CGFloat
     var didTapOnCard: (EventInfo) -> Void
@@ -81,7 +86,7 @@ extension EventsCardView {
                 .padding(.top, .xxSmall)
                 .padding(.trailing, .xxSmall)
             
-            Text(event.eventType)
+            Text(event.labels.joined(separator: ", "))
                 .font(.subheadline)
                 .foregroundStyle(.textSecondary)
         }
@@ -118,10 +123,20 @@ extension EventsCardView {
                         .squareFrame(size: 36)
                 }
             }
+
+            if let reportCategoryModel {
+                Button {
+                    reportCategoryModel.didTapReport()
+                } label: {
+                    Image(.warning)
+                        .imageScale(.large)
+                        .squareFrame(size: 36)
+                }
+            }
         }
         .padding(.all, .medium)
     }
-    
+
     @available(iOS 26.0, *)
     @ViewBuilder
     var actionIconsView26: some View {
@@ -150,6 +165,17 @@ extension EventsCardView {
             if let url = URL(string: event.url) {
                 ShareLink(item: url) {
                     Image(.shareClear)
+                        .squareFrame(size: 36)
+                        .glassEffect()
+                }
+            }
+
+            if let reportCategoryModel {
+                Button {
+                    reportCategoryModel.didTapReport()
+                } label: {
+                    Image(.warning)
+                        .imageScale(.large)
                         .squareFrame(size: 36)
                         .glassEffect()
                 }

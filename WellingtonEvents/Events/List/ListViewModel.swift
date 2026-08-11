@@ -43,6 +43,7 @@ class ListViewModel: ObservableObject {
         case dateSelector(startDate: Date, endDate: Date, selectedQuickDate: QuickDateType?, id: String)
         case distance(distance: Double)
         case webView(url: String)
+        case reportCategory(event: EventInfo)
     }
     
     let repository: EventsRepository
@@ -143,6 +144,12 @@ class ListViewModel: ObservableObject {
         }
     }    
     
+    var allCategories: [String] {
+        let fromEvents = allEvents.flatMap { $0.labels }
+        let fromFilters = filters?.eventTypes ?? []
+        return Array(Set(fromEvents + fromFilters)).sorted()
+    }
+
     func resetRoute() {
         route = nil
     }

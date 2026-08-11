@@ -23,3 +23,6 @@ xcuserdata/
 
 # Claude Code
 .claude/
+
+# Secrets (copy Secrets.example.swift → WellingtonEvents/Secrets.swift and fill in)
+WellingtonEvents/Secrets.swift

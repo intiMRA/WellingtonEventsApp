@@ -23,7 +23,7 @@ actor DefaultEventsRepository: EventsRepository {
     enum DefaultEventsRepositoryError: Error {
         case failedToFetchResponse
     }
-    
+
     static let calendar = Calendar.current
     
     enum Keys: String {
