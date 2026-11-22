@@ -56,8 +56,8 @@ extension MapView {
                 DatePickerView(viewModel: .init(
                     event: event,
                     repository: viewModel.repository,
-                    dismiss: { [weak viewModel] style in
-                        viewModel?.dissmissCalendar(style)
+                    dismiss: { style in
+                        viewModel.dissmissCalendar(style)
                     }))
                 .environmentObject(actionsManager)
             }
@@ -69,7 +69,7 @@ extension MapView {
                     possibleFilters: value.items,
                     selectedFilters: viewModel.selectedFilters(for: value.id),
                     finishedFiltering: viewModel.didSelectFilterValues,
-                    dismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+                    dismiss: { viewModel.resetRoute() }))
             }
             .presentationDetents([ .medium, .large])
         }
@@ -275,6 +275,7 @@ extension MapView {
                 }
             }
             .padding(.bottom, .small)
+            .conditionalGlassContainer()
         }
     }
 }

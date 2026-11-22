@@ -13,7 +13,7 @@ extension View {
     @ViewBuilder
     func wellingTOnToolbar(favoritesSelected: Bool, didTapFavourites: @escaping () -> Void) -> some View {
         self
-            .toolbarBackground(.hidden, for: .navigationBar)
+            .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {

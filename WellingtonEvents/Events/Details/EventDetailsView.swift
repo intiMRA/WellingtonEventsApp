@@ -71,8 +71,8 @@ struct EventDetailsView: View {
                 DatePickerView(viewModel: .init(
                     event: viewModel.event,
                     repository: viewModel.repository,
-                    dismiss: { [weak viewModel] style in
-                        viewModel?.dissmissCalendar(style)
+                    dismiss: { style in
+                        viewModel.dissmissCalendar(style)
                     }))
                 .environmentObject(actionsManager)
             }
@@ -248,52 +248,54 @@ extension EventDetailsView {
     var actionIconsView26: some View {
         let isFavourited = actionsManager.isEventFavourited(id: viewModel.event.id)
         let isInCalendar = actionsManager.isEventInCalendar(id: viewModel.event.id)
-        HStack(alignment: .top, spacing: .xSmall) {
-            Button {
-                Task {
-                    if isFavourited {
-                        await actionsManager.deleteFromFavorites(event: viewModel.event, errorHandler: viewModel.showErrorAlert)
+        GlassEffectContainer(spacing: CommonPadding.xSmall.rawValue) {
+            HStack(alignment: .top, spacing: .xSmall) {
+                Button {
+                    Task {
+                        if isFavourited {
+                            await actionsManager.deleteFromFavorites(event: viewModel.event, errorHandler: viewModel.showErrorAlert)
+                        }
+                        else {
+                            await actionsManager.saveToFavorites(event: viewModel.event, errorHandler: viewModel.showErrorAlert)
+                        }
                     }
-                    else {
-                        await actionsManager.saveToFavorites(event: viewModel.event, errorHandler: viewModel.showErrorAlert)
-                    }
-                }
-            } label: {
-                (isFavourited ? Image(.heartFillClear) : Image(.heartClear))
-                    .resizable()
-                    .squareFrame(size: 36)
-                    .glassEffect()
-            }
-            
-            Button {
-                Task {
-                    if isInCalendar {
-                        await viewModel.presentEditCalendar()
-                    }
-                    else {
-                        await saveTocalendar(event: viewModel.event)
-                    }
-                }
-            } label: {
-                VStack {
-                    (isInCalendar ? Image(.calendarTickClear) : Image(.calendarClear))
+                } label: {
+                    (isFavourited ? Image(.heartFillClear) : Image(.heartClear))
                         .resizable()
                         .squareFrame(size: 36)
-                        .glassEffect()
-                    if isInCalendar {
-                        Text("Edit")
-                            .font(.caption)
-                            .foregroundStyle(.accent)
+                        .glassEffect(.regular.interactive(), in: .circle)
+                }
+                
+                Button {
+                    Task {
+                        if isInCalendar {
+                            await viewModel.presentEditCalendar()
+                        }
+                        else {
+                            await saveTocalendar(event: viewModel.event)
+                        }
+                    }
+                } label: {
+                    VStack {
+                        (isInCalendar ? Image(.calendarTickClear) : Image(.calendarClear))
+                            .resizable()
+                            .squareFrame(size: 36)
+                            .glassEffect(.regular.interactive(), in: .circle)
+                        if isInCalendar {
+                            Text("Edit")
+                                .font(.caption)
+                                .foregroundStyle(.accent)
+                        }
                     }
                 }
-            }
-            
-            
-            if let url = URL(string: viewModel.event.url) {
-                ShareLink(item: url) {
-                    Image(.shareClear)
-                        .squareFrame(size: 36)
-                        .glassEffect()
+                
+                
+                if let url = URL(string: viewModel.event.url) {
+                    ShareLink(item: url) {
+                        Image(.shareClear)
+                            .squareFrame(size: 36)
+                            .glassEffect(.regular.interactive(), in: .circle)
+                    }
                 }
             }
         }

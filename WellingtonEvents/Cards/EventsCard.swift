@@ -140,44 +140,46 @@ extension EventsCardView {
     @available(iOS 26.0, *)
     @ViewBuilder
     var actionIconsView26: some View {
-        HStack(spacing: .xSmall) {
-            Button {
-                favouriteModel.didTapFavorites()
-            } label: {
-                (favouriteModel.isFavourited ? Image(.heartFillClear) : Image(.heartClear))
-                    .resizable()
-                    .squareFrame(size: 36)
-                    .glassEffect()
-            }
-            
-            if let calendarModel {
+        GlassEffectContainer(spacing: CommonPadding.xSmall.rawValue) {
+            HStack(spacing: .xSmall) {
                 Button {
-                    calendarModel.addToCalendar()
+                    favouriteModel.didTapFavorites()
                 } label: {
-                    (calendarModel.isInCalendar ? Image(.calendarTickClear) : Image(.calendarClear))
+                    (favouriteModel.isFavourited ? Image(.heartFillClear) : Image(.heartClear))
                         .resizable()
                         .squareFrame(size: 36)
-                        .glassEffect()
+                        .glassEffect(.regular.interactive(), in: .circle)
                 }
-            }
-            
-            
-            if let url = URL(string: event.url) {
-                ShareLink(item: url) {
-                    Image(.shareClear)
-                        .squareFrame(size: 36)
-                        .glassEffect()
+                
+                if let calendarModel {
+                    Button {
+                        calendarModel.addToCalendar()
+                    } label: {
+                        (calendarModel.isInCalendar ? Image(.calendarTickClear) : Image(.calendarClear))
+                            .resizable()
+                            .squareFrame(size: 36)
+                            .glassEffect(.regular.interactive(), in: .circle)
+                    }
                 }
-            }
+                
+                
+                if let url = URL(string: event.url) {
+                    ShareLink(item: url) {
+                        Image(.shareClear)
+                            .squareFrame(size: 36)
+                            .glassEffect(.regular.interactive(), in: .circle)
+                    }
+                }
 
-            if let reportCategoryModel {
-                Button {
-                    reportCategoryModel.didTapReport()
-                } label: {
-                    Image(.warning)
-                        .imageScale(.large)
-                        .squareFrame(size: 36)
-                        .glassEffect()
+                if let reportCategoryModel {
+                    Button {
+                        reportCategoryModel.didTapReport()
+                    } label: {
+                        Image(.warningClear)
+                            .resizable()
+                            .squareFrame(size: 36)
+                            .glassEffect(.regular.interactive(), in: .circle)
+                    }
                 }
             }
         }

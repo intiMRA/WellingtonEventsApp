@@ -17,12 +17,10 @@ struct ListView: View {
     @EnvironmentObject var actionsManager: ActionsManager
     @EnvironmentObject var router: Navigator
     @Environment(\.scenePhase) private var scenePhase
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @FocusState private var focusState: ViewFocusState?
     private let spaceName = "pullToRefresh"
     private let scrollViewId = "scrollView"
-    @State private var safeAreaInsets = EdgeInsets()
     @State private var width: CGFloat = .zero
     
     var body: some View {
@@ -54,8 +52,8 @@ struct ListView: View {
                 DatePickerView(viewModel: .init(
                     event: event,
                     repository: viewModel.repository,
-                    dismiss: { [weak viewModel] style in
-                        viewModel?.dissmissCalendar(style)
+                    dismiss: { style in
+                        viewModel.dissmissCalendar(style)
                     }))
                 .environmentObject(actionsManager)
             }
@@ -68,7 +66,7 @@ struct ListView: View {
                     possibleFilters: value.items,
                     selectedFilters: viewModel.selectedFilters(for: value.id),
                     finishedFiltering: viewModel.didSelectFilterValues,
-                    dismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+                    dismiss: { viewModel.resetRoute() }))
             }
             .presentationDetents([ .medium, .large])
         }
@@ -104,7 +102,7 @@ struct ListView: View {
                     event: event,
                     eventTypes: viewModel.allCategories,
                     repository: viewModel.repository,
-                    dismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+                    dismiss: { viewModel.resetRoute() }))
             }
             .presentationDetents([.medium, .large])
         }
@@ -127,7 +125,7 @@ struct ListView: View {
     
     @ViewBuilder
     var lazyGridView: some View {
-        LazyVGrid(columns: [.init(), .init()], spacing: 16) {
+        LazyVGrid(columns: [.init(alignment: .top), .init(alignment: .top)], spacing: 16) {
             cardItemsView
         }
     }
@@ -226,12 +224,6 @@ extension ListView {
                         await actionsManager.setUp(events: viewModel.events)
                     }
                 }
-                VStack { }
-                    .background {
-                        Color.clear
-                    }
-                    .frame(height: 130)
-                    .id(scrollViewId)
                 
                 VStack(alignment: .leading, spacing: .medium) {
                     switch horizontalSizeClass {
@@ -241,6 +233,7 @@ extension ListView {
                         lazyStackView
                     }
                 }
+                .id(scrollViewId)
             }
             .scrollDismissesKeyboard(.immediately)
             .onChange(of: viewModel.scrollToTop) { oldValue, newValue in
@@ -329,6 +322,7 @@ extension ListView {
             }
             .padding(.vertical, .xxSmall)
             .padding(.horizontal, .xxxSmall)
+            .conditionalGlassContainer()
         }
         .scrollIndicators(.hidden)
     }
@@ -337,7 +331,7 @@ extension ListView {
 extension ListView {
     @ViewBuilder
     var contentView: some View {
-        ZStack(alignment: .topLeading) {
+        Group {
             if viewModel.isLoading {
                 loadingView
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -348,6 +342,8 @@ extension ListView {
                         focusState = nil
                     }))
             }
+        }
+        .scrollHeaderBar {
             VStack(spacing: .empty) {
                 SearchView(searchText: $viewModel.searchText, focusState: $focusState)
                 
@@ -355,18 +351,11 @@ extension ListView {
             }
             .padding(.horizontal, .medium)
             .padding(.top, .medium)
-            .background {
-                Color(uiColor: .systemBackground)
-                    .opacity(colorScheme == .light ? 0.95 : 0.9)
-            }
         }
         .background {
             GeometryReader { geometry in
                 Color.clear
                     .padding(.horizontal, .medium)
-                    .onChange(of: geometry.safeAreaInsets, { _, newValue in
-                        safeAreaInsets = newValue
-                    })
                     .onChange(of: geometry.size) { _, newValue in
                         switch horizontalSizeClass {
                         case .regular:
@@ -376,13 +365,6 @@ extension ListView {
                         }
                     }
             }
-        }
-        .overlay(alignment: .top) {
-            Color(uiColor: .systemBackground)
-                .opacity(colorScheme == .light ? 0.95 : 0.9)
-                .frame(height: safeAreaInsets.top)
-                .frame(maxWidth: .infinity)
-                .ignoresSafeArea()
         }
     }
 }
