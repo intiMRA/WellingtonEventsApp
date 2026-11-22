@@ -20,7 +20,7 @@ struct FestivalCellView: View {
             Spacer()
             Image(systemName: "chevron.right")
         }
-        .frame(maxWidth: .infinity, idealHeight: 44)
+        .frame(maxWidth: .infinity, minHeight: 44)
     }
 }
 

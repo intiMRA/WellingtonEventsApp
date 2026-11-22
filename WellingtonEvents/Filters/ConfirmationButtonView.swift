@@ -30,12 +30,8 @@ struct StyledButtonView: View {
             didTapConfirmationButton()
         } label: {
             Text(type.title)
-                .frame(maxWidth: .infinity, idealHeight: 44)
-                .background {
-                    RoundedRectangle(cornerRadius: .greatestFiniteMagnitude)
-                        .fill(.accent)
-                        .conditionalGlass(tint: .accent)
-                }
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .conditionalGlass(tint: .accent, isInteractive: true, legacyColor: .accent)
                 .foregroundStyle(.selectedChipText)
                 .bold()
         }

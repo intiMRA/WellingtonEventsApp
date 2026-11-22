@@ -27,19 +27,7 @@ struct SearchView: View {
                 }
                 .frame(height: 44)
                 .padding(.horizontal, .medium)
-                .background {
-                    if #available(iOS 26.0, *) {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(hasCancelButton ? .cardBackground : .clear)
-                            .shadow(radius: 2, x: 0, y: 2)
-                            .glassEffect()
-                    }
-                    else {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(.cardBackground)
-                            .shadow(radius: 2, x: 0, y: 2)
-                    }
-                }
+                .searchFieldGlass(isTinted: hasCancelButton)
                 .onTapGesture {
                     focusState.wrappedValue = .search
                 }
@@ -51,12 +39,7 @@ struct SearchView: View {
                         .frame(maxWidth: .infinity)
                         .focused(focusState, equals: .search)
                         .padding(.horizontal, .medium)
-                        .background {
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(.cardBackground)
-                                .shadow(radius: 2, x: 0, y: 2)
-                                .conditionalGlass()
-                        }
+                        .searchFieldGlass(isTinted: hasCancelButton)
                     
                     if searchText.isEmpty, focusState.wrappedValue == .search, hasCancelButton {
                         HStack {
@@ -90,5 +73,17 @@ struct SearchView: View {
             focusState.wrappedValue = nil
         }
         .padding(.bottom, .xSmall)
+    }
+}
+
+private extension View {
+    func searchFieldGlass(isTinted: Bool) -> some View {
+        conditionalGlass(
+            tint: isTinted ? .cardBackground : nil,
+            isInteractive: true,
+            in: RoundedRectangle(cornerRadius: 20),
+            legacyColor: .cardBackground,
+            hasLegacyShadow: true
+        )
     }
 }

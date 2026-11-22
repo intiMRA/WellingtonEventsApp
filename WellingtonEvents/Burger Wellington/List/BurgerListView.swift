@@ -15,13 +15,11 @@ struct BurgerListView: View {
     @EnvironmentObject var burgerActionsManager: BurgerActionsManager
     @State private var width: CGFloat = .zero
     @FocusState var focusState: ViewFocusState?
-    @State private var safeAreaInsets = EdgeInsets()
-    @Environment(\.colorScheme) private var colorScheme
     private let scrollViewId = "scrollViewId"
     private let spaceName = "pullToRefresh"
     var body: some View {
         ZStack(alignment: .bottom) {
-            ZStack(alignment: .topLeading) {
+            Group {
                 if viewModel.isLoading {
                     loadingView
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -32,6 +30,8 @@ struct BurgerListView: View {
                             focusState = nil
                         }))
                 }
+            }
+            .scrollHeaderBar {
                 VStack(spacing: .empty) {
                     SearchView(searchText: $viewModel.searchText, focusState: $focusState)
                     
@@ -39,10 +39,6 @@ struct BurgerListView: View {
                 }
                 .padding(.horizontal, .medium)
                 .padding(.top, .medium)
-                .background {
-                    Color(uiColor: .systemBackground)
-                        .opacity(colorScheme == .light ? 0.95 : 0.9)
-                }
             }
             switch viewModel.route {
             case .alert(let toastStyle):
@@ -55,9 +51,6 @@ struct BurgerListView: View {
             GeometryReader { geometry in
                 Color.clear
                     .padding(.horizontal, .medium)
-                    .onChange(of: geometry.safeAreaInsets, { _, newValue in
-                        safeAreaInsets = newValue
-                    })
                     .onChange(of: geometry.size) { _, newValue in
                         switch horizontalSizeClass {
                         case .regular:
@@ -71,13 +64,6 @@ struct BurgerListView: View {
         .wellingTOnToolbar(favoritesSelected: viewModel.selectedFilterSource().contains(where: { $0 == .favorited }), didTapFavourites: {
             viewModel.didTapFavouritesFilter(favourites: burgerActionsManager.favourites)
         })
-        .overlay(alignment: .top) {
-            Color(uiColor: .systemBackground)
-                .opacity(colorScheme == .light ? 0.95 : 0.9)
-                .frame(height: safeAreaInsets.top)
-                .frame(maxWidth: .infinity)
-                .ignoresSafeArea()
-        }
         .task {
             guard !viewModel.isBackTap else {
                 viewModel.isBackTap = false
@@ -96,7 +82,7 @@ struct BurgerListView: View {
                     possibleFilters: value.items,
                     selectedFilters: viewModel.selectedFilters(for: value.id),
                     finishedFiltering: viewModel.didSelectFilterValues,
-                    dismiss: { [weak viewModel] in viewModel?.resetRoute() }))
+                    dismiss: { viewModel.resetRoute() }))
             }
             .presentationDetents([ .medium, .large])
         }
@@ -136,13 +122,8 @@ extension BurgerListView {
                         await viewModel.fetchBurgers()
                     }
                 }
-                VStack { }
-                    .background {
-                        Color.clear
-                    }
-                    .frame(height: 130)
-                    .id(scrollViewId)
                 burgerStackView
+                    .id(scrollViewId)
             }
             .scrollDismissesKeyboard(.immediately)
             .onChange(of: viewModel.scrollToTop) { oldValue, newValue in
@@ -243,6 +224,7 @@ extension BurgerListView {
             }
             .padding(.vertical, .xxSmall)
             .padding(.horizontal, .xxxSmall)
+            .conditionalGlassContainer()
         }
         .scrollIndicators(.hidden)
     }

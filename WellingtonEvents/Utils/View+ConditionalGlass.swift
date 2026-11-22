@@ -7,54 +7,46 @@
 
 import SwiftUI
 
+private enum LegacyShadow {
+    static let radius: CGFloat = 2
+    static let yOffset: CGFloat = 2
+    static let opacity: Double = 0.25
+}
+
 extension View {
     @ViewBuilder
-    func conditionalGlass(tint: Color? = nil, legacyColor: Color? = nil) -> some View {
+    func conditionalGlass(
+        tint: Color? = nil,
+        isInteractive: Bool = false,
+        in shape: some Shape = Capsule(),
+        legacyColor: Color? = nil,
+        hasLegacyShadow: Bool = false
+    ) -> some View {
         if #available(iOS 26.0, *) {
-            if let tint {
-                self
-                    .glassEffect(.regular.tint(tint))
-            }
-            else {
-                self
-                    .glassEffect()
-            }
+            glassEffect(.regular.tint(tint).interactive(isInteractive), in: shape)
         } else {
-            if let legacyColor {
-                self
-                    .background(legacyColor)
-            }
-            else {
-                self
+            background {
+                if let legacyColor {
+                    shape
+                        .fill(legacyColor)
+                        .shadow(
+                            color: Color(.shadow).opacity(LegacyShadow.opacity),
+                            radius: hasLegacyShadow ? LegacyShadow.radius : 0,
+                            y: hasLegacyShadow ? LegacyShadow.yOffset : 0
+                        )
+                }
             }
         }
     }
-}
 
-extension View where Self: Shape {
     @ViewBuilder
-    func conditionalGlassShape(tint: Color? = nil, legacyColor: Color? = nil, stroke: CGFloat = 0, strokeColor: Color = .accent) -> some View {
+    func conditionalGlassContainer() -> some View {
         if #available(iOS 26.0, *) {
-            if let tint {
+            GlassEffectContainer {
                 self
-                    .stroke(strokeColor, lineWidth: stroke)
-                    .glassEffect(.regular.tint(tint), in: self)
-            }
-            else {
-                self
-                    .stroke(strokeColor, lineWidth: stroke)
-                    .glassEffect()
             }
         } else {
-            if let legacyColor {
-                self
-                    .stroke(strokeColor, lineWidth: stroke)
-                    .fill(legacyColor)
-            }
-            else {
-                self
-                    .stroke(strokeColor, lineWidth: stroke)
-            }
+            self
         }
     }
 }
